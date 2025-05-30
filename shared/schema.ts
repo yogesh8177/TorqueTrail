@@ -350,6 +350,8 @@ export const insertConvoySchema = createInsertSchema(convoys).omit({
   currentParticipants: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  startDateTime: z.union([z.date(), z.string().transform((str) => new Date(str))]),
 });
 
 export const insertPostCommentSchema = createInsertSchema(postComments).omit({
