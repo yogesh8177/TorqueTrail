@@ -1,0 +1,220 @@
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { Heart, MessageCircle, Share2, Bookmark, MapPin, Clock, User, Zap, ExternalLink } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+
+interface AIBlogPostProps {
+  post: {
+    id: number;
+    userId: string;
+    content: string;
+    title?: string;
+    type: string;
+    imageUrls?: string[];
+    videoUrls?: string[];
+    likes: number;
+    comments: number;
+    shares: number;
+    isAiGenerated?: boolean;
+    createdAt: string;
+  };
+}
+
+export default function AIBlogPost({ post }: AIBlogPostProps) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isLiked, setIsLiked] = useState(false);
+  const [showFullContent, setShowFullContent] = useState(false);
+
+  const likeMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", `/api/posts/${post.id}/like`);
+    },
+    onSuccess: (response) => {
+      setIsLiked(response.liked);
+      queryClient.invalidateQueries({ queryKey: ["/api/posts/feed"] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update like",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLike = () => {
+    likeMutation.mutate();
+  };
+
+  // Mock AI blog data for demonstration
+  const mockBlogData = {
+    title: "Epic Pacific Coast Highway Adventure: 450 Miles of Pure Driving Bliss",
+    excerpt: "Just completed an incredible 3-day journey along the PCH in my Porsche 911 GT3. From San Francisco to LA, every mile was a masterpiece. The AI captured my adventure perfectly - from the foggy start in SF to the sunset finish in Malibu.",
+    fullContent: "The Pacific Coast Highway has always been on my bucket list, and this weekend I finally made it happen. Starting at sunrise in San Francisco, the city was shrouded in its typical morning fog as I fired up the GT3 and headed south. The first hundred miles were absolutely magical - winding through redwood forests with occasional glimpses of the Pacific through the trees.\n\nBy the time I reached Big Sur, the fog had lifted and I was treated to some of the most spectacular coastal scenery I've ever witnessed. The combination of the GT3's naturally aspirated flat-six symphony and the dramatic coastline created a sensory experience that's impossible to replicate. Each corner revealed new vistas, each straightaway offered moments of pure automotive bliss.\n\nThe highlight was definitely the stretch near McWay Falls, where I stopped to capture some photos and videos that the AI has now woven into this incredible narrative. The way the afternoon light played across the water while my car sat perched on the cliff edge - pure automotive poetry.\n\nAs I rolled into Malibu just as the sun was setting, painting the sky in brilliant oranges and purples, I couldn't help but smile. 450 miles, 8 hours of pure driving joy, and memories that will last a lifetime. This is what TorqueTrail is all about - sharing these incredible automotive adventures with fellow enthusiasts who truly understand the passion.",
+    stats: {
+      distance: "450mi",
+      duration: "8h 30m",
+      pitstops: 12,
+    },
+    readTime: 5,
+  };
+
+  const contentPreview = mockBlogData.excerpt;
+  const displayContent = showFullContent ? mockBlogData.fullContent : contentPreview;
+
+  return (
+    <Card className="automotive-card hover:border-purple-500/30 transition-colors border-purple-500/20 bg-gradient-to-br from-card to-purple-500/5">
+      <CardContent className="p-6">
+        {/* Post Header */}
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/50 to-primary/50 border-2 border-purple-500/30 flex items-center justify-center">
+            <User className="w-5 h-5 text-purple-300" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center space-x-2">
+              <h3 className="font-medium">Marcus Thompson</h3>
+              <Badge variant="secondary" className="bg-purple-500/20 text-purple-400 border-purple-500/30">
+                <Zap className="w-3 h-3 mr-1" />
+                AI Blog
+              </Badge>
+            </div>
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Clock className="w-3 h-3" />
+              <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })} • Generated by AI</span>
+            </div>
+          </div>
+          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+            </svg>
+          </Button>
+        </div>
+
+        {/* Post Title */}
+        <h2 className="text-xl font-bold mb-3 gradient-text-racing">
+          {mockBlogData.title}
+        </h2>
+
+        {/* Featured Image */}
+        <div className="mb-4 rounded-lg overflow-hidden">
+          <img
+            src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=500"
+            alt="Pacific Coast Highway scenic drive"
+            className="w-full h-64 object-cover cursor-pointer hover:opacity-90 transition-opacity"
+          />
+        </div>
+
+        {/* Blog Content */}
+        <div className="prose prose-invert max-w-none mb-4">
+          <p className="text-muted-foreground leading-relaxed whitespace-pre-line">
+            {displayContent}
+          </p>
+          
+          {!showFullContent && (
+            <Button
+              variant="link"
+              onClick={() => setShowFullContent(true)}
+              className="text-purple-400 hover:text-purple-300 p-0 h-auto font-medium"
+            >
+              Read Full Blog →
+            </Button>
+          )}
+        </div>
+
+        {/* Drive Stats */}
+        <div className="grid grid-cols-3 gap-4 mb-4 p-4 bg-gradient-to-r from-purple-500/10 to-primary/10 rounded-lg border border-purple-500/20">
+          <div className="text-center">
+            <p className="text-2xl font-bold text-primary">{mockBlogData.stats.distance}</p>
+            <p className="text-xs text-muted-foreground">Distance</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-secondary">{mockBlogData.stats.duration}</p>
+            <p className="text-xs text-muted-foreground">Duration</p>
+          </div>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-purple-400">{mockBlogData.stats.pitstops}</p>
+            <p className="text-xs text-muted-foreground">Pit Stops</p>
+          </div>
+        </div>
+
+        {/* Route Badge */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-1 bg-primary/20 px-3 py-1 rounded-full border border-primary/30">
+              <MapPin className="w-3 h-3 text-primary" />
+              <span className="text-xs font-medium text-primary">Pacific Coast Highway</span>
+            </div>
+            <div className="flex items-center space-x-1 bg-purple-500/20 px-3 py-1 rounded-full border border-purple-500/30">
+              <span className="text-xs font-medium text-purple-400">{mockBlogData.readTime} min read</span>
+            </div>
+          </div>
+          
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+          >
+            <ExternalLink className="w-4 h-4 mr-2" />
+            Read Full Blog
+          </Button>
+        </div>
+
+        {/* Engagement Actions */}
+        <div className="flex items-center justify-between pt-4 border-t border-border">
+          <div className="flex items-center space-x-6">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleLike}
+              disabled={likeMutation.isPending}
+              className={`flex items-center space-x-2 ${
+                isLiked
+                  ? "text-primary hover:text-primary/80"
+                  : "text-muted-foreground hover:text-primary"
+              }`}
+            >
+              <Heart
+                className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`}
+              />
+              <span className="text-sm">247</span>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center space-x-2 text-muted-foreground hover:text-secondary"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span className="text-sm">38</span>
+            </Button>
+            
+            <Button
+              variant="ghost"
+              size="sm"
+              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
+            >
+              <Share2 className="w-5 h-5" />
+              <span className="text-sm">Share</span>
+            </Button>
+          </div>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-yellow-500"
+          >
+            <Bookmark className="w-5 h-5" />
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

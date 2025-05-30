@@ -1,0 +1,273 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 240 10% 3.9%; /* #0F0F0F - Deep black background */
+  --foreground: 210 40% 98%; /* #F8F8F8 - Pearl white text */
+  --muted: 210 40% 15%; /* #1A1A1A - Carbon muted */
+  --muted-foreground: 215 20% 65%; /* #6B7280 - Steel foreground */
+  --popover: 240 10% 6%; /* #1A1A1A - Carbon popover */
+  --popover-foreground: 210 40% 98%; /* #F8F8F8 - Pearl foreground */
+  --card: 240 10% 6%; /* #1A1A1A - Carbon card */
+  --card-foreground: 210 40% 98%; /* #F8F8F8 - Pearl foreground */
+  --border: 215 20% 20%; /* #2A2A2A - Steel border */
+  --input: 215 20% 20%; /* #2A2A2A - Steel input */
+  --primary: 0 84% 60%; /* #DC2626 - Racing red */
+  --primary-foreground: 210 40% 98%; /* #F8F8F8 - Pearl foreground */
+  --secondary: 217 91% 60%; /* #3B82F6 - Electric blue */
+  --secondary-foreground: 210 40% 98%; /* #F8F8F8 - Pearl foreground */
+  --accent: 215 20% 25%; /* #3A3A3A - Steel accent */
+  --accent-foreground: 210 40% 98%; /* #F8F8F8 - Pearl foreground */
+  --destructive: 0 84% 60%; /* #DC2626 - Racing red */
+  --destructive-foreground: 210 40% 98%; /* #F8F8F8 - Pearl foreground */
+  --ring: 0 84% 60%; /* #DC2626 - Racing red ring */
+  --radius: 0.75rem;
+  
+  /* Custom automotive theme colors */
+  --racing-red: 0 84% 60%; /* #DC2626 */
+  --electric-blue: 217 91% 60%; /* #3B82F6 */
+  --carbon: 240 10% 6%; /* #1A1A1A */
+  --deep-black: 240 10% 3.9%; /* #0F0F0F */
+  --pearl: 210 40% 98%; /* #F8F8F8 */
+  --steel: 215 20% 65%; /* #6B7280 */
+}
+
+.dark {
+  --background: 240 10% 3.9%; /* #0F0F0F */
+  --foreground: 210 40% 98%; /* #F8F8F8 */
+  --muted: 240 10% 6%; /* #1A1A1A */
+  --muted-foreground: 215 20% 65%; /* #6B7280 */
+  --popover: 240 10% 6%; /* #1A1A1A */
+  --popover-foreground: 210 40% 98%; /* #F8F8F8 */
+  --card: 240 10% 6%; /* #1A1A1A */
+  --card-foreground: 210 40% 98%; /* #F8F8F8 */
+  --border: 215 20% 20%; /* #2A2A2A */
+  --input: 215 20% 20%; /* #2A2A2A */
+  --primary: 0 84% 60%; /* #DC2626 */
+  --primary-foreground: 210 40% 98%; /* #F8F8F8 */
+  --secondary: 217 91% 60%; /* #3B82F6 */
+  --secondary-foreground: 210 40% 98%; /* #F8F8F8 */
+  --accent: 215 20% 25%; /* #3A3A3A */
+  --accent-foreground: 210 40% 98%; /* #F8F8F8 */
+  --destructive: 0 62.8% 30.6%; /* #7F1D1D */
+  --destructive-foreground: 210 40% 98%; /* #F8F8F8 */
+  --ring: 0 84% 60%; /* #DC2626 */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl lg:text-5xl;
+  }
+
+  h2 {
+    @apply text-3xl lg:text-4xl;
+  }
+
+  h3 {
+    @apply text-2xl lg:text-3xl;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-accent rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-accent/80;
+  }
+}
+
+@layer components {
+  /* Automotive-themed gradients */
+  .gradient-racing {
+    background: linear-gradient(135deg, hsl(var(--racing-red)), hsl(var(--electric-blue)));
+  }
+
+  .gradient-carbon {
+    background: linear-gradient(135deg, hsl(var(--carbon)), hsl(var(--accent)));
+  }
+
+  .gradient-text-racing {
+    background: linear-gradient(135deg, hsl(var(--racing-red)), hsl(var(--electric-blue)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Glass morphism effect */
+  .glass-card {
+    background: hsla(var(--card), 0.8);
+    backdrop-filter: blur(12px);
+    border: 1px solid hsla(var(--border), 0.2);
+  }
+
+  /* Hover animations */
+  .hover-scale {
+    @apply transition-transform duration-200 ease-in-out;
+  }
+
+  .hover-scale:hover {
+    @apply scale-105;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-200 ease-in-out;
+  }
+
+  .hover-lift:hover {
+    @apply shadow-lg transform translate-y-[-2px];
+  }
+
+  /* Custom focus styles */
+  .focus-racing {
+    @apply focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50;
+  }
+
+  .focus-electric {
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+  }
+
+  /* Typography enhancements */
+  .text-gradient-racing {
+    @apply bg-gradient-to-r from-red-500 to-blue-500 bg-clip-text text-transparent;
+  }
+
+  /* Loading animation */
+  @keyframes spin-slow {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .animate-spin-slow {
+    animation: spin-slow 3s linear infinite;
+  }
+
+  /* Pulse animation for notifications */
+  @keyframes pulse-racing {
+    0%, 100% {
+      opacity: 1;
+      box-shadow: 0 0 0 0 hsla(var(--racing-red), 0.7);
+    }
+    50% {
+      opacity: 0.8;
+      box-shadow: 0 0 0 10px hsla(var(--racing-red), 0);
+    }
+  }
+
+  .animate-pulse-racing {
+    animation: pulse-racing 2s infinite;
+  }
+
+  /* Card styles */
+  .automotive-card {
+    @apply bg-card border border-border rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow duration-200;
+  }
+
+  .automotive-card-interactive {
+    @apply automotive-card hover:border-primary/30 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-pointer;
+  }
+}
+
+@layer utilities {
+  /* Custom spacing for automotive layouts */
+  .space-y-automotive > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 1.5rem;
+  }
+
+  .space-x-automotive > :not([hidden]) ~ :not([hidden]) {
+    margin-left: 1.5rem;
+  }
+
+  /* Text utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Container utilities */
+  .container-automotive {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Aspect ratio utilities for automotive content */
+  .aspect-car {
+    aspect-ratio: 16 / 9;
+  }
+
+  .aspect-garage {
+    aspect-ratio: 4 / 3;
+  }
+
+  /* Responsive text sizing */
+  .text-responsive-xl {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+
+  .text-responsive-lg {
+    @apply text-lg sm:text-xl lg:text-2xl;
+  }
+
+  .text-responsive-base {
+    @apply text-base sm:text-lg;
+  }
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .hover-scale:hover {
+    transform: none;
+  }
+
+  .hover-lift:hover {
+    transform: none;
+  }
+
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0% 100%;
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+  }
+}
