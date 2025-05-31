@@ -56,6 +56,7 @@ export default function FeedPost({ post }: FeedPostProps) {
       case "drive":
         return "bg-green-500/20 text-green-500 border-green-500/30";
       case "garage":
+      case "vehicle_showcase":
         return "bg-primary/20 text-primary border-primary/30";
       case "convoy":
         return "bg-secondary/20 text-secondary border-secondary/30";
@@ -70,6 +71,8 @@ export default function FeedPost({ post }: FeedPostProps) {
         return "Drive Log";
       case "garage":
         return "Garage Update";
+      case "vehicle_showcase":
+        return "Vehicle Showcase";
       case "convoy":
         return "Convoy Event";
       default:

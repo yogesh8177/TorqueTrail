@@ -19,10 +19,7 @@ export default function Home() {
     enabled: !!user,
   });
 
-  // Debug posts data
-  console.log("Posts data:", posts);
-  console.log("Posts length:", posts.length);
-  console.log("Posts loading:", postsLoading);
+
 
   // Fetch upcoming convoys
   const { data: upcomingConvoys = [] } = useQuery({
