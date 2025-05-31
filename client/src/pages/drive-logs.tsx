@@ -78,6 +78,7 @@ export default function DriveLogs() {
 
   const createDriveLogMutation = useMutation({
     mutationFn: async (data: DriveLogFormData & { titleImage?: File }) => {
+      console.log('Mutation started with data:', data);
       const formData = new FormData();
       
       // Add all form fields
@@ -95,18 +96,25 @@ export default function DriveLogs() {
         formData.append('titleImage', data.titleImage);
       }
 
+      console.log('FormData entries:', Array.from(formData.entries()));
+
       const response = await fetch('/api/drive-logs', {
         method: 'POST',
         body: formData,
         credentials: 'include', // Include cookies for authentication
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
         const errorText = await response.text();
+        console.error('Error response:', errorText);
         throw new Error(`${response.status}: ${errorText}`);
       }
 
-      return await response.json();
+      const result = await response.json();
+      console.log('Success response:', result);
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
@@ -128,6 +136,8 @@ export default function DriveLogs() {
   });
 
   const handleSubmit = (data: DriveLogFormData) => {
+    console.log('Form submitted with data:', data);
+    console.log('Selected image:', selectedImage);
     createDriveLogMutation.mutate({
       ...data,
       titleImage: selectedImage || undefined,
