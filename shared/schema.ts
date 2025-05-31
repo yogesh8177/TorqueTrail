@@ -357,6 +357,16 @@ export const insertConvoySchema = createInsertSchema(convoys).omit({
     z.string().transform((str) => str === "" ? undefined : Number(str)),
     z.undefined()
   ]).optional(),
+  distance: z.union([
+    z.string().transform((str) => {
+      if (!str || str === "") return undefined;
+      // Extract numbers from string like "1000 kms" -> "1000"
+      const numStr = str.replace(/[^\d.]/g, '');
+      return numStr ? parseFloat(numStr) : undefined;
+    }),
+    z.number(),
+    z.undefined()
+  ]).optional(),
 });
 
 export const insertPostCommentSchema = createInsertSchema(postComments).omit({
