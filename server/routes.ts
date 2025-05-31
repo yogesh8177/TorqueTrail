@@ -364,6 +364,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/drive-logs', isAuthenticated, upload.single('titleImage'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const driveLogData = insertDriveLogSchema.parse({ ...req.body, userId });
+      
+      // Handle image upload if present
+      if (req.file) {
+        driveLogData.titleImageUrl = `/uploads/${req.file.filename}`;
+      }
+      
+      const driveLog = await storage.createDriveLog(driveLogData);
+      res.json(driveLog);
+    } catch (error) {
+      console.error("Error creating drive log:", error);
+      res.status(500).json({ message: "Failed to create drive log" });
+    }
+  });
+
   // AI blog generation route
   app.post('/api/drive-logs/:id/generate-blog', isAuthenticated, async (req, res) => {
     try {
