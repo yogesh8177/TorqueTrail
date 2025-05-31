@@ -269,6 +269,48 @@ export default function DriveLogs() {
                       </FormItem>
                     )}
                   />
+
+                  <FormField
+                    control={form.control}
+                    name="routeName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Route Name (Optional)</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Pacific Coast Highway" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="weatherConditions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Weather Conditions</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Sunny, Clear Skies" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="roadConditions"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Road Conditions</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Dry, Good Visibility" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
 
                 <FormField
