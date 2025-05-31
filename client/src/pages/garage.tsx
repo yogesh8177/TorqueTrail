@@ -171,8 +171,12 @@ export default function Garage() {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedImage(file);
-      // Trigger AI analysis
-      analyzeImageMutation.mutate(file);
+    }
+  };
+
+  const handleAnalyzeImage = () => {
+    if (uploadedImage) {
+      analyzeImageMutation.mutate(uploadedImage);
     }
   };
 
@@ -263,7 +267,7 @@ export default function Garage() {
                                 className="w-32 h-32 object-cover rounded-lg mx-auto"
                               />
                               <p className="text-sm text-green-500">
-                                Image uploaded! AI analysis {analyzeImageMutation.isPending ? "in progress..." : "complete"}
+                                Image uploaded! Ready for AI analysis
                               </p>
                             </div>
                           ) : (
@@ -278,6 +282,26 @@ export default function Garage() {
                             </div>
                           )}
                         </label>
+                        {uploadedImage && (
+                          <Button 
+                            type="button"
+                            onClick={handleAnalyzeImage}
+                            disabled={analyzeImageMutation.isPending}
+                            className="mt-2 w-full"
+                          >
+                            {analyzeImageMutation.isPending ? (
+                              <>
+                                <Zap className="w-4 h-4 mr-2 animate-pulse" />
+                                Analyzing...
+                              </>
+                            ) : (
+                              <>
+                                <Zap className="w-4 h-4 mr-2" />
+                                Analyze Photo
+                              </>
+                            )}
+                          </Button>
+                        )}
                       </div>
                       {analyzeImageMutation.isPending && (
                         <div className="flex items-center space-x-2 text-sm text-secondary">
