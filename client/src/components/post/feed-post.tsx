@@ -81,7 +81,7 @@ export default function FeedPost({ post }: FeedPostProps) {
   };
 
   return (
-    <Card className="automotive-card hover:border-accent/50 transition-colors" style={{border: "2px solid red", backgroundColor: "rgba(255,0,0,0.1)"}}>
+    <Card className="automotive-card hover:border-accent/50 transition-colors">
       <CardContent className="p-6">
         {/* Post Header */}
         <div className="flex items-center space-x-3 mb-4">

@@ -161,7 +161,7 @@ export default function Home() {
                       </Card>
                     ))}
                   </div>
-                ) : posts.length > 0 ? (
+                ) : posts && Array.isArray(posts) && posts.length > 0 ? (
                   <div className="space-y-6">
                     {posts.map((post: any) => {
                       // Show AI blog posts only if they are actually AI generated
