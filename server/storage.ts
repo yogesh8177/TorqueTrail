@@ -65,6 +65,14 @@ export interface IStorage {
   createDriveLog(driveLog: InsertDriveLog): Promise<DriveLog>;
   getUserDriveLogs(userId: string): Promise<DriveLog[]>;
   getDriveLog(id: number): Promise<DriveLog | undefined>;
+  getDriveLogWithPitstops(id: number): Promise<(DriveLog & { pitstops: Pitstop[] }) | undefined>;
+  
+  // Pitstop operations
+  createPitstop(pitstop: InsertPitstop): Promise<Pitstop>;
+  getPitstopsByDriveLog(driveLogId: number): Promise<Pitstop[]>;
+  getPitstop(id: number): Promise<Pitstop | undefined>;
+  updatePitstop(id: number, updates: Partial<InsertPitstop>): Promise<Pitstop>;
+  deletePitstop(id: number): Promise<void>;
   
   // Convoy operations
   createConvoy(convoy: InsertConvoy): Promise<Convoy>;
@@ -285,6 +293,66 @@ export class DatabaseStorage implements IStorage {
   async getDriveLog(id: number): Promise<DriveLog | undefined> {
     const [driveLog] = await db.select().from(driveLogs).where(eq(driveLogs.id, id));
     return driveLog;
+  }
+
+  async getDriveLogWithPitstops(id: number): Promise<(DriveLog & { pitstops: Pitstop[] }) | undefined> {
+    const [driveLog] = await db.select().from(driveLogs).where(eq(driveLogs.id, id));
+    if (!driveLog) return undefined;
+
+    const pitstopsData = await this.getPitstopsByDriveLog(id);
+    return { ...driveLog, pitstops: pitstopsData };
+  }
+
+  // Pitstop operations
+  async createPitstop(pitstop: InsertPitstop): Promise<Pitstop> {
+    const [newPitstop] = await db.insert(pitstops).values(pitstop).returning();
+    
+    // Update drive log's total pitstops count
+    await db
+      .update(driveLogs)
+      .set({
+        totalPitstops: sql`${driveLogs.totalPitstops} + 1`,
+      })
+      .where(eq(driveLogs.id, pitstop.driveLogId));
+    
+    return newPitstop;
+  }
+
+  async getPitstopsByDriveLog(driveLogId: number): Promise<Pitstop[]> {
+    return await db
+      .select()
+      .from(pitstops)
+      .where(eq(pitstops.driveLogId, driveLogId))
+      .orderBy(pitstops.orderIndex);
+  }
+
+  async getPitstop(id: number): Promise<Pitstop | undefined> {
+    const [pitstop] = await db.select().from(pitstops).where(eq(pitstops.id, id));
+    return pitstop;
+  }
+
+  async updatePitstop(id: number, updates: Partial<InsertPitstop>): Promise<Pitstop> {
+    const [updatedPitstop] = await db
+      .update(pitstops)
+      .set(updates)
+      .where(eq(pitstops.id, id))
+      .returning();
+    return updatedPitstop;
+  }
+
+  async deletePitstop(id: number): Promise<void> {
+    const pitstop = await this.getPitstop(id);
+    if (!pitstop) return;
+
+    await db.delete(pitstops).where(eq(pitstops.id, id));
+    
+    // Update drive log's total pitstops count
+    await db
+      .update(driveLogs)
+      .set({
+        totalPitstops: sql`${driveLogs.totalPitstops} - 1`,
+      })
+      .where(eq(driveLogs.id, pitstop.driveLogId));
   }
 
   // Convoy operations
