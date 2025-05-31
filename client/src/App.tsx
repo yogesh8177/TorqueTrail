@@ -20,24 +20,24 @@ function Router() {
     return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
+  if (!isAuthenticated) {
+    return (
+      <Switch>
+        <Route path="/" component={Landing} />
+        <Route component={Landing} />
+      </Switch>
+    );
+  }
+
   return (
     <Switch>
-      {!isAuthenticated ? (
-        <>
-          <Route path="/" component={Landing} />
-          <Route component={Landing} />
-        </>
-      ) : (
-        <>
-          <Route path="/" component={Home} />
-          <Route path="/garage" component={Garage} />
-          <Route path="/convoys" component={Convoys} />
-          <Route path="/convoy/:id" component={ConvoyDetail} />
-          <Route path="/profile" component={Profile} />
-          <Route path="/routes" component={Routes} />
-          <Route component={NotFound} />
-        </>
-      )}
+      <Route path="/" component={Home} />
+      <Route path="/garage" component={Garage} />
+      <Route path="/convoys" component={Convoys} />
+      <Route path="/convoy/:id" component={ConvoyDetail} />
+      <Route path="/profile" component={Profile} />
+      <Route path="/routes" component={Routes} />
+      <Route component={NotFound} />
     </Switch>
   );
 }
