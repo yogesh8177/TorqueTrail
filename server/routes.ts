@@ -154,6 +154,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
+      // Process tags if provided
+      let tagsArray: string[] | undefined;
+      if (req.body.tags && req.body.tags.trim()) {
+        tagsArray = req.body.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean);
+      }
+
       const postData = insertPostSchema.parse({
         ...req.body,
         userId,
@@ -161,6 +167,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
         vehicleId: req.body.vehicleId ? parseInt(req.body.vehicleId) : undefined,
         isAiGenerated: req.body.isAiGenerated === 'true',
+        tags: tagsArray,
       });
 
       const post = await storage.createPost(postData);

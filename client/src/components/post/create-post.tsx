@@ -17,6 +17,7 @@ export default function CreatePost() {
   
   const [content, setContent] = useState("");
   const [title, setTitle] = useState("");
+  const [tags, setTags] = useState("");
   const [postType, setPostType] = useState<"drive" | "garage" | "general">("general");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -32,6 +33,7 @@ export default function CreatePost() {
       });
       setContent("");
       setTitle("");
+      setTags("");
       setSelectedFiles([]);
       setIsExpanded(false);
       queryClient.invalidateQueries({ queryKey: ["/api/posts/feed"] });
@@ -78,6 +80,7 @@ export default function CreatePost() {
     formData.append("content", content);
     formData.append("type", postType);
     if (title) formData.append("title", title);
+    if (tags) formData.append("tags", tags);
     
     selectedFiles.forEach(file => {
       formData.append("media", file);
@@ -119,6 +122,12 @@ export default function CreatePost() {
                     onChange={(e) => setContent(e.target.value)}
                     className="bg-accent/20 border-accent min-h-[100px] resize-none"
                     autoFocus
+                  />
+                  <Input
+                    placeholder="Add tags (comma separated, e.g., BMW, M3, Track Day)"
+                    value={tags}
+                    onChange={(e) => setTags(e.target.value)}
+                    className="bg-accent/20 border-accent"
                   />
                 </div>
               ) : (
@@ -228,6 +237,7 @@ export default function CreatePost() {
                       setIsExpanded(false);
                       setContent("");
                       setTitle("");
+                      setTags("");
                       setSelectedFiles([]);
                     }}
                   >
