@@ -55,6 +55,7 @@ export interface IStorage {
   savePost(postId: number, userId: string): Promise<void>;
   unsavePost(postId: number, userId: string): Promise<void>;
   isPostSavedByUser(postId: number, userId: string): Promise<boolean>;
+  getUserSavedPosts(userId: string, limit?: number, offset?: number): Promise<Post[]>;
   
   // Drive log operations
   createDriveLog(driveLog: InsertDriveLog): Promise<DriveLog>;
@@ -228,6 +229,18 @@ export class DatabaseStorage implements IStorage {
       .from(savedPosts)
       .where(and(eq(savedPosts.postId, postId), eq(savedPosts.userId, userId)));
     return !!saved;
+  }
+
+  async getUserSavedPosts(userId: string, limit = 20, offset = 0): Promise<Post[]> {
+    return await db
+      .select()
+      .from(posts)
+      .innerJoin(savedPosts, eq(posts.id, savedPosts.postId))
+      .where(eq(savedPosts.userId, userId))
+      .orderBy(desc(savedPosts.createdAt))
+      .limit(limit)
+      .offset(offset)
+      .then(results => results.map(result => result.posts));
   }
 
   // Drive log operations

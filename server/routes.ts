@@ -196,6 +196,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/posts/user', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const posts = await storage.getUserPosts(userId, limit, offset);
+      res.json(posts);
+    } catch (error) {
+      console.error("Error fetching current user posts:", error);
+      res.status(500).json({ message: "Failed to fetch user posts" });
+    }
+  });
+
   app.post('/api/posts/:id/like', isAuthenticated, async (req: any, res) => {
     try {
       const postId = parseInt(req.params.id);

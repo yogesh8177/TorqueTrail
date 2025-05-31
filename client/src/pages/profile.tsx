@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
+import FeedPost from "@/components/post/feed-post";
 import { 
   User, 
   Mail, 
@@ -15,7 +17,9 @@ import {
   Users, 
   Trophy,
   MapPin,
-  Activity
+  Activity,
+  Bookmark,
+  FileText
 } from "lucide-react";
 
 export default function Profile() {
@@ -31,6 +35,10 @@ export default function Profile() {
 
   const { data: userPosts } = useQuery({
     queryKey: ['/api/posts/user'],
+  });
+
+  const { data: savedPosts } = useQuery({
+    queryKey: ['/api/posts/saved'],
   });
 
   if (!user) {
