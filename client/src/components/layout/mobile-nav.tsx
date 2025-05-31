@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Car, Home, Users, Route, User } from "lucide-react";
+import { Car, Home, Users, Route, User, Map } from "lucide-react";
 
 export default function MobileNav() {
   const [location] = useLocation();
@@ -8,7 +8,7 @@ export default function MobileNav() {
     { name: "Feed", href: "/", icon: Home, current: location === "/" },
     { name: "Garage", href: "/garage", icon: Car, current: location === "/garage" },
     { name: "Convoys", href: "/convoys", icon: Users, current: location === "/convoys" },
-    { name: "Routes", href: "/routes", icon: Route, current: location === "/routes" },
+    { name: "Logs", href: "/drive-logs", icon: Map, current: location === "/drive-logs" },
     { name: "Profile", href: "/profile", icon: User, current: location === "/profile" },
   ];
 
