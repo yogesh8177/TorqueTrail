@@ -76,6 +76,12 @@ export interface IStorage {
   
   // Leaderboard operations
   getTopContributors(limit?: number): Promise<{user: User, points: number}[]>;
+  
+  // Real-time convoy operations
+  updateParticipantLocation(convoyId: number, userId: string, latitude: number, longitude: number): Promise<void>;
+  createConvoyUpdate(update: InsertConvoyUpdate): Promise<ConvoyUpdate>;
+  getConvoyUpdates(convoyId: number, limit?: number): Promise<ConvoyUpdate[]>;
+  getActiveConvoyParticipants(convoyId: number): Promise<ConvoyParticipant[]>;
 }
 
 export class DatabaseStorage implements IStorage {

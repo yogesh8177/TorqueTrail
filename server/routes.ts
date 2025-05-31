@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
@@ -476,5 +477,136 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   const httpServer = createServer(app);
+  
+  // WebSocket server for real-time convoy coordination
+  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  
+  // Store active convoy connections
+  const convoyConnections = new Map<number, Map<string, WebSocket>>();
+  
+  wss.on('connection', (ws: WebSocket, request) => {
+    console.log('WebSocket connection established');
+    
+    ws.on('message', async (message: string) => {
+      try {
+        const data = JSON.parse(message);
+        const { type, convoyId, userId, payload } = data;
+        
+        switch (type) {
+          case 'join_convoy':
+            // Add user to convoy room
+            if (!convoyConnections.has(convoyId)) {
+              convoyConnections.set(convoyId, new Map());
+            }
+            convoyConnections.get(convoyId)!.set(userId, ws);
+            
+            // Broadcast join notification
+            broadcastToConvoy(convoyId, {
+              type: 'user_joined',
+              userId,
+              timestamp: new Date().toISOString()
+            }, userId);
+            break;
+            
+          case 'location_update':
+            // Update user location in database
+            await storage.updateParticipantLocation(convoyId, userId, payload.latitude, payload.longitude);
+            
+            // Store convoy update
+            await storage.createConvoyUpdate({
+              convoyId,
+              userId,
+              updateType: 'location',
+              latitude: payload.latitude,
+              longitude: payload.longitude,
+              data: payload
+            });
+            
+            // Broadcast location to other convoy members
+            broadcastToConvoy(convoyId, {
+              type: 'location_update',
+              userId,
+              latitude: payload.latitude,
+              longitude: payload.longitude,
+              timestamp: new Date().toISOString()
+            }, userId);
+            break;
+            
+          case 'convoy_message':
+            // Store message
+            await storage.createConvoyUpdate({
+              convoyId,
+              userId,
+              updateType: 'message',
+              data: { message: payload.message }
+            });
+            
+            // Broadcast message to convoy
+            broadcastToConvoy(convoyId, {
+              type: 'convoy_message',
+              userId,
+              message: payload.message,
+              timestamp: new Date().toISOString()
+            });
+            break;
+            
+          case 'emergency_alert':
+            // Store emergency alert
+            await storage.createConvoyUpdate({
+              convoyId,
+              userId,
+              updateType: 'emergency',
+              latitude: payload.latitude,
+              longitude: payload.longitude,
+              data: { type: payload.emergencyType, message: payload.message }
+            });
+            
+            // Broadcast emergency to convoy with high priority
+            broadcastToConvoy(convoyId, {
+              type: 'emergency_alert',
+              userId,
+              emergencyType: payload.emergencyType,
+              message: payload.message,
+              latitude: payload.latitude,
+              longitude: payload.longitude,
+              timestamp: new Date().toISOString()
+            });
+            break;
+        }
+      } catch (error) {
+        console.error('WebSocket message error:', error);
+        ws.send(JSON.stringify({ type: 'error', message: 'Invalid message format' }));
+      }
+    });
+    
+    ws.on('close', () => {
+      // Remove user from all convoy rooms
+      convoyConnections.forEach((convoyUsers, convoyId) => {
+        convoyUsers.forEach((userWs, userId) => {
+          if (userWs === ws) {
+            convoyUsers.delete(userId);
+            // Notify convoy of user disconnect
+            broadcastToConvoy(convoyId, {
+              type: 'user_left',
+              userId,
+              timestamp: new Date().toISOString()
+            }, userId);
+          }
+        });
+      });
+    });
+  });
+  
+  function broadcastToConvoy(convoyId: number, message: any, excludeUserId?: string) {
+    const convoyUsers = convoyConnections.get(convoyId);
+    if (convoyUsers) {
+      convoyUsers.forEach((ws, userId) => {
+        if (userId !== excludeUserId && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify(message));
+        }
+      });
+    }
+  }
+
   return httpServer;
 }

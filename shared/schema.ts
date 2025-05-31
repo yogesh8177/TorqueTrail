@@ -140,6 +140,23 @@ export const convoyParticipants = pgTable("convoy_participants", {
   vehicleId: integer("vehicle_id").references(() => vehicles.id, { onDelete: "set null" }),
   status: varchar("status").default("joined"), // joined, left, banned
   joinedAt: timestamp("joined_at").defaultNow(),
+  // Real-time location data
+  currentLatitude: decimal("current_latitude", { precision: 10, scale: 8 }),
+  currentLongitude: decimal("current_longitude", { precision: 11, scale: 8 }),
+  lastLocationUpdate: timestamp("last_location_update"),
+  isLocationSharing: boolean("is_location_sharing").default(false),
+});
+
+// Live convoy updates table for real-time coordination
+export const convoyUpdates = pgTable("convoy_updates", {
+  id: serial("id").primaryKey(),
+  convoyId: integer("convoy_id").notNull().references(() => convoys.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  updateType: varchar("update_type").notNull(), // location, message, status, emergency
+  data: jsonb("data"), // flexible data structure for different update types
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Post likes table
@@ -271,6 +288,17 @@ export const convoyParticipantsRelations = relations(convoyParticipants, ({ one 
   }),
 }));
 
+export const convoyUpdatesRelations = relations(convoyUpdates, ({ one }) => ({
+  convoy: one(convoys, {
+    fields: [convoyUpdates.convoyId],
+    references: [convoys.id],
+  }),
+  user: one(users, {
+    fields: [convoyUpdates.userId],
+    references: [users.id],
+  }),
+}));
+
 export const postLikesRelations = relations(postLikes, ({ one }) => ({
   post: one(posts, {
     fields: [postLikes.postId],
@@ -391,3 +419,5 @@ export type ConvoyParticipant = typeof convoyParticipants.$inferSelect;
 export type PostComment = typeof postComments.$inferSelect;
 export type InsertPostComment = z.infer<typeof insertPostCommentSchema>;
 export type WeatherAlert = typeof weatherAlerts.$inferSelect;
+export type ConvoyUpdate = typeof convoyUpdates.$inferSelect;
+export type InsertConvoyUpdate = typeof convoyUpdates.$inferInsert;
