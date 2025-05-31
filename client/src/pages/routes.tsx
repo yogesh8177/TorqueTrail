@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import Sidebar from "@/components/layout/sidebar";
+import MobileNav from "@/components/layout/mobile-nav";
 import { 
   MapPin, 
   Navigation, 
@@ -80,7 +82,11 @@ export default function Routes() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
+    <div className="min-h-screen bg-background">
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 lg:ml-64">
+          <div className="container mx-auto px-4 py-8 pb-20 lg:pb-8 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">Discover Routes</h1>
@@ -247,6 +253,10 @@ export default function Routes() {
           </div>
         </CardContent>
       </Card>
+          </div>
+        </main>
+      </div>
+      <MobileNav />
     </div>
   );
 }

@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import Sidebar from "@/components/layout/sidebar";
+import MobileNav from "@/components/layout/mobile-nav";
 import { 
   User, 
   Mail, 
@@ -50,8 +52,12 @@ export default function Profile() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 space-y-6">
-      {/* Profile Header */}
+    <div className="min-h-screen bg-background">
+      <div className="flex">
+        <Sidebar />
+        <main className="flex-1 lg:ml-64">
+          <div className="container mx-auto px-4 py-8 pb-20 lg:pb-8 space-y-6">
+            {/* Profile Header */}
       <Card>
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
@@ -246,6 +252,10 @@ export default function Profile() {
           </Card>
         </div>
       </div>
+          </div>
+        </main>
+      </div>
+      <MobileNav />
     </div>
   );
 }
