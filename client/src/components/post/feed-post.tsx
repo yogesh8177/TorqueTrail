@@ -303,7 +303,7 @@ export default function FeedPost({ post }: FeedPostProps) {
         ) : (
           <>
             {post.title && (
-              <h2 className="text-xl font-bold mb-3">{post.title}</h2>
+              <h2 className="text-xl font-bold mb-3 gradient-text-racing">{post.title}</h2>
             )}
             <p className="mb-4 leading-relaxed">{post.content}</p>
           </>
