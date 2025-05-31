@@ -254,6 +254,7 @@ export default function Garage() {
         description: "Your vehicle post has been shared with the community.",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/posts/feed"] });
       setSelectedVehicleForPost(null);
       setPostContent("");
       setPostImages([]);
