@@ -179,6 +179,14 @@ export const postComments = pgTable("post_comments", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Saved posts table
+export const savedPosts = pgTable("saved_posts", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").notNull().references(() => posts.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Garage votes table
 export const garageVotes = pgTable("garage_votes", {
   id: serial("id").primaryKey(),

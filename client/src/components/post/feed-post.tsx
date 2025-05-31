@@ -36,6 +36,7 @@ export default function FeedPost({ post }: FeedPostProps) {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
 
   // Fetch comments for this post
   const { data: comments = [] } = useQuery<any[]>({
@@ -84,6 +85,26 @@ export default function FeedPost({ post }: FeedPostProps) {
     },
   });
 
+  const saveMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest("POST", `/api/posts/${post.id}/save`);
+    },
+    onSuccess: (response: any) => {
+      setIsSaved(response.saved);
+      toast({
+        title: isSaved ? "Post removed from saved" : "Post saved",
+        description: isSaved ? "Post has been removed from your saved posts." : "Post has been saved to your collection.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to save post",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLike = () => {
     likeMutation.mutate();
   };
@@ -124,6 +145,10 @@ export default function FeedPost({ post }: FeedPostProps) {
         break;
     }
     setIsShareOpen(false);
+  };
+
+  const handleSave = () => {
+    saveMutation.mutate();
   };
 
   const getPostTypeStyle = (type: string) => {
@@ -320,9 +345,15 @@ export default function FeedPost({ post }: FeedPostProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="text-muted-foreground hover:text-yellow-500"
+            onClick={handleSave}
+            disabled={saveMutation.isPending}
+            className={`${
+              isSaved
+                ? "text-yellow-500 hover:text-yellow-600"
+                : "text-muted-foreground hover:text-yellow-500"
+            }`}
           >
-            <Bookmark className="w-5 h-5" />
+            <Bookmark className={`w-5 h-5 ${isSaved ? "fill-current" : ""}`} />
           </Button>
         </div>
 
