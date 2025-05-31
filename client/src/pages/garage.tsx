@@ -26,7 +26,7 @@ const vehicleFormSchema = insertVehicleSchema.extend({
 type VehicleFormData = z.infer<typeof vehicleFormSchema>;
 
 export default function Garage() {
-  const { user } = useAuth();
+  const { user, isLoading: userLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -759,7 +759,7 @@ export default function Garage() {
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
                   <p className="text-xl font-bold">
-                    {authLoading ? (
+                    {userLoading ? (
                       <Skeleton className="h-6 w-12 inline-block" />
                     ) : (
                       `${user?.garageRating || "4.8"}⭐`
