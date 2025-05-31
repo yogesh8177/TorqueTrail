@@ -379,7 +379,7 @@ export default function Home() {
               </Card>
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
-                  <p className="text-2xl font-bold text-secondary">{userStats.convoysJoined}</p>
+                  <p className="text-2xl font-bold text-secondary">{(userStats as any)?.totalConvoys || 0}</p>
                   <p className="text-xs text-muted-foreground">Convoys</p>
                 </CardContent>
               </Card>
@@ -408,7 +408,7 @@ export default function Home() {
                 </div>
               ) : (
                 <div className="space-y-6">
-                  {posts.slice(0, 5).map((post: any, index: number) => {
+                  {(posts as any)?.slice(0, 5).map((post: any, index: number) => {
                     if (index === 0) {
                       return <AIBlogPost key={post.id} post={post} />;
                     }
