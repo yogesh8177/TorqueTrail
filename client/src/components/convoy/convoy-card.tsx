@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -290,9 +291,11 @@ export default function ConvoyCard({ convoy, showJoinButton = true, variant = "d
               }
             </Button>
             
-            <Button variant="outline" size="default">
-              View Details
-            </Button>
+            <Link href={`/convoy/${convoy.id}`}>
+              <Button variant="outline" size="default">
+                View Details
+              </Button>
+            </Link>
           </div>
         )}
         

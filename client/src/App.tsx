@@ -30,6 +30,7 @@ function Router() {
           <Route path="/" component={Home} />
           <Route path="/garage" component={Garage} />
           <Route path="/convoys" component={Convoys} />
+          <Route path="/convoy/:id" component={ConvoyDetail} />
           <Route component={NotFound} />
         </>
       )}
