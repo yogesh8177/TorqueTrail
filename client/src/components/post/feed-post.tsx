@@ -38,7 +38,7 @@ export default function FeedPost({ post }: FeedPostProps) {
   const [isShareOpen, setIsShareOpen] = useState(false);
 
   // Fetch comments for this post
-  const { data: comments = [] } = useQuery({
+  const { data: comments = [] } = useQuery<any[]>({
     queryKey: ["/api/posts", post.id, "comments"],
     enabled: showComments,
   });
@@ -47,7 +47,7 @@ export default function FeedPost({ post }: FeedPostProps) {
     mutationFn: async () => {
       return await apiRequest("POST", `/api/posts/${post.id}/like`);
     },
-    onSuccess: (response) => {
+    onSuccess: (response: any) => {
       setIsLiked(response.liked);
       queryClient.invalidateQueries({ queryKey: ["/api/posts/feed"] });
     },
@@ -357,7 +357,7 @@ export default function FeedPost({ post }: FeedPostProps) {
 
             {/* Comments List */}
             <div className="space-y-3">
-              {comments.length > 0 ? (
+              {Array.isArray(comments) && comments.length > 0 ? (
                 comments.map((comment: any) => (
                   <div key={comment.id} className="flex items-start space-x-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/50 to-secondary/50 border border-border flex items-center justify-center">
