@@ -476,6 +476,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get individual convoy
+  app.get('/api/convoys/:id', isAuthenticated, async (req, res) => {
+    try {
+      const convoyId = parseInt(req.params.id);
+      const convoy = await storage.getConvoy(convoyId);
+      if (!convoy) {
+        return res.status(404).json({ message: "Convoy not found" });
+      }
+      res.json(convoy);
+    } catch (error) {
+      console.error("Error fetching convoy:", error);
+      res.status(500).json({ message: "Failed to fetch convoy" });
+    }
+  });
+
+  // Get convoy participants
+  app.get('/api/convoys/:id/participants', isAuthenticated, async (req, res) => {
+    try {
+      const convoyId = parseInt(req.params.id);
+      const participants = await storage.getConvoyParticipants(convoyId);
+      res.json(participants);
+    } catch (error) {
+      console.error("Error fetching convoy participants:", error);
+      res.status(500).json({ message: "Failed to fetch convoy participants" });
+    }
+  });
+
+  // Check if user is participant
+  app.get('/api/convoys/:id/is-participant', isAuthenticated, async (req, res) => {
+    try {
+      const convoyId = parseInt(req.params.id);
+      const userId = req.user?.claims?.sub;
+      const participants = await storage.getConvoyParticipants(convoyId);
+      const isParticipant = participants.some(p => p.userId === userId);
+      res.json(isParticipant);
+    } catch (error) {
+      console.error("Error checking participant status:", error);
+      res.status(500).json({ message: "Failed to check participant status" });
+    }
+  });
+
   // Real-time convoy coordination routes
   app.get('/api/convoys/:id/updates', isAuthenticated, async (req, res) => {
     try {
