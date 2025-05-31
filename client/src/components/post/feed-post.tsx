@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, MessageCircle, Share2, Bookmark, MapPin, Clock, User, Send, Twitter, Facebook, Link, Copy } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, MapPin, Clock, User, Send, Twitter, Facebook, Link, Copy, MoreHorizontal, Edit, Trash } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface FeedPostProps {
@@ -37,6 +37,9 @@ export default function FeedPost({ post }: FeedPostProps) {
   const [newComment, setNewComment] = useState("");
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(post.title || "");
+  const [editContent, setEditContent] = useState(post.content || "");
 
   // Fetch comments for this post
   const { data: comments = [] } = useQuery<any[]>({
@@ -105,6 +108,29 @@ export default function FeedPost({ post }: FeedPostProps) {
     },
   });
 
+  const editMutation = useMutation({
+    mutationFn: async (data: { title?: string; content: string }) => {
+      return await apiRequest("PUT", `/api/posts/${post.id}`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Post updated!",
+        description: "Your post has been successfully updated.",
+      });
+      setIsEditing(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/posts/feed'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/posts/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/posts/saved'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to update post",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLike = () => {
     likeMutation.mutate();
   };
@@ -145,6 +171,28 @@ export default function FeedPost({ post }: FeedPostProps) {
         break;
     }
     setIsShareOpen(false);
+  };
+
+  const handleEditSubmit = () => {
+    if (!editContent.trim()) {
+      toast({
+        title: "Content required",
+        description: "Post content cannot be empty.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    editMutation.mutate({
+      title: editTitle.trim() || undefined,
+      content: editContent.trim(),
+    });
+  };
+
+  const handleEditCancel = () => {
+    setIsEditing(false);
+    setEditTitle(post.title || "");
+    setEditContent(post.content || "");
   };
 
   const handleSave = () => {
@@ -202,20 +250,64 @@ export default function FeedPost({ post }: FeedPostProps) {
               <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-          </Button>
+          {user?.id === post.userId && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <MoreHorizontal className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Post
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
         </div>
 
         {/* Post Title */}
-        {post.title && (
-          <h2 className="text-xl font-bold mb-3">{post.title}</h2>
+        {isEditing ? (
+          <div className="space-y-3 mb-4">
+            <Input
+              placeholder="Post title (optional)"
+              value={editTitle}
+              onChange={(e) => setEditTitle(e.target.value)}
+              className="bg-accent/20 border-accent"
+            />
+            <Textarea
+              placeholder="Post content"
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              className="bg-accent/20 border-accent min-h-[100px] resize-none"
+            />
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleEditCancel}
+                disabled={editMutation.isPending}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleEditSubmit}
+                disabled={editMutation.isPending || !editContent.trim()}
+              >
+                {editMutation.isPending ? "Saving..." : "Save"}
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <>
+            {post.title && (
+              <h2 className="text-xl font-bold mb-3">{post.title}</h2>
+            )}
+            <p className="mb-4 leading-relaxed">{post.content}</p>
+          </>
         )}
-
-        {/* Post Content */}
-        <p className="mb-4 leading-relaxed">{post.content}</p>
 
         {/* Media */}
         {post.imageUrls && post.imageUrls.length > 0 && (

@@ -243,6 +243,18 @@ export class DatabaseStorage implements IStorage {
       .then(results => results.map(result => result.posts));
   }
 
+  async updatePost(id: number, updates: Partial<InsertPost>): Promise<Post> {
+    const [updatedPost] = await db
+      .update(posts)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(posts.id, id))
+      .returning();
+    return updatedPost;
+  }
+
   // Drive log operations
   async createDriveLog(driveLog: InsertDriveLog): Promise<DriveLog> {
     const [newDriveLog] = await db.insert(driveLogs).values(driveLog).returning();
