@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
 import LiveConvoyTracker from "@/components/convoy/live-convoy-tracker";
 import { 
   ArrowLeft, 
@@ -35,12 +36,12 @@ export default function ConvoyDetail() {
     enabled: !!convoyId,
   });
 
-  const { data: participants } = useQuery({
+  const { data: participants, isLoading: participantsLoading } = useQuery({
     queryKey: ['/api/convoys', convoyId, 'participants'],
     enabled: !!convoyId,
   });
 
-  const { data: isParticipant } = useQuery({
+  const { data: isParticipant, isLoading: participantStatusLoading } = useQuery({
     queryKey: ['/api/convoys', convoyId, 'is-participant'],
     enabled: !!convoyId && !!user?.id,
   });

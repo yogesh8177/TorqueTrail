@@ -242,11 +242,19 @@ export default function Profile() {
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="posts" className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    My Posts ({Array.isArray(userPosts) ? userPosts.length : 0})
+                    My Posts ({postsLoading ? (
+                      <Skeleton className="h-3 w-4 inline-block ml-1" />
+                    ) : (
+                      Array.isArray(userPosts) ? userPosts.length : 0
+                    )})
                   </TabsTrigger>
                   <TabsTrigger value="saved" className="flex items-center gap-2">
                     <Bookmark className="h-4 w-4" />
-                    Saved ({Array.isArray(savedPosts) ? savedPosts.length : 0})
+                    Saved ({savedPostsLoading ? (
+                      <Skeleton className="h-3 w-4 inline-block ml-1" />
+                    ) : (
+                      Array.isArray(savedPosts) ? savedPosts.length : 0
+                    )})
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="posts" className="space-y-4">

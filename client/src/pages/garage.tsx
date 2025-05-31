@@ -628,7 +628,13 @@ export default function Garage() {
                       <Car className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{vehicles.length}</p>
+                      <p className="text-2xl font-bold">
+                        {vehiclesLoading ? (
+                          <Skeleton className="h-8 w-8 inline-block" />
+                        ) : (
+                          vehicles.length
+                        )}
+                      </p>
                       <p className="text-muted-foreground">Vehicles in Garage</p>
                     </div>
                   </div>
@@ -740,13 +746,25 @@ export default function Garage() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
-                  <p className="text-xl font-bold">{vehicles.length}</p>
+                  <p className="text-xl font-bold">
+                    {vehiclesLoading ? (
+                      <Skeleton className="h-6 w-6 inline-block" />
+                    ) : (
+                      vehicles.length
+                    )}
+                  </p>
                   <p className="text-xs text-muted-foreground">Vehicles</p>
                 </CardContent>
               </Card>
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
-                  <p className="text-xl font-bold">{user.garageRating || "4.8"}⭐</p>
+                  <p className="text-xl font-bold">
+                    {isLoading ? (
+                      <Skeleton className="h-6 w-12 inline-block" />
+                    ) : (
+                      `${user.garageRating || "4.8"}⭐`
+                    )}
+                  </p>
                   <p className="text-xs text-muted-foreground">Rating</p>
                 </CardContent>
               </Card>
