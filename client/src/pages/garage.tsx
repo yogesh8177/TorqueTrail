@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Car, Plus, Upload, Zap, Trophy, Star } from "lucide-react";
+import { Car, Plus, Upload, Zap, Trophy, Star, X } from "lucide-react";
 import { insertVehicleSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -569,6 +569,8 @@ export default function Garage() {
                       key={vehicle.id}
                       vehicle={vehicle}
                       onEdit={handleEdit}
+                      onViewDetails={handleViewDetails}
+                      onCreatePost={handleCreatePost}
                     />
                   ))}
                 </div>
@@ -648,6 +650,8 @@ export default function Garage() {
                     key={vehicle.id}
                     vehicle={vehicle}
                     onEdit={handleEdit}
+                    onViewDetails={handleViewDetails}
+                    onCreatePost={handleCreatePost}
                   />
                 ))}
               </div>
@@ -670,6 +674,117 @@ export default function Garage() {
         </main>
         <MobileNav />
       </div>
+
+      {/* Vehicle Details Modal */}
+      {selectedVehicleForDetails && (
+        <Dialog open={!!selectedVehicleForDetails} onOpenChange={() => setSelectedVehicleForDetails(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                {selectedVehicleForDetails.year} {selectedVehicleForDetails.make} {selectedVehicleForDetails.model}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              {selectedVehicleForDetails.imageUrl && (
+                <div className="aspect-video rounded-lg overflow-hidden">
+                  <img
+                    src={selectedVehicleForDetails.imageUrl}
+                    alt={`${selectedVehicleForDetails.year} ${selectedVehicleForDetails.make} ${selectedVehicleForDetails.model}`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">Make</p>
+                  <p className="font-medium">{selectedVehicleForDetails.make}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Model</p>
+                  <p className="font-medium">{selectedVehicleForDetails.model}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Year</p>
+                  <p className="font-medium">{selectedVehicleForDetails.year}</p>
+                </div>
+                {selectedVehicleForDetails.color && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Color</p>
+                    <p className="font-medium">{selectedVehicleForDetails.color}</p>
+                  </div>
+                )}
+                {selectedVehicleForDetails.engine && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Engine</p>
+                    <p className="font-medium">{selectedVehicleForDetails.engine}</p>
+                  </div>
+                )}
+                {selectedVehicleForDetails.horsepower && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Horsepower</p>
+                    <p className="font-medium">{selectedVehicleForDetails.horsepower} HP</p>
+                  </div>
+                )}
+                {selectedVehicleForDetails.transmission && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Transmission</p>
+                    <p className="font-medium">{selectedVehicleForDetails.transmission}</p>
+                  </div>
+                )}
+                {selectedVehicleForDetails.fuelType && (
+                  <div>
+                    <p className="text-sm text-muted-foreground">Fuel Type</p>
+                    <p className="font-medium">{selectedVehicleForDetails.fuelType}</p>
+                  </div>
+                )}
+              </div>
+              {selectedVehicleForDetails.description && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Description</p>
+                  <p className="mt-1">{selectedVehicleForDetails.description}</p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Create Post Modal */}
+      {selectedVehicleForPost && (
+        <Dialog open={!!selectedVehicleForPost} onOpenChange={() => setSelectedVehicleForPost(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>
+                Create Post for {selectedVehicleForPost.year} {selectedVehicleForPost.make} {selectedVehicleForPost.model}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="post-content">Post Content</Label>
+                <Textarea
+                  id="post-content"
+                  placeholder="Share something about your vehicle..."
+                  className="min-h-[120px]"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <Button variant="outline" onClick={() => setSelectedVehicleForPost(null)}>
+                  Cancel
+                </Button>
+                <Button onClick={() => {
+                  toast({
+                    title: "Post functionality coming soon!",
+                    description: "The create post feature will be available in the next update.",
+                  });
+                  setSelectedVehicleForPost(null);
+                }}>
+                  Create Post
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
