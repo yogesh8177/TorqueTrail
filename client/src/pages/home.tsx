@@ -67,7 +67,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                 <div className="absolute bottom-6 left-6 right-6">
                   <h1 className="text-3xl sm:text-4xl font-bold mb-2">
-                    Welcome back, {user.firstName || "Driver"}!
+                    Welcome back, {(user as any)?.firstName || "Driver"}!
                   </h1>
                   <p className="text-muted-foreground text-lg">Ready for your next adventure?</p>
                   <div className="flex flex-wrap gap-4 mt-4">
@@ -113,7 +113,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-muted-foreground text-sm">Garage Rating</p>
-                      <p className="text-2xl font-bold text-yellow-500">{userStats.garageRating}⭐</p>
+                      <p className="text-2xl font-bold text-yellow-500">{(userStats as any)?.garageRating || 0}⭐</p>
                     </div>
                     <Trophy className="w-8 h-8 text-yellow-500/50" />
                   </div>
@@ -125,7 +125,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-muted-foreground text-sm">Followers</p>
-                      <p className="text-2xl font-bold text-green-500">{userStats.followers.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-green-500">{((userStats as any)?.followers || 0).toLocaleString()}</p>
                     </div>
                     <Users className="w-8 h-8 text-green-500/50" />
                   </div>
@@ -201,9 +201,9 @@ export default function Home() {
                           </div>
                         ))}
                       </div>
-                    ) : upcomingConvoys.length > 0 ? (
+                    ) : (upcomingConvoys as any)?.length > 0 ? (
                       <div className="space-y-3">
-                        {upcomingConvoys.slice(0, 3).map((convoy: any) => (
+                        {(upcomingConvoys as any)?.slice(0, 3).map((convoy: any) => (
                           <div key={convoy.id} className="p-3 bg-muted/20 rounded-lg hover:bg-muted/30 cursor-pointer transition-colors">
                             <div className="flex items-center justify-between mb-2">
                               <h4 className="font-medium text-sm">{convoy.title}</h4>
@@ -232,8 +232,8 @@ export default function Home() {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-bold mb-4">Route Alerts</h3>
                     <div className="space-y-3">
-                      {weatherAlerts.length > 0 ? (
-                        weatherAlerts.slice(0, 2).map((alert: any) => (
+                      {(weatherAlerts as any)?.length > 0 ? (
+                        (weatherAlerts as any)?.slice(0, 2).map((alert: any) => (
                           <div key={alert.id} className={`p-3 rounded-lg border ${
                             alert.severity === 'high' ? 'bg-red-500/10 border-red-500/20' :
                             alert.severity === 'medium' ? 'bg-yellow-500/10 border-yellow-500/20' :
@@ -363,7 +363,7 @@ export default function Home() {
               <div className="relative h-48 rounded-xl overflow-hidden bg-gradient-to-r from-primary/20 to-secondary/20 bg-[url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=800&h=400')] bg-cover bg-center">
                 <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
-                  <h1 className="text-2xl font-bold mb-1">Welcome back, {user.firstName || "Driver"}!</h1>
+                  <h1 className="text-2xl font-bold mb-1">Welcome back, {(user as any)?.firstName || "Driver"}!</h1>
                   <p className="text-muted-foreground">Ready for your next adventure?</p>
                 </div>
               </div>
@@ -373,7 +373,7 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
-                  <p className="text-2xl font-bold text-primary">{userStats.totalMiles.toLocaleString()}</p>
+                  <p className="text-2xl font-bold text-primary">{((userStats as any)?.totalMiles || 0).toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground">Total Miles</p>
                 </CardContent>
               </Card>
