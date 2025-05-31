@@ -90,10 +90,16 @@ export default function DriveLogs() {
         formData.append('titleImage', data.titleImage);
       }
 
-      return await apiRequest('/api/drive-logs', {
+      const response = await fetch('/api/drive-logs', {
         method: 'POST',
         body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error(`${response.status}: ${response.statusText}`);
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
