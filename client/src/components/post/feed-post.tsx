@@ -1,11 +1,15 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Heart, MessageCircle, Share2, Bookmark, MapPin, Clock, User } from "lucide-react";
+import { Heart, MessageCircle, Share2, Bookmark, MapPin, Clock, User, Send, Twitter, Facebook, Link, Copy } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface FeedPostProps {
@@ -29,6 +33,15 @@ export default function FeedPost({ post }: FeedPostProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLiked, setIsLiked] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [isShareOpen, setIsShareOpen] = useState(false);
+
+  // Fetch comments for this post
+  const { data: comments = [] } = useQuery({
+    queryKey: ["/api/posts", post.id, "comments"],
+    enabled: showComments,
+  });
 
   const likeMutation = useMutation({
     mutationFn: async () => {
@@ -47,8 +60,70 @@ export default function FeedPost({ post }: FeedPostProps) {
     },
   });
 
+  const commentMutation = useMutation({
+    mutationFn: async (comment: string) => {
+      return await apiRequest("POST", `/api/posts/${post.id}/comments`, {
+        content: comment,
+      });
+    },
+    onSuccess: () => {
+      setNewComment("");
+      queryClient.invalidateQueries({ queryKey: ["/api/posts", post.id, "comments"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/posts/feed"] });
+      toast({
+        title: "Comment added",
+        description: "Your comment has been posted successfully.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to add comment",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLike = () => {
     likeMutation.mutate();
+  };
+
+  const handleComment = () => {
+    setShowComments(!showComments);
+  };
+
+  const handleAddComment = () => {
+    if (!newComment.trim()) return;
+    commentMutation.mutate(newComment.trim());
+  };
+
+  const handleShare = (platform: string) => {
+    const postUrl = `${window.location.origin}/post/${post.id}`;
+    const postText = `Check out this post: "${post.content}"`;
+    
+    switch (platform) {
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(postText)}&url=${encodeURIComponent(postUrl)}`, '_blank');
+        break;
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(postUrl)}`, '_blank');
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(postUrl).then(() => {
+          toast({
+            title: "Link copied",
+            description: "Post link has been copied to clipboard.",
+          });
+        }).catch(() => {
+          toast({
+            title: "Failed to copy",
+            description: "Unable to copy link to clipboard.",
+            variant: "destructive",
+          });
+        });
+        break;
+    }
+    setIsShareOpen(false);
   };
 
   const getPostTypeStyle = (type: string) => {
@@ -207,20 +282,39 @@ export default function FeedPost({ post }: FeedPostProps) {
             <Button
               variant="ghost"
               size="sm"
+              onClick={handleComment}
               className="flex items-center space-x-2 text-muted-foreground hover:text-secondary"
             >
               <MessageCircle className="w-5 h-5" />
               <span className="text-sm">{post.comments}</span>
             </Button>
             
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
-            >
-              <Share2 className="w-5 h-5" />
-              <span className="text-sm">Share</span>
-            </Button>
+            <DropdownMenu open={isShareOpen} onOpenChange={setIsShareOpen}>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center space-x-2 text-muted-foreground hover:text-foreground"
+                >
+                  <Share2 className="w-5 h-5" />
+                  <span className="text-sm">Share</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={() => handleShare('twitter')}>
+                  <Twitter className="w-4 h-4 mr-2" />
+                  Share on Twitter
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleShare('facebook')}>
+                  <Facebook className="w-4 h-4 mr-2" />
+                  Share on Facebook
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleShare('copy')}>
+                  <Copy className="w-4 h-4 mr-2" />
+                  Copy Link
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           
           <Button
@@ -231,6 +325,65 @@ export default function FeedPost({ post }: FeedPostProps) {
             <Bookmark className="w-5 h-5" />
           </Button>
         </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="border-t border-border pt-4 mt-4">
+            {/* Add Comment Form */}
+            <div className="flex items-start space-x-3 mb-4">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/50 to-secondary/50 border border-border flex items-center justify-center">
+                <User className="w-4 h-4 text-muted-foreground" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <Textarea
+                  placeholder="Write a comment..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  className="min-h-[80px] resize-none"
+                />
+                <div className="flex justify-end">
+                  <Button
+                    onClick={handleAddComment}
+                    disabled={!newComment.trim() || commentMutation.isPending}
+                    size="sm"
+                    className="flex items-center space-x-2"
+                  >
+                    <Send className="w-4 h-4" />
+                    <span>{commentMutation.isPending ? "Posting..." : "Post Comment"}</span>
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Comments List */}
+            <div className="space-y-3">
+              {comments.length > 0 ? (
+                comments.map((comment: any) => (
+                  <div key={comment.id} className="flex items-start space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/50 to-secondary/50 border border-border flex items-center justify-center">
+                      <User className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <div className="bg-accent/50 rounded-lg px-3 py-2">
+                        <div className="flex items-center space-x-2 mb-1">
+                          <span className="text-sm font-medium">Driver {comment.userId.slice(0, 8)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                          </span>
+                        </div>
+                        <p className="text-sm">{comment.content}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground text-sm py-4">
+                  No comments yet. Be the first to comment!
+                </p>
+              )}
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
