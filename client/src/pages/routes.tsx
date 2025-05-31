@@ -83,10 +83,11 @@ export default function Routes() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex">
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex">
         <Sidebar />
-        <main className="flex-1 lg:ml-64">
-          <div className="container mx-auto px-4 py-8 pb-20 lg:pb-8 space-y-6">
+        <main className="flex-1 lg:pl-64">
+          <div className="container mx-auto px-4 py-8 space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold">Discover Routes</h1>
@@ -256,7 +257,181 @@ export default function Routes() {
           </div>
         </main>
       </div>
-      <MobileNav />
+
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <main className="pb-20">
+          <div className="container mx-auto px-4 py-8 space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold">Discover Routes</h1>
+        <p className="text-muted-foreground">
+          Find the perfect driving routes for your next adventure
+        </p>
+      </div>
+
+      {/* Search Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5" />
+            Route Search
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="location">Starting Location</Label>
+            <Input
+              id="location"
+              placeholder="Enter city, state, or address..."
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+            />
+          </div>
+          <Button 
+            onClick={handleSearch} 
+            disabled={recommendationsMutation.isPending}
+            className="w-full"
+          >
+            {recommendationsMutation.isPending ? "Searching..." : "Find Routes"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      {/* Search Results */}
+      {recommendations.length > 0 && (
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Recommended Routes</h2>
+          <div className="space-y-4">
+            {recommendations.map((route: any, index: number) => (
+              <Card key={index}>
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {/* Route Header */}
+                    <div className="flex items-start justify-between">
+                      <h3 className="font-semibold text-lg">{route.name}</h3>
+                    </div>
+
+                    {/* Route Description */}
+                    {route.description && (
+                      <p className="text-sm text-muted-foreground">{route.description}</p>
+                    )}
+
+                    {/* Route Details */}
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <MapPin className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{route.startPoint} → {route.endPoint}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Route className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{route.distance}</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-sm">{route.duration}</span>
+                      </div>
+
+                      {route.difficulty && (
+                        <div className="flex items-center gap-2">
+                          <Mountain className="h-4 w-4 text-muted-foreground" />
+                          <Badge variant="outline" className={getDifficultyColor(route.difficulty)}>
+                            {route.difficulty}
+                          </Badge>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Route Features */}
+                    {route.features && route.features.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium">Highlights:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {route.features.map((feature: string, idx: number) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {feature}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Action Button */}
+                    <Button variant="outline" className="w-full">
+                      <Navigation className="h-4 w-4 mr-2" />
+                      Plan Convoy
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Popular Routes */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Popular Routes</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="border rounded-lg p-4 space-y-2">
+              <h3 className="font-semibold">Pacific Coast Highway</h3>
+              <p className="text-sm text-muted-foreground">
+                Scenic coastal drive from San Francisco to Los Angeles
+              </p>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span>655 miles</span>
+                <span>12+ hours</span>
+                <Badge variant="outline" className="text-xs">Scenic</Badge>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 space-y-2">
+              <h3 className="font-semibold">Blue Ridge Parkway</h3>
+              <p className="text-sm text-muted-foreground">
+                Mountain views through Virginia and North Carolina
+              </p>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span>469 miles</span>
+                <span>8+ hours</span>
+                <Badge variant="outline" className="text-xs">Mountain</Badge>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 space-y-2">
+              <h3 className="font-semibold">Route 66</h3>
+              <p className="text-sm text-muted-foreground">
+                Historic highway from Chicago to Santa Monica
+              </p>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span>2,448 miles</span>
+                <span>35+ hours</span>
+                <Badge variant="outline" className="text-xs">Historic</Badge>
+              </div>
+            </div>
+
+            <div className="border rounded-lg p-4 space-y-2">
+              <h3 className="font-semibold">Going-to-the-Sun Road</h3>
+              <p className="text-sm text-muted-foreground">
+                Spectacular mountain road through Glacier National Park
+              </p>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <span>50 miles</span>
+                <span>2+ hours</span>
+                <Badge variant="outline" className="text-xs">National Park</Badge>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+          </div>
+        </main>
+        <MobileNav />
+      </div>
     </div>
   );
 }

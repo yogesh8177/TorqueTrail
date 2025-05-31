@@ -53,10 +53,11 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="flex">
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex">
         <Sidebar />
-        <main className="flex-1 lg:ml-64">
-          <div className="container mx-auto px-4 py-8 pb-20 lg:pb-8 space-y-6">
+        <main className="flex-1 lg:pl-64">
+          <div className="container mx-auto px-4 py-8 space-y-6">
             {/* Profile Header */}
       <Card>
         <CardContent className="p-6">
@@ -255,7 +256,173 @@ export default function Profile() {
           </div>
         </main>
       </div>
-      <MobileNav />
+
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <main className="pb-20">
+          <div className="container mx-auto px-4 py-8 space-y-6">
+            {/* Profile Header */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center space-x-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={user.profileImageUrl || undefined} />
+              <AvatarFallback className="text-lg">
+                {user.firstName ? user.firstName[0] : user.email?.[0]?.toUpperCase() || 'U'}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold">
+                {user.firstName && user.lastName 
+                  ? `${user.firstName} ${user.lastName}`
+                  : user.email || 'User'
+                }
+              </h1>
+              
+              {user.email && (
+                <div className="flex items-center text-muted-foreground mt-1">
+                  <Mail className="h-4 w-4 mr-2" />
+                  {user.email}
+                </div>
+              )}
+              
+              <div className="flex items-center text-muted-foreground mt-1">
+                <Calendar className="h-4 w-4 mr-2" />
+                Member since {formatDate(user.createdAt)}
+              </div>
+            </div>
+
+            <Button variant="outline">
+              Edit Profile
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="grid grid-cols-1 gap-6">
+        {/* Stats Overview */}
+        <div className="grid grid-cols-2 gap-4">
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Car className="h-8 w-8 mx-auto text-primary mb-2" />
+              <div className="text-2xl font-bold">{vehicles?.length || 0}</div>
+              <div className="text-sm text-muted-foreground">Vehicles</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Users className="h-8 w-8 mx-auto text-secondary mb-2" />
+              <div className="text-2xl font-bold">{userConvoys?.length || 0}</div>
+              <div className="text-sm text-muted-foreground">Convoys</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Activity className="h-8 w-8 mx-auto text-accent mb-2" />
+              <div className="text-2xl font-bold">{userPosts?.length || 0}</div>
+              <div className="text-sm text-muted-foreground">Posts</div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 text-center">
+              <Trophy className="h-8 w-8 mx-auto text-yellow-500 mb-2" />
+              <div className="text-2xl font-bold">12</div>
+              <div className="text-sm text-muted-foreground">Points</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* My Vehicles */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Car className="h-5 w-5" />
+              My Vehicles
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {vehicles && vehicles.length > 0 ? (
+              <div className="space-y-4">
+                {vehicles.map((vehicle: any) => (
+                  <div key={vehicle.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h3 className="font-semibold">{vehicle.year} {vehicle.make} {vehicle.model}</h3>
+                        {vehicle.color && (
+                          <p className="text-sm text-muted-foreground">{vehicle.color}</p>
+                        )}
+                      </div>
+                      <Badge variant={vehicle.isPublic ? 'default' : 'outline'}>
+                        {vehicle.isPublic ? 'Public' : 'Private'}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Car className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No vehicles added yet</p>
+                <Button variant="outline" className="mt-4">
+                  Add Your First Vehicle
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* My Convoys */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              My Convoys
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {userConvoys && userConvoys.length > 0 ? (
+              <div className="space-y-4">
+                {userConvoys.map((convoy: any) => (
+                  <div key={convoy.id} className="border rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h3 className="font-semibold">{convoy.title}</h3>
+                        <div className="flex items-center text-sm text-muted-foreground mt-1">
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {convoy.startLocation}
+                        </div>
+                        <div className="flex items-center text-sm text-muted-foreground mt-1">
+                          <Calendar className="h-3 w-3 mr-1" />
+                          {formatDate(convoy.startDateTime)}
+                        </div>
+                      </div>
+                      <Badge variant={convoy.status === 'upcoming' ? 'default' : 'outline'}>
+                        {convoy.status}
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                <p className="text-muted-foreground">No convoys joined yet</p>
+                <Button variant="outline" className="mt-4">
+                  Browse Convoys
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+          </div>
+        </main>
+        <MobileNav />
+      </div>
     </div>
   );
 }
