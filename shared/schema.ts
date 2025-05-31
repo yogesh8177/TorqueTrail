@@ -76,6 +76,7 @@ export const posts = pgTable("posts", {
   convoyId: integer("convoy_id"),
   isAiGenerated: boolean("is_ai_generated").default(false),
   aiPrompt: text("ai_prompt"),
+  estimatedReadTime: integer("estimated_read_time"), // in minutes
   likes: integer("likes").default(0),
   comments: integer("comments").default(0),
   shares: integer("shares").default(0),

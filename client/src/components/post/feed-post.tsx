@@ -12,6 +12,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, MessageCircle, Share2, Bookmark, MapPin, Clock, User, Send, Twitter, Facebook, Link, Copy, MoreHorizontal, Edit, Trash } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { calculateReadTime, formatReadTime } from "@/lib/readTime";
 
 interface FeedPostProps {
   post: {
@@ -22,6 +23,7 @@ interface FeedPostProps {
     type: string;
     imageUrls?: string[];
     videoUrls?: string[];
+    estimatedReadTime?: number;
     likes: number;
     comments: number;
     shares: number;
@@ -249,6 +251,12 @@ export default function FeedPost({ post }: FeedPostProps) {
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Clock className="w-3 h-3" />
               <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
+              {(post.estimatedReadTime || (post.content && post.content.length > 50)) && (
+                <>
+                  <span>•</span>
+                  <span>{formatReadTime(post.estimatedReadTime || calculateReadTime(post.content || '', post.title))}</span>
+                </>
+              )}
             </div>
           </div>
           {user?.id === post.userId && (
