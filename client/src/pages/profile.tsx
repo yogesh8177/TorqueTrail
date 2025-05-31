@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Skeleton } from "@/components/ui/skeleton";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
 import FeedPost from "@/components/post/feed-post";
@@ -25,19 +26,19 @@ import {
 export default function Profile() {
   const { user } = useAuth();
 
-  const { data: vehicles } = useQuery({
+  const { data: vehicles, isLoading: vehiclesLoading } = useQuery({
     queryKey: ['/api/vehicles'],
   });
 
-  const { data: userConvoys } = useQuery({
+  const { data: userConvoys, isLoading: convoysLoading } = useQuery({
     queryKey: ['/api/convoys/user'],
   });
 
-  const { data: userPosts } = useQuery({
+  const { data: userPosts, isLoading: postsLoading } = useQuery({
     queryKey: ['/api/posts/user'],
   });
 
-  const { data: savedPosts } = useQuery({
+  const { data: savedPosts, isLoading: savedPostsLoading } = useQuery({
     queryKey: ['/api/posts/saved'],
   });
 
@@ -121,9 +122,13 @@ export default function Profile() {
                   <Car className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Vehicles</span>
                 </div>
-                <Badge variant="secondary">
-                  {vehicles?.length || 0}
-                </Badge>
+                {vehiclesLoading ? (
+                  <Skeleton className="h-5 w-8 rounded" />
+                ) : (
+                  <Badge variant="secondary">
+                    {(vehicles as any[])?.length || 0}
+                  </Badge>
+                )}
               </div>
               
               <div className="flex items-center justify-between">
@@ -131,9 +136,13 @@ export default function Profile() {
                   <Users className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Convoys</span>
                 </div>
-                <Badge variant="secondary">
-                  {userConvoys?.length || 0}
-                </Badge>
+                {convoysLoading ? (
+                  <Skeleton className="h-5 w-8 rounded" />
+                ) : (
+                  <Badge variant="secondary">
+                    {(userConvoys as any[])?.length || 0}
+                  </Badge>
+                )}
               </div>
               
               <div className="flex items-center justify-between">
@@ -141,9 +150,13 @@ export default function Profile() {
                   <Trophy className="h-4 w-4 text-muted-foreground" />
                   <span className="text-sm">Posts</span>
                 </div>
-                <Badge variant="secondary">
-                  {userPosts?.length || 0}
-                </Badge>
+                {postsLoading ? (
+                  <Skeleton className="h-5 w-8 rounded" />
+                ) : (
+                  <Badge variant="secondary">
+                    {(userPosts as any[])?.length || 0}
+                  </Badge>
+                )}
               </div>
             </CardContent>
           </Card>

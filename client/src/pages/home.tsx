@@ -22,19 +22,19 @@ export default function Home() {
 
 
   // Fetch upcoming convoys
-  const { data: upcomingConvoys = [] } = useQuery({
+  const { data: upcomingConvoys = [], isLoading: convoysLoading } = useQuery({
     queryKey: ["/api/convoys/upcoming?limit=5"],
     enabled: !!user,
   });
 
   // Fetch weather alerts
-  const { data: weatherAlerts = [] } = useQuery({
+  const { data: weatherAlerts = [], isLoading: alertsLoading } = useQuery({
     queryKey: ["/api/weather/alerts"],
     enabled: !!user,
   });
 
   // Fetch top contributors
-  const { data: topContributors = [] } = useQuery({
+  const { data: topContributors = [], isLoading: contributorsLoading } = useQuery({
     queryKey: ["/api/leaderboard/contributors?limit=5"],
     enabled: !!user,
   });
@@ -187,7 +187,22 @@ export default function Home() {
                 <Card className="automotive-card">
                   <CardContent className="p-6">
                     <h3 className="text-lg font-bold mb-4">Upcoming Convoys</h3>
-                    {upcomingConvoys.length > 0 ? (
+                    {convoysLoading ? (
+                      <div className="space-y-3">
+                        {[...Array(3)].map((_, i) => (
+                          <div key={i} className="p-3 bg-muted/20 rounded-lg">
+                            <div className="flex items-center justify-between mb-2">
+                              <Skeleton className="h-4 w-24" />
+                              <Skeleton className="h-3 w-16" />
+                            </div>
+                            <div className="flex items-center space-x-4">
+                              <Skeleton className="h-3 w-12" />
+                              <Skeleton className="h-3 w-16" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : upcomingConvoys.length > 0 ? (
                       <div className="space-y-3">
                         {upcomingConvoys.slice(0, 3).map((convoy: any) => (
                           <div key={convoy.id} className="p-3 bg-muted/20 rounded-lg hover:bg-muted/30 cursor-pointer transition-colors">
@@ -274,8 +289,21 @@ export default function Home() {
                   <CardContent className="p-6">
                     <h3 className="text-lg font-bold mb-4">Top Contributors</h3>
                     <div className="space-y-3">
-                      {topContributors.length > 0 ? (
-                        topContributors.map((contributor: any, index: number) => (
+                      {contributorsLoading ? (
+                        <div className="space-y-3">
+                          {[...Array(3)].map((_, i) => (
+                            <div key={i} className="flex items-center space-x-3">
+                              <Skeleton className="w-6 h-6 rounded-full" />
+                              <Skeleton className="w-8 h-8 rounded-full" />
+                              <div className="flex-1 space-y-1">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-3 w-16" />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (topContributors as any[]).length > 0 ? (
+                        (topContributors as any[]).map((contributor: any, index: number) => (
                           <div key={contributor.user.id} className="flex items-center space-x-3">
                             <div className={`flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold ${
                               index === 0 ? 'bg-primary text-primary-foreground' :
