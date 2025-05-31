@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
-import { Car, Home, Users, Route, Trophy, MapPin, User, LogOut } from "lucide-react";
+import { Car, Home, Users, Route, Trophy, MapPin, User, LogOut, Map } from "lucide-react";
 
 export default function Sidebar() {
   const { user } = useAuth();
@@ -11,6 +11,7 @@ export default function Sidebar() {
     { name: "Feed", href: "/", icon: Home, current: location === "/" },
     { name: "My Garage", href: "/garage", icon: Car, current: location === "/garage" },
     { name: "Convoys", href: "/convoys", icon: Users, current: location === "/convoys" },
+    { name: "Drive Logs", href: "/drive-logs", icon: Map, current: location === "/drive-logs" },
     { name: "Routes", href: "/routes", icon: Route, current: location === "/routes" },
   ];
 

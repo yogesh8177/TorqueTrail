@@ -301,10 +301,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Drive log routes
-  app.post('/api/drive-logs', isAuthenticated, async (req: any, res) => {
+  app.post('/api/drive-logs', isAuthenticated, upload.single('titleImage'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const driveLogData = insertDriveLogSchema.parse({ ...req.body, userId });
+      
+      // Handle file upload
+      let titleImageUrl = null;
+      if (req.file) {
+        titleImageUrl = `/uploads/${req.file.filename}`;
+      }
+
+      // Parse form data
+      const formData = {
+        ...req.body,
+        userId,
+        titleImageUrl,
+        vehicleId: req.body.vehicleId ? parseInt(req.body.vehicleId) : null,
+        startTime: new Date(req.body.startTime || new Date()),
+        totalPitstops: 0, // Will be updated when pitstops are added
+      };
+
+      // Calculate estimated read time based on description
+      const estimatedReadTime = formData.description 
+        ? calculateReadTime(formData.description, formData.title)
+        : null;
+
+      const driveLogData = insertDriveLogSchema.parse({
+        ...formData,
+        estimatedReadTime,
+      });
+      
       const driveLog = await storage.createDriveLog(driveLogData);
       res.json(driveLog);
     } catch (error) {
