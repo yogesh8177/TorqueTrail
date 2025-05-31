@@ -11,6 +11,7 @@ import {
   insertPostCommentSchema,
 } from "@shared/schema";
 import { generateDriveBlog, analyzeVehicleImage, generateRouteRecommendations } from "./openai";
+import { calculateReadTime } from "./readTime";
 import multer from "multer";
 import { z } from "zod";
 
@@ -160,6 +161,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         tagsArray = req.body.tags.split(',').map((tag: string) => tag.trim()).filter(Boolean);
       }
 
+      // Calculate estimated read time
+      const estimatedReadTime = req.body.content ? calculateReadTime(req.body.content, req.body.title) : undefined;
+
       const postData = insertPostSchema.parse({
         ...req.body,
         userId,
@@ -167,6 +171,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
         vehicleId: req.body.vehicleId ? parseInt(req.body.vehicleId) : undefined,
         isAiGenerated: req.body.isAiGenerated === 'true',
+        estimatedReadTime,
         tags: tagsArray,
       });
 
