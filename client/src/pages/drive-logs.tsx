@@ -178,14 +178,14 @@ export default function DriveLogs() {
               New Drive Log
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto sm:max-w-2xl w-[95vw] sm:w-full">
             <DialogHeader>
               <DialogTitle>Create New Drive Log</DialogTitle>
             </DialogHeader>
             
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
                     name="title"
@@ -347,17 +347,19 @@ export default function DriveLogs() {
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3">
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                   <Button 
                     type="button" 
                     variant="outline" 
                     onClick={() => setShowCreateDialog(false)}
+                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
                   <Button 
                     type="submit" 
                     disabled={createDriveLogMutation.isPending}
+                    className="w-full sm:w-auto"
                   >
                     {createDriveLogMutation.isPending ? "Creating..." : "Create Drive Log"}
                   </Button>
