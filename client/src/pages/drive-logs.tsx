@@ -59,7 +59,7 @@ export default function DriveLogs() {
   });
 
   const form = useForm<DriveLogFormData>({
-    resolver: zodResolver(insertDriveLogSchema),
+    resolver: zodResolver(insertDriveLogSchema.omit({ userId: true })),
     defaultValues: {
       title: "",
       description: "",
@@ -137,10 +137,20 @@ export default function DriveLogs() {
 
   const handleSubmit = (data: DriveLogFormData) => {
     console.log('Form submitted with data:', data);
+    console.log('Form errors:', form.formState.errors);
     console.log('Selected image:', selectedImage);
     createDriveLogMutation.mutate({
       ...data,
       titleImage: selectedImage || undefined,
+    });
+  };
+
+  const onFormError = (errors: any) => {
+    console.error('Form validation errors:', errors);
+    toast({
+      title: "Form Error",
+      description: "Please check all required fields are filled correctly.",
+      variant: "destructive",
     });
   };
 
@@ -194,7 +204,7 @@ export default function DriveLogs() {
             </DialogHeader>
             
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+              <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
