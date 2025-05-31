@@ -759,10 +759,10 @@ export default function Garage() {
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
                   <p className="text-xl font-bold">
-                    {isLoading ? (
+                    {authLoading ? (
                       <Skeleton className="h-6 w-12 inline-block" />
                     ) : (
-                      `${user.garageRating || "4.8"}⭐`
+                      `${user?.garageRating || "4.8"}⭐`
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">Rating</p>

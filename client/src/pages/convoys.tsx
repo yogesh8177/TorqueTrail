@@ -403,7 +403,13 @@ export default function Convoys() {
                       <Users className="w-6 h-6 text-secondary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{upcomingConvoys.length}</p>
+                      <p className="text-2xl font-bold">
+                        {upcomingLoading ? (
+                          <Skeleton className="h-8 w-8 inline-block" />
+                        ) : (
+                          upcomingConvoys.length
+                        )}
+                      </p>
                       <p className="text-muted-foreground">Upcoming Convoys</p>
                     </div>
                   </div>
@@ -431,7 +437,13 @@ export default function Convoys() {
                       <Route className="w-6 h-6 text-green-500" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">{userConvoys.length}</p>
+                      <p className="text-2xl font-bold">
+                        {userLoading ? (
+                          <Skeleton className="h-8 w-8 inline-block" />
+                        ) : (
+                          userConvoys.length
+                        )}
+                      </p>
                       <p className="text-muted-foreground">Organized</p>
                     </div>
                   </div>
