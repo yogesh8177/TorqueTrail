@@ -123,12 +123,15 @@ export default function CreatePost() {
                     className="bg-accent/20 border-accent min-h-[100px] resize-none"
                     autoFocus
                   />
-                  <Input
-                    placeholder="Add tags (comma separated, e.g., BMW, M3, Track Day)"
-                    value={tags}
-                    onChange={(e) => setTags(e.target.value)}
-                    className="bg-accent/20 border-accent"
-                  />
+                  <div className="space-y-1">
+                    <label className="text-sm text-muted-foreground">Tags (optional)</label>
+                    <Input
+                      placeholder="Add tags (comma separated, e.g., BMW, M3, Track Day)"
+                      value={tags}
+                      onChange={(e) => setTags(e.target.value)}
+                      className="bg-accent/20 border-accent"
+                    />
+                  </div>
                 </div>
               ) : (
                 <Input
