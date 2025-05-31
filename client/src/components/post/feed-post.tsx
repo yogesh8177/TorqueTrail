@@ -39,7 +39,7 @@ export default function FeedPost({ post }: FeedPostProps) {
 
   // Fetch comments for this post
   const { data: comments = [] } = useQuery<any[]>({
-    queryKey: ["/api/posts", post.id, "comments"],
+    queryKey: [`/api/posts/${post.id}/comments`],
     enabled: showComments,
   });
 
@@ -68,7 +68,7 @@ export default function FeedPost({ post }: FeedPostProps) {
     },
     onSuccess: () => {
       setNewComment("");
-      queryClient.invalidateQueries({ queryKey: ["/api/posts", post.id, "comments"] });
+      queryClient.invalidateQueries({ queryKey: [`/api/posts/${post.id}/comments`] });
       queryClient.invalidateQueries({ queryKey: ["/api/posts/feed"] });
       toast({
         title: "Comment added",
