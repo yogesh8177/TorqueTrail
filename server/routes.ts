@@ -46,6 +46,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user's drive logs to calculate total miles
+      const driveLogs = await storage.getUserDriveLogs(userId);
+      const totalMiles = driveLogs.reduce((sum, log) => sum + Number(log.distance), 0);
+      
+      // Get convoys user has organized or joined
+      const userConvoys = await storage.getUserConvoys(userId);
+      const convoyParticipations = await storage.getConvoyParticipants(0); // Get all to filter by user
+      const joinedConvoys = convoyParticipations.filter(p => p.userId === userId).length;
+      
+      // Get garage votes for rating
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const garageVotes = await storage.getMonthlyGarageVotes(currentMonth, currentYear);
+      const userVotes = garageVotes.find(v => v.userId === userId);
+      
+      const stats = {
+        totalMiles: Math.round(totalMiles * 10) / 10, // Round to 1 decimal
+        convoysOrganized: userConvoys.length,
+        convoysJoined: joinedConvoys,
+        totalConvoys: userConvoys.length + joinedConvoys,
+        garageRating: userVotes ? userVotes.votes : 0,
+        driveLogs: driveLogs.length,
+      };
+      
+      res.json(stats);
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+      res.status(500).json({ message: "Failed to fetch user stats" });
+    }
+  });
+
   // Vehicle routes
   app.post('/api/vehicles', isAuthenticated, async (req: any, res) => {
     try {

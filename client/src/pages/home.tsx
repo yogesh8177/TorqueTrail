@@ -39,13 +39,12 @@ export default function Home() {
     enabled: !!user,
   });
 
-  // Mock user stats - in real app would come from user profile
-  const userStats = {
-    totalMiles: user?.totalMiles || 0,
-    convoysJoined: user?.totalConvoys || 0,
-    garageRating: user?.garageRating || "0.0",
-    followers: user?.followers || 0,
-  };
+  // Fetch real user statistics
+  const { data: userStats } = useQuery({
+    queryKey: ['/api/user/stats'],
+    enabled: !!user,
+    staleTime: 30000, // Cache for 30 seconds
+  });
 
   if (!user) {
     return (
@@ -90,7 +89,7 @@ export default function Home() {
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-muted-foreground text-sm">Total Miles</p>
-                      <p className="text-2xl font-bold text-primary">{userStats.totalMiles.toLocaleString()}</p>
+                      <p className="text-2xl font-bold text-primary">{(userStats as any)?.totalMiles?.toLocaleString() || '0'}</p>
                     </div>
                     <Car className="w-8 h-8 text-primary/50" />
                   </div>
@@ -101,8 +100,8 @@ export default function Home() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-muted-foreground text-sm">Convoys Joined</p>
-                      <p className="text-2xl font-bold text-secondary">{userStats.convoysJoined}</p>
+                      <p className="text-muted-foreground text-sm">Total Convoys</p>
+                      <p className="text-2xl font-bold text-secondary">{(userStats as any)?.totalConvoys || 0}</p>
                     </div>
                     <Users className="w-8 h-8 text-secondary/50" />
                   </div>
