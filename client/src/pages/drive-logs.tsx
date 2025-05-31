@@ -65,8 +65,13 @@ export default function DriveLogs() {
       description: "",
       startLocation: "",
       endLocation: "",
+      routeName: "",
       distance: "0",
       startTime: new Date(),
+      endTime: undefined,
+      weatherConditions: "",
+      roadConditions: "",
+      vehicleId: undefined,
       notes: "",
     },
   });
@@ -93,10 +98,12 @@ export default function DriveLogs() {
       const response = await fetch('/api/drive-logs', {
         method: 'POST',
         body: formData,
+        credentials: 'include', // Include cookies for authentication
       });
 
       if (!response.ok) {
-        throw new Error(`${response.status}: ${response.statusText}`);
+        const errorText = await response.text();
+        throw new Error(`${response.status}: ${errorText}`);
       }
 
       return await response.json();
