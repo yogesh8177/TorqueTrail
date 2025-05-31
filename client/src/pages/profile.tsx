@@ -369,17 +369,17 @@ export default function Profile() {
           <div className="container mx-auto px-4 py-8 space-y-6">
             {/* Profile Header */}
       <Card>
-        <CardContent className="p-6">
-          <div className="flex items-center space-x-4">
-            <Avatar className="h-20 w-20">
+        <CardContent className="p-4">
+          <div className="flex items-start space-x-3">
+            <Avatar className="h-16 w-16 flex-shrink-0">
               <AvatarImage src={user.profileImageUrl || undefined} />
-              <AvatarFallback className="text-lg">
+              <AvatarFallback className="text-base">
                 {user.firstName ? user.firstName[0] : user.email?.[0]?.toUpperCase() || 'U'}
               </AvatarFallback>
             </Avatar>
             
-            <div className="flex-1">
-              <h1 className="text-2xl font-bold">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl font-bold">
                 {user.firstName && user.lastName 
                   ? `${user.firstName} ${user.lastName}`
                   : user.email || 'User'
@@ -387,20 +387,20 @@ export default function Profile() {
               </h1>
               
               {user.email && (
-                <div className="flex items-center text-muted-foreground mt-1">
-                  <Mail className="h-4 w-4 mr-2" />
-                  {user.email}
+                <div className="flex items-start text-muted-foreground mt-1">
+                  <Mail className="h-3 w-3 mr-2 flex-shrink-0 mt-1" />
+                  <span className="text-xs break-all min-w-0">{user.email}</span>
                 </div>
               )}
               
               <div className="flex items-center text-muted-foreground mt-1">
-                <Calendar className="h-4 w-4 mr-2" />
-                Member since {formatDate(user.createdAt)}
+                <Calendar className="h-3 w-3 mr-2 flex-shrink-0" />
+                <span className="text-xs">Member since {formatDate(user.createdAt)}</span>
               </div>
             </div>
 
-            <Button variant="outline">
-              Edit Profile
+            <Button variant="outline" size="sm" className="flex-shrink-0">
+              Edit
             </Button>
           </div>
         </CardContent>
