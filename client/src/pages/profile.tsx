@@ -216,6 +216,64 @@ export default function Profile() {
             </CardContent>
           </Card>
 
+          {/* Posts and Saved Posts */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                My Content
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Tabs defaultValue="posts" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="posts" className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    My Posts ({Array.isArray(userPosts) ? userPosts.length : 0})
+                  </TabsTrigger>
+                  <TabsTrigger value="saved" className="flex items-center gap-2">
+                    <Bookmark className="h-4 w-4" />
+                    Saved ({Array.isArray(savedPosts) ? savedPosts.length : 0})
+                  </TabsTrigger>
+                </TabsList>
+                <TabsContent value="posts" className="space-y-4">
+                  {Array.isArray(userPosts) && userPosts.length > 0 ? (
+                    <div className="space-y-4">
+                      {userPosts.map((post: any) => (
+                        <FeedPost key={post.id} post={post} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No posts created yet</p>
+                      <Button variant="outline" className="mt-4">
+                        Create Your First Post
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+                <TabsContent value="saved" className="space-y-4">
+                  {Array.isArray(savedPosts) && savedPosts.length > 0 ? (
+                    <div className="space-y-4">
+                      {savedPosts.map((post: any) => (
+                        <FeedPost key={post.id} post={post} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                      <p className="text-muted-foreground">No saved posts yet</p>
+                      <Button variant="outline" className="mt-4">
+                        Browse Posts to Save
+                      </Button>
+                    </div>
+                  )}
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
           {/* My Convoys */}
           <Card>
             <CardHeader>
@@ -225,7 +283,7 @@ export default function Profile() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {userConvoys && userConvoys.length > 0 ? (
+              {Array.isArray(userConvoys) && userConvoys.length > 0 ? (
                 <div className="space-y-4">
                   {userConvoys.map((convoy: any) => (
                     <div key={convoy.id} className="border rounded-lg p-4">
