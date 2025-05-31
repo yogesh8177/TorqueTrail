@@ -112,12 +112,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No image provided" });
       }
 
+      console.log("Image received:", req.file.originalname, "Size:", req.file.size);
       const base64Image = req.file.buffer.toString('base64');
+      console.log("Calling OpenAI vision API...");
+      
       const analysis = await analyzeVehicleImage(base64Image);
+      console.log("AI analysis result:", analysis);
+      
       res.json(analysis);
     } catch (error) {
       console.error("Error analyzing vehicle image:", error);
-      res.status(500).json({ message: "Failed to analyze vehicle image" });
+      res.status(500).json({ 
+        message: "Failed to analyze vehicle image", 
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 
