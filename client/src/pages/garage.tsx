@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Car, Plus, Upload, Zap, Trophy, Star, X } from "lucide-react";
+import { Car, Plus, Upload, Zap, Trophy, Star, X, ImageIcon, Loader2, Wand2 } from "lucide-react";
 import { insertVehicleSchema } from "@shared/schema";
 import { z } from "zod";
 
@@ -35,6 +35,9 @@ export default function Garage() {
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
   const [selectedVehicleForDetails, setSelectedVehicleForDetails] = useState<any>(null);
   const [selectedVehicleForPost, setSelectedVehicleForPost] = useState<any>(null);
+  const [postContent, setPostContent] = useState("");
+  const [postImages, setPostImages] = useState<File[]>([]);
+  const [isGeneratingPost, setIsGeneratingPost] = useState(false);
   const [formData, setFormData] = useState<Partial<VehicleFormData>>({
     make: "",
     model: "",
@@ -169,7 +172,7 @@ export default function Garage() {
     setIsAddDialogOpen(true);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleVehicleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setUploadedImage(file);
@@ -214,8 +217,129 @@ export default function Garage() {
     setSelectedVehicleForDetails(vehicle);
   };
 
-  const handleCreatePost = (vehicle: any) => {
+  const handleOpenCreatePost = (vehicle: any) => {
     setSelectedVehicleForPost(vehicle);
+    setPostContent("");
+    setPostImages([]);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setPostImages(prev => [...prev, ...files].slice(0, 5)); // Limit to 5 images
+  };
+
+  const removeImage = (index: number) => {
+    setPostImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const createPostMutation = useMutation({
+    mutationFn: async (data: { content: string; images: File[]; vehicleId: number; isAiGenerated?: boolean }) => {
+      const formData = new FormData();
+      formData.append('content', data.content);
+      formData.append('vehicleId', data.vehicleId.toString());
+      formData.append('type', 'vehicle_showcase');
+      if (data.isAiGenerated) {
+        formData.append('isAiGenerated', 'true');
+      }
+      
+      data.images.forEach((image, index) => {
+        formData.append(`images`, image);
+      });
+
+      return await apiRequest("POST", "/api/posts", formData);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Post created successfully!",
+        description: "Your vehicle post has been shared with the community.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["/api/posts"] });
+      setSelectedVehicleForPost(null);
+      setPostContent("");
+      setPostImages([]);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to create post",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const generateAIBlogMutation = useMutation({
+    mutationFn: async (data: { images: File[]; vehicleId: number; userContext: string }) => {
+      const formData = new FormData();
+      formData.append('vehicleId', data.vehicleId.toString());
+      formData.append('userContext', data.userContext);
+      
+      data.images.forEach((image) => {
+        formData.append('images', image);
+      });
+
+      return await apiRequest("POST", "/api/ai/generate-blog", formData);
+    },
+    onSuccess: (data: any) => {
+      setPostContent(data.content);
+      setIsGeneratingPost(false);
+      toast({
+        title: "AI blog generated!",
+        description: "Your AI-generated blog post is ready. Review and publish when ready.",
+      });
+    },
+    onError: (error: any) => {
+      setIsGeneratingPost(false);
+      toast({
+        title: "Failed to generate AI blog",
+        description: error.message || "Please try again or write your post manually.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleGenerateAIBlog = () => {
+    if (postImages.length === 0) {
+      toast({
+        title: "Images required",
+        description: "Please upload at least one image to generate an AI blog post.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!postContent.trim()) {
+      toast({
+        title: "Context required",
+        description: "Please provide some context about your vehicle or experience.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingPost(true);
+    generateAIBlogMutation.mutate({
+      images: postImages,
+      vehicleId: selectedVehicleForPost.id,
+      userContext: postContent,
+    });
+  };
+
+  const handleCreatePost = () => {
+    if (!postContent.trim()) {
+      toast({
+        title: "Content required",
+        description: "Please write something about your vehicle.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createPostMutation.mutate({
+      content: postContent,
+      images: postImages,
+      vehicleId: selectedVehicleForPost.id,
+      isAiGenerated: generateAIBlogMutation.data ? true : false,
+    });
   };
 
   if (!user) {
@@ -752,33 +876,121 @@ export default function Garage() {
       {/* Create Post Modal */}
       {selectedVehicleForPost && (
         <Dialog open={!!selectedVehicleForPost} onOpenChange={() => setSelectedVehicleForPost(null)}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 Create Post for {selectedVehicleForPost.year} {selectedVehicleForPost.make} {selectedVehicleForPost.model}
               </DialogTitle>
             </DialogHeader>
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="post-content">Post Content</Label>
+            <div className="space-y-6">
+              {/* Image Upload Section */}
+              <div className="space-y-3">
+                <Label>Upload Images (up to 5)</Label>
+                <div className="border-2 border-dashed border-muted rounded-lg p-6 text-center">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="post-images"
+                  />
+                  <label htmlFor="post-images" className="cursor-pointer">
+                    <div className="flex flex-col items-center space-y-2">
+                      <ImageIcon className="w-8 h-8 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        Click to upload images or drag and drop
+                      </p>
+                    </div>
+                  </label>
+                </div>
+                
+                {/* Image Preview */}
+                {postImages.length > 0 && (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {postImages.map((image, index) => (
+                      <div key={index} className="relative">
+                        <img
+                          src={URL.createObjectURL(image)}
+                          alt={`Upload ${index + 1}`}
+                          className="w-full h-24 object-cover rounded-lg"
+                        />
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          className="absolute -top-2 -right-2 w-6 h-6 rounded-full p-0"
+                          onClick={() => removeImage(index)}
+                        >
+                          <X className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Content Section */}
+              <div className="space-y-3">
+                <Label htmlFor="post-content">
+                  Post Content or Context for AI Generation
+                </Label>
                 <Textarea
                   id="post-content"
-                  placeholder="Share something about your vehicle..."
+                  value={postContent}
+                  onChange={(e) => setPostContent(e.target.value)}
+                  placeholder="Write about your vehicle experience, modifications, or provide context for AI blog generation..."
                   className="min-h-[120px]"
                 />
               </div>
+
+              {/* AI Generation Section */}
+              <div className="border rounded-lg p-4 bg-muted/20">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center space-x-2">
+                    <Wand2 className="w-4 h-4 text-primary" />
+                    <span className="font-medium">AI Blog Generation</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateAIBlog}
+                    disabled={isGeneratingPost || postImages.length === 0 || !postContent.trim()}
+                  >
+                    {isGeneratingPost ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Wand2 className="w-4 h-4 mr-2" />
+                        Generate AI Blog
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Upload images and provide context to generate an AI-powered blog post about your vehicle.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
               <div className="flex justify-end space-x-3">
                 <Button variant="outline" onClick={() => setSelectedVehicleForPost(null)}>
                   Cancel
                 </Button>
-                <Button onClick={() => {
-                  toast({
-                    title: "Post functionality coming soon!",
-                    description: "The create post feature will be available in the next update.",
-                  });
-                  setSelectedVehicleForPost(null);
-                }}>
-                  Create Post
+                <Button 
+                  onClick={handleCreatePost}
+                  disabled={createPostMutation.isPending || !postContent.trim()}
+                >
+                  {createPostMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Post"
+                  )}
                 </Button>
               </div>
             </div>
