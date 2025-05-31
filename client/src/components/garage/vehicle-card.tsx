@@ -25,9 +25,11 @@ interface Vehicle {
 interface VehicleCardProps {
   vehicle: Vehicle;
   onEdit?: (vehicle: Vehicle) => void;
+  onViewDetails?: (vehicle: Vehicle) => void;
+  onCreatePost?: (vehicle: Vehicle) => void;
 }
 
-export default function VehicleCard({ vehicle, onEdit }: VehicleCardProps) {
+export default function VehicleCard({ vehicle, onEdit, onViewDetails, onCreatePost }: VehicleCardProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [imageError, setImageError] = useState(false);
@@ -224,10 +226,20 @@ export default function VehicleCard({ vehicle, onEdit }: VehicleCardProps) {
 
           {/* Action Buttons */}
           <div className="mt-6 flex space-x-3">
-            <Button variant="outline" size="sm" className="flex-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => onViewDetails?.(vehicle)}
+            >
               View Details
             </Button>
-            <Button variant="outline" size="sm" className="flex-1">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="flex-1"
+              onClick={() => onCreatePost?.(vehicle)}
+            >
               Create Post
             </Button>
           </div>

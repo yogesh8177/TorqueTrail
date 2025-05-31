@@ -33,6 +33,8 @@ export default function Garage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingVehicle, setEditingVehicle] = useState<any>(null);
   const [uploadedImage, setUploadedImage] = useState<File | null>(null);
+  const [selectedVehicleForDetails, setSelectedVehicleForDetails] = useState<any>(null);
+  const [selectedVehicleForPost, setSelectedVehicleForPost] = useState<any>(null);
   const [formData, setFormData] = useState<Partial<VehicleFormData>>({
     make: "",
     model: "",
@@ -206,6 +208,14 @@ export default function Garage() {
         });
       }
     }
+  };
+
+  const handleViewDetails = (vehicle: any) => {
+    setSelectedVehicleForDetails(vehicle);
+  };
+
+  const handleCreatePost = (vehicle: any) => {
+    setSelectedVehicleForPost(vehicle);
   };
 
   if (!user) {
