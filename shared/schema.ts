@@ -90,8 +90,13 @@ export const driveLogs = pgTable("drive_logs", {
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   vehicleId: integer("vehicle_id").references(() => vehicles.id, { onDelete: "set null" }),
   title: varchar("title").notNull(),
+  description: text("description"),
   startLocation: varchar("start_location").notNull(),
   endLocation: varchar("end_location").notNull(),
+  startLatitude: decimal("start_latitude", { precision: 10, scale: 8 }),
+  startLongitude: decimal("start_longitude", { precision: 11, scale: 8 }),
+  endLatitude: decimal("end_latitude", { precision: 10, scale: 8 }),
+  endLongitude: decimal("end_longitude", { precision: 11, scale: 8 }),
   routeName: varchar("route_name"),
   distance: decimal("distance", { precision: 8, scale: 2 }).notNull(),
   duration: integer("duration"), // in minutes
@@ -102,9 +107,32 @@ export const driveLogs = pgTable("drive_logs", {
   fuelConsumed: decimal("fuel_consumed", { precision: 6, scale: 2 }),
   weatherConditions: varchar("weather_conditions"),
   roadConditions: varchar("road_conditions"),
-  pitStops: jsonb("pit_stops"), // Array of stop locations with coordinates
-  routeCoordinates: jsonb("route_coordinates"), // GPS coordinates array
+  routeCoordinates: jsonb("route_coordinates"), // GPS coordinates array for the route
+  titleImageUrl: varchar("title_image_url"),
+  totalPitstops: integer("total_pitstops").default(0),
+  estimatedReadTime: integer("estimated_read_time"), // in minutes for AI blog
   notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Pitstops table for drive logs
+export const pitstops = pgTable("pitstops", {
+  id: serial("id").primaryKey(),
+  driveLogId: integer("drive_log_id").notNull().references(() => driveLogs.id, { onDelete: "cascade" }),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
+  type: varchar("type").notNull(), // 'food', 'scenic', 'fuel', 'rest', 'attraction', 'other'
+  arrivalTime: timestamp("arrival_time"),
+  departureTime: timestamp("departure_time"),
+  duration: integer("duration"), // in minutes
+  rating: integer("rating"), // 1-5 stars
+  cost: decimal("cost", { precision: 8, scale: 2 }),
+  imageUrls: text("image_urls").array(),
+  videoUrls: text("video_urls").array(),
+  notes: text("notes"),
+  orderIndex: integer("order_index").notNull(), // Order of pitstop in the journey
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -272,7 +300,15 @@ export const driveLogsRelations = relations(driveLogs, ({ one, many }) => ({
     fields: [driveLogs.vehicleId],
     references: [vehicles.id],
   }),
+  pitstops: many(pitstops),
   posts: many(posts),
+}));
+
+export const pitstopsRelations = relations(pitstops, ({ one }) => ({
+  driveLog: one(driveLogs, {
+    fields: [pitstops.driveLogId],
+    references: [driveLogs.id],
+  }),
 }));
 
 export const convoysRelations = relations(convoys, ({ one, many }) => ({
@@ -419,6 +455,11 @@ export const insertConvoySchema = createInsertSchema(convoys).omit({
   ]).optional(),
 });
 
+export const insertPitstopSchema = createInsertSchema(pitstops).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertPostCommentSchema = createInsertSchema(postComments).omit({
   id: true,
   likes: true,
@@ -440,6 +481,8 @@ export type Convoy = typeof convoys.$inferSelect;
 export type ConvoyParticipant = typeof convoyParticipants.$inferSelect;
 export type PostComment = typeof postComments.$inferSelect;
 export type InsertPostComment = z.infer<typeof insertPostCommentSchema>;
+export type InsertPitstop = z.infer<typeof insertPitstopSchema>;
+export type Pitstop = typeof pitstops.$inferSelect;
 export type WeatherAlert = typeof weatherAlerts.$inferSelect;
 export type ConvoyUpdate = typeof convoyUpdates.$inferSelect;
 export type InsertConvoyUpdate = typeof convoyUpdates.$inferInsert;
