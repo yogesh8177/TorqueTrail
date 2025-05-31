@@ -215,6 +215,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post('/api/posts/:id/save', isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+      
+      const isSaved = await storage.isPostSavedByUser(postId, userId);
+      if (isSaved) {
+        await storage.unsavePost(postId, userId);
+        res.json({ saved: false });
+      } else {
+        await storage.savePost(postId, userId);
+        res.json({ saved: true });
+      }
+    } catch (error) {
+      console.error("Error toggling post save:", error);
+      res.status(500).json({ message: "Failed to toggle post save" });
+    }
+  });
+
   // Drive log routes
   app.post('/api/drive-logs', isAuthenticated, async (req: any, res) => {
     try {

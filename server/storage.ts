@@ -52,6 +52,9 @@ export interface IStorage {
   likePost(postId: number, userId: string): Promise<void>;
   unlikePost(postId: number, userId: string): Promise<void>;
   isPostLikedByUser(postId: number, userId: string): Promise<boolean>;
+  savePost(postId: number, userId: string): Promise<void>;
+  unsavePost(postId: number, userId: string): Promise<void>;
+  isPostSavedByUser(postId: number, userId: string): Promise<boolean>;
   
   // Drive log operations
   createDriveLog(driveLog: InsertDriveLog): Promise<DriveLog>;
