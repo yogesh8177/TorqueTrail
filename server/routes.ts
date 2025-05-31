@@ -247,6 +247,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get('/api/posts/saved', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const offset = parseInt(req.query.offset as string) || 0;
+      const savedPosts = await storage.getUserSavedPosts(userId, limit, offset);
+      res.json(savedPosts);
+    } catch (error) {
+      console.error("Error fetching saved posts:", error);
+      res.status(500).json({ message: "Failed to fetch saved posts" });
+    }
+  });
+
   // Drive log routes
   app.post('/api/drive-logs', isAuthenticated, async (req: any, res) => {
     try {
