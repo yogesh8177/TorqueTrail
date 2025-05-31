@@ -267,6 +267,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/posts/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const userId = req.user.claims.sub;
+
+      // First check if the post exists and belongs to the user
+      const existingPost = await storage.getPost(postId);
+      if (!existingPost) {
+        return res.status(404).json({ message: "Post not found" });
+      }
+      
+      if (existingPost.userId !== userId) {
+        return res.status(403).json({ message: "You can only edit your own posts" });
+      }
+
+      // Update the post
+      const updates: Partial<any> = {};
+      if (req.body.title !== undefined) updates.title = req.body.title || null;
+      if (req.body.content !== undefined) updates.content = req.body.content;
+
+      const updatedPost = await storage.updatePost(postId, updates);
+      res.json(updatedPost);
+    } catch (error) {
+      console.error("Error updating post:", error);
+      res.status(500).json({ message: "Failed to update post" });
+    }
+  });
+
   // Drive log routes
   app.post('/api/drive-logs', isAuthenticated, async (req: any, res) => {
     try {

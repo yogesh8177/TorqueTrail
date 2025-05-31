@@ -49,6 +49,7 @@ export interface IStorage {
   getFeedPosts(limit?: number, offset?: number): Promise<Post[]>;
   getUserPosts(userId: string, limit?: number, offset?: number): Promise<Post[]>;
   getPost(id: number): Promise<Post | undefined>;
+  updatePost(id: number, updates: Partial<InsertPost>): Promise<Post>;
   likePost(postId: number, userId: string): Promise<void>;
   unlikePost(postId: number, userId: string): Promise<void>;
   isPostLikedByUser(postId: number, userId: string): Promise<boolean>;
