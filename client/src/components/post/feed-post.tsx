@@ -9,6 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, MessageCircle, Share2, Bookmark, MapPin, Clock, User, Send, Twitter, Facebook, Link, Copy, MoreHorizontal, Edit, Trash } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -42,7 +43,7 @@ export default function FeedPost({ post }: FeedPostProps) {
   const [editContent, setEditContent] = useState(post.content || "");
 
   // Fetch comments for this post
-  const { data: comments = [] } = useQuery<any[]>({
+  const { data: comments = [], isLoading: commentsLoading } = useQuery<any[]>({
     queryKey: [`/api/posts/${post.id}/comments`],
     enabled: showComments,
   });
@@ -480,7 +481,24 @@ export default function FeedPost({ post }: FeedPostProps) {
 
             {/* Comments List */}
             <div className="space-y-3">
-              {Array.isArray(comments) && comments.length > 0 ? (
+              {commentsLoading ? (
+                <div className="space-y-3">
+                  {[...Array(2)].map((_, i) => (
+                    <div key={i} className="flex items-start space-x-3">
+                      <Skeleton className="w-8 h-8 rounded-full" />
+                      <div className="flex-1">
+                        <div className="bg-accent/50 rounded-lg px-3 py-2">
+                          <div className="flex items-center space-x-2 mb-1">
+                            <Skeleton className="h-4 w-20" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                          <Skeleton className="h-4 w-full" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : Array.isArray(comments) && comments.length > 0 ? (
                 comments.map((comment: any) => (
                   <div key={comment.id} className="flex items-start space-x-3">
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary/50 to-secondary/50 border border-border flex items-center justify-center">

@@ -58,7 +58,7 @@ export default function Garage() {
   });
 
   // Fetch monthly garage votes for leaderboard
-  const { data: monthlyVotes = [] } = useQuery({
+  const { data: monthlyVotes = [], isLoading: votesLoading } = useQuery({
     queryKey: ["/api/garage/votes/monthly"],
     enabled: !!user,
   });

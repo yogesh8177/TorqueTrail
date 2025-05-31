@@ -250,7 +250,26 @@ export default function Profile() {
                   </TabsTrigger>
                 </TabsList>
                 <TabsContent value="posts" className="space-y-4">
-                  {Array.isArray(userPosts) && userPosts.length > 0 ? (
+                  {postsLoading ? (
+                    <div className="space-y-4">
+                      {[...Array(2)].map((_, i) => (
+                        <Card key={i} className="automotive-card">
+                          <CardContent className="p-6">
+                            <div className="flex items-center space-x-4 mb-4">
+                              <Skeleton className="h-10 w-10 rounded-full" />
+                              <div className="space-y-2">
+                                <Skeleton className="h-4 w-32" />
+                                <Skeleton className="h-3 w-24" />
+                              </div>
+                            </div>
+                            <Skeleton className="h-4 w-full mb-2" />
+                            <Skeleton className="h-4 w-3/4 mb-4" />
+                            <Skeleton className="h-40 w-full rounded-lg" />
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  ) : Array.isArray(userPosts) && userPosts.length > 0 ? (
                     <div className="space-y-4">
                       {userPosts.map((post: any) => (
                         <FeedPost key={post.id} post={post} />
