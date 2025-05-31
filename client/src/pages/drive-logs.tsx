@@ -235,7 +235,10 @@ export default function DriveLogs() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Vehicle</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value?.toString()}>
+                        <Select 
+                          onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} 
+                          value={field.value?.toString() || ""}
+                        >
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select vehicle" />
