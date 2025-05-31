@@ -161,9 +161,9 @@ export default function Home() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    {posts.map((post: any, index: number) => {
-                      // Simulate AI blog posts for demo
-                      if (index === 0) {
+                    {posts.map((post: any) => {
+                      // Show AI blog posts only if they are actually AI generated
+                      if (post.isAiGenerated) {
                         return <AIBlogPost key={post.id} post={post} />;
                       }
                       return <FeedPost key={post.id} post={post} />;
