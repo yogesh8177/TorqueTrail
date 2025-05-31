@@ -19,8 +19,8 @@ export default function MobileNav() {
           const Icon = item.icon;
           return (
             <Link key={item.name} href={item.href}>
-              <a
-                className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors ${
+              <div
+                className={`flex flex-col items-center py-2 px-3 rounded-lg transition-colors cursor-pointer ${
                   item.current
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
@@ -28,7 +28,7 @@ export default function MobileNav() {
               >
                 <Icon className="w-6 h-6" />
                 <span className="text-xs mt-1">{item.name}</span>
-              </a>
+              </div>
             </Link>
           );
         })}

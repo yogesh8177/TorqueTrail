@@ -9,6 +9,8 @@ import Home from "@/pages/home";
 import Garage from "@/pages/garage";
 import Convoys from "@/pages/convoys";
 import ConvoyDetail from "@/pages/convoy-detail";
+import Profile from "@/pages/profile";
+import Routes from "@/pages/routes";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -31,6 +33,8 @@ function Router() {
           <Route path="/garage" component={Garage} />
           <Route path="/convoys" component={Convoys} />
           <Route path="/convoy/:id" component={ConvoyDetail} />
+          <Route path="/profile" component={Profile} />
+          <Route path="/routes" component={Routes} />
           <Route component={NotFound} />
         </>
       )}
