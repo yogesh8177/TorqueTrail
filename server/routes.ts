@@ -159,6 +159,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         userId,
         imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
         videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
+        vehicleId: req.body.vehicleId ? parseInt(req.body.vehicleId) : undefined,
+        isAiGenerated: req.body.isAiGenerated === 'true',
       });
 
       const post = await storage.createPost(postData);
@@ -403,6 +405,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching comments:", error);
       res.status(500).json({ message: "Failed to fetch comments" });
+    }
+  });
+
+  // AI blog generation endpoint
+  app.post('/api/ai/generate-blog', isAuthenticated, upload.array('images', 5), async (req: any, res) => {
+    try {
+      const { vehicleId, userContext } = req.body;
+      
+      if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        return res.status(400).json({ message: "At least one image is required for AI blog generation" });
+      }
+      
+      if (!userContext || !userContext.trim()) {
+        return res.status(400).json({ message: "User context is required for AI blog generation" });
+      }
+      
+      // Get vehicle information
+      const vehicle = vehicleId ? await storage.getVehicle(parseInt(vehicleId)) : null;
+      
+      // Convert images to base64
+      const base64Images = req.files.map((file: any) => file.buffer.toString('base64'));
+      
+      // Generate AI blog using OpenAI
+      const blogResult = await generateDriveBlog({
+        images: base64Images,
+        driveData: {
+          distance: 0,
+          duration: 0,
+          startLocation: "Garage",
+          endLocation: "Showcase",
+          vehicleMake: vehicle?.make || "Unknown",
+          vehicleModel: vehicle?.model || "Unknown",
+          notes: userContext,
+        }
+      });
+      
+      res.json({
+        title: blogResult.title,
+        content: blogResult.content,
+        excerpt: blogResult.excerpt,
+        tags: blogResult.tags,
+        estimatedReadTime: blogResult.estimatedReadTime,
+      });
+    } catch (error) {
+      console.error("Error generating AI blog:", error);
+      res.status(500).json({ message: "Failed to generate AI blog" });
     }
   });
 

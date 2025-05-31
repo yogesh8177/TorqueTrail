@@ -694,7 +694,7 @@ export default function Garage() {
                       vehicle={vehicle}
                       onEdit={handleEdit}
                       onViewDetails={handleViewDetails}
-                      onCreatePost={handleCreatePost}
+                      onCreatePost={handleOpenCreatePost}
                     />
                   ))}
                 </div>
@@ -775,7 +775,7 @@ export default function Garage() {
                     vehicle={vehicle}
                     onEdit={handleEdit}
                     onViewDetails={handleViewDetails}
-                    onCreatePost={handleCreatePost}
+                    onCreatePost={handleOpenCreatePost}
                   />
                 ))}
               </div>
