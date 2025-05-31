@@ -8,6 +8,7 @@ import Landing from "@/pages/landing";
 import Home from "@/pages/home";
 import Garage from "@/pages/garage";
 import Convoys from "@/pages/convoys";
+import ConvoyDetail from "@/pages/convoy-detail";
 import NotFound from "@/pages/not-found";
 
 function Router() {

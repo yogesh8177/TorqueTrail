@@ -24,6 +24,9 @@ import {
   type PostComment,
   type InsertPostComment,
   type WeatherAlert,
+  type ConvoyUpdate,
+  type InsertConvoyUpdate,
+  convoyUpdates,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, sql, gte, lte, inArray, count } from "drizzle-orm";
@@ -406,6 +409,47 @@ export class DatabaseStorage implements IStorage {
       user: r.user,
       points: Number(r.totalLikes) + Number(r.postCount) * 10 + (r.totalConvoys || 0) * 50,
     }));
+  }
+
+  // Real-time convoy operations
+  async updateParticipantLocation(convoyId: number, userId: string, latitude: number, longitude: number): Promise<void> {
+    await db
+      .update(convoyParticipants)
+      .set({
+        currentLatitude: latitude.toString(),
+        currentLongitude: longitude.toString(),
+        lastLocationUpdate: new Date(),
+        isLocationSharing: true,
+      })
+      .where(and(eq(convoyParticipants.convoyId, convoyId), eq(convoyParticipants.userId, userId)));
+  }
+
+  async createConvoyUpdate(update: InsertConvoyUpdate): Promise<ConvoyUpdate> {
+    const [newUpdate] = await db
+      .insert(convoyUpdates)
+      .values(update)
+      .returning();
+    return newUpdate;
+  }
+
+  async getConvoyUpdates(convoyId: number, limit = 50): Promise<ConvoyUpdate[]> {
+    return await db
+      .select()
+      .from(convoyUpdates)
+      .where(eq(convoyUpdates.convoyId, convoyId))
+      .orderBy(desc(convoyUpdates.createdAt))
+      .limit(limit);
+  }
+
+  async getActiveConvoyParticipants(convoyId: number): Promise<ConvoyParticipant[]> {
+    return await db
+      .select()
+      .from(convoyParticipants)
+      .where(and(
+        eq(convoyParticipants.convoyId, convoyId),
+        eq(convoyParticipants.status, "joined"),
+        eq(convoyParticipants.isLocationSharing, true)
+      ));
   }
 }
 
