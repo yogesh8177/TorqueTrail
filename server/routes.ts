@@ -409,7 +409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI blog generation endpoint
-  app.post('/api/ai/generate-blog', isAuthenticated, upload.array('images', 5), async (req: any, res) => {
+  app.post('/api/ai/generate-blog', isAuthenticated, upload.array('media', 5), async (req: any, res) => {
     try {
       const { vehicleId, userContext } = req.body;
       

@@ -243,7 +243,7 @@ export default function Garage() {
       }
       
       data.images.forEach((image, index) => {
-        formData.append(`images`, image);
+        formData.append(`media`, image);
       });
 
       return await apiRequest("POST", "/api/posts", formData);
@@ -274,7 +274,7 @@ export default function Garage() {
       formData.append('userContext', data.userContext);
       
       data.images.forEach((image) => {
-        formData.append('images', image);
+        formData.append('media', image);
       });
 
       return await apiRequest("POST", "/api/ai/generate-blog", formData);
