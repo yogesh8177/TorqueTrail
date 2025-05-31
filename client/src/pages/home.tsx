@@ -19,6 +19,11 @@ export default function Home() {
     enabled: !!user,
   });
 
+  // Debug posts data
+  console.log("Posts data:", posts);
+  console.log("Posts length:", posts.length);
+  console.log("Posts loading:", postsLoading);
+
   // Fetch upcoming convoys
   const { data: upcomingConvoys = [] } = useQuery({
     queryKey: ["/api/convoys/upcoming?limit=5"],
@@ -159,7 +164,7 @@ export default function Home() {
                       </Card>
                     ))}
                   </div>
-                ) : (
+                ) : posts.length > 0 ? (
                   <div className="space-y-6">
                     {posts.map((post: any) => {
                       // Show AI blog posts only if they are actually AI generated
@@ -169,6 +174,13 @@ export default function Home() {
                       return <FeedPost key={post.id} post={post} />;
                     })}
                   </div>
+                ) : (
+                  <Card className="automotive-card text-center py-12">
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4">No posts yet</p>
+                      <p className="text-sm text-muted-foreground">Be the first to share something with the community!</p>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
 

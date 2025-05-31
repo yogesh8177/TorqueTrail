@@ -127,6 +127,13 @@ export default function FeedPost({ post }: FeedPostProps) {
                 className={`w-full object-cover cursor-pointer hover:opacity-90 transition-opacity ${
                   post.imageUrls!.length === 1 ? "h-64 sm:h-80" : "h-32 sm:h-40"
                 }`}
+                onError={(e) => {
+                  console.error("Image failed to load:", e);
+                  e.currentTarget.style.display = 'none';
+                }}
+                onLoad={() => {
+                  console.log("Image loaded successfully");
+                }}
               />
             ))}
           </div>
