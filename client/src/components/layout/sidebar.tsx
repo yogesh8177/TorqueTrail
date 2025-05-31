@@ -12,7 +12,6 @@ export default function Sidebar() {
     { name: "My Garage", href: "/garage", icon: Car, current: location === "/garage" },
     { name: "Convoys", href: "/convoys", icon: Users, current: location === "/convoys" },
     { name: "Routes", href: "/routes", icon: Route, current: location === "/routes" },
-    { name: "Leaderboards", href: "/leaderboards", icon: Trophy, current: location === "/leaderboards" },
   ];
 
   const handleLogout = () => {
