@@ -228,6 +228,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   convoyParticipations: many(convoyParticipants),
   postLikes: many(postLikes),
   postComments: many(postComments),
+  savedPosts: many(savedPosts),
   garageVotesGiven: many(garageVotes, { relationName: "voter" }),
   garageVotesReceived: many(garageVotes, { relationName: "garageOwner" }),
   followers: many(userFollows, { relationName: "following" }),
@@ -258,6 +259,7 @@ export const postsRelations = relations(posts, ({ one, many }) => ({
   }),
   likes: many(postLikes),
   comments: many(postComments),
+  savedBy: many(savedPosts),
 }));
 
 export const driveLogsRelations = relations(driveLogs, ({ one, many }) => ({
@@ -332,6 +334,17 @@ export const postCommentsRelations = relations(postComments, ({ one, many }) => 
     references: [postComments.id],
   }),
   replies: many(postComments, { relationName: "parentComment" }),
+}));
+
+export const savedPostsRelations = relations(savedPosts, ({ one }) => ({
+  post: one(posts, {
+    fields: [savedPosts.postId],
+    references: [posts.id],
+  }),
+  user: one(users, {
+    fields: [savedPosts.userId],
+    references: [users.id],
+  }),
 }));
 
 export const garageVotesRelations = relations(garageVotes, ({ one }) => ({

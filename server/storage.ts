@@ -7,6 +7,7 @@ import {
   convoyParticipants,
   postLikes,
   postComments,
+  savedPosts,
   garageVotes,
   userFollows,
   weatherAlerts,
@@ -203,6 +204,27 @@ export class DatabaseStorage implements IStorage {
       .from(postLikes)
       .where(and(eq(postLikes.postId, postId), eq(postLikes.userId, userId)));
     return !!like;
+  }
+
+  async savePost(postId: number, userId: string): Promise<void> {
+    await db.insert(savedPosts).values({
+      postId,
+      userId,
+    }).onConflictDoNothing();
+  }
+
+  async unsavePost(postId: number, userId: string): Promise<void> {
+    await db
+      .delete(savedPosts)
+      .where(and(eq(savedPosts.postId, postId), eq(savedPosts.userId, userId)));
+  }
+
+  async isPostSavedByUser(postId: number, userId: string): Promise<boolean> {
+    const [saved] = await db
+      .select()
+      .from(savedPosts)
+      .where(and(eq(savedPosts.postId, postId), eq(savedPosts.userId, userId)));
+    return !!saved;
   }
 
   // Drive log operations
