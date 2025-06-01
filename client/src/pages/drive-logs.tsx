@@ -812,9 +812,18 @@ export default function DriveLogs() {
                           className="mt-1"
                         />
                         {selectedImage && (
-                          <p className="text-sm text-muted-foreground mt-1">
-                            Selected: {selectedImage.name}
-                          </p>
+                          <div className="mt-2">
+                            <p className="text-sm text-muted-foreground mb-2">
+                              Selected: {selectedImage.name}
+                            </p>
+                            <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
+                              <img 
+                                src={URL.createObjectURL(selectedImage)} 
+                                alt="Preview"
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          </div>
                         )}
                       </div>
 
@@ -1241,10 +1250,31 @@ export default function DriveLogs() {
                   onChange={handleImageChange}
                   className="mt-1"
                 />
+                {driveLogToEdit?.titleImageUrl && !selectedImage && (
+                  <div className="mt-2">
+                    <p className="text-sm text-muted-foreground mb-2">Current image:</p>
+                    <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
+                      <img 
+                        src={driveLogToEdit.titleImageUrl} 
+                        alt="Current"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                )}
                 {selectedImage && (
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Selected: {selectedImage.name}
-                  </p>
+                  <div className="mt-2">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Selected: {selectedImage.name}
+                    </p>
+                    <div className="w-full h-32 bg-gray-100 rounded-lg overflow-hidden">
+                      <img 
+                        src={URL.createObjectURL(selectedImage)} 
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
 
