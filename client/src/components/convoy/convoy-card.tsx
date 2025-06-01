@@ -300,9 +300,11 @@ export default function ConvoyCard({ convoy, showJoinButton = true, variant = "d
         )}
         
         {!isUpcoming && (
-          <Button variant="outline" className="w-full">
-            View Results
-          </Button>
+          <Link href={`/convoy/${convoy.id}`}>
+            <Button variant="outline" className="w-full">
+              View Results
+            </Button>
+          </Link>
         )}
       </CardContent>
     </Card>

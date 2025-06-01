@@ -340,11 +340,6 @@ export default function DriveLogs() {
               <div>
                 <h1 className="text-3xl font-bold mb-2">Drive Logs</h1>
                 <p className="text-muted-foreground">Document your journeys and create memorable travel stories</p>
-                
-                {/* Test section outside dialog */}
-                <div className="w-full h-16 bg-red-500 border-4 border-blue-500 flex items-center justify-center my-4">
-                  <h2 className="text-2xl font-bold text-white">MAIN PAGE TEST - CAN YOU SEE THIS?</h2>
-                </div>
               </div>
               
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
@@ -507,9 +502,59 @@ export default function DriveLogs() {
                   )}
                 />
 
-                {/* Simple test without component */}
-                <div className="w-full h-20 bg-yellow-300 border-4 border-black flex items-center justify-center">
-                  <h2 className="text-2xl font-bold text-black">TEST SECTION - CAN YOU SEE THIS?</h2>
+                {/* Pitstop Management */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <Label className="text-base font-medium">Pitstops ({pitstops.length}/10)</Label>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (pitstops.length < 10) {
+                          setPitstops([...pitstops, {
+                            name: '',
+                            latitude: 0,
+                            longitude: 0,
+                            type: 'other' as const,
+                            orderIndex: pitstops.length
+                          }]);
+                        }
+                      }}
+                      disabled={pitstops.length >= 10}
+                    >
+                      Add Pitstop
+                    </Button>
+                  </div>
+                  
+                  {pitstops.length > 0 && (
+                    <div className="space-y-2">
+                      {pitstops.map((pitstop, index) => (
+                        <div key={index} className="flex items-center space-x-2 p-2 border rounded">
+                          <Input
+                            placeholder="Pitstop name"
+                            value={pitstop.name}
+                            onChange={(e) => {
+                              const updated = [...pitstops];
+                              updated[index] = { ...updated[index], name: e.target.value };
+                              setPitstops(updated);
+                            }}
+                            className="flex-1"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              setPitstops(pitstops.filter((_, i) => i !== index));
+                            }}
+                          >
+                            Remove
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
