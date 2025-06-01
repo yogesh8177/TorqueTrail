@@ -16,12 +16,13 @@ import { calculateReadTime } from "./readTime";
 import multer from "multer";
 import { z } from "zod";
 import path from "path";
-import fs from "fs";
+import fs from "fs/promises";
+import { existsSync, mkdirSync } from "fs";
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
+if (!existsSync(uploadsDir)) {
+  mkdirSync(uploadsDir, { recursive: true });
 }
 
 // Configure multer for file uploads
@@ -452,6 +453,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Handle image upload if present
       if (req.file) {
+        // Delete old image if it exists
+        if (existingDriveLog.titleImageUrl) {
+          const oldImagePath = path.join(__dirname, '..', existingDriveLog.titleImageUrl);
+          try {
+            await fs.unlink(oldImagePath);
+          } catch (error) {
+            console.log('Old image file not found or already deleted:', oldImagePath);
+          }
+        }
         updateData.titleImageUrl = `/uploads/${req.file.filename}`;
       }
 
