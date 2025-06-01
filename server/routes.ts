@@ -417,6 +417,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put('/api/drive-logs/:id', isAuthenticated, upload.single('titleImage'), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const driveLogId = parseInt(req.params.id);
+      
+      // Check if drive log exists and belongs to user
+      const existingDriveLog = await storage.getDriveLog(driveLogId);
+      if (!existingDriveLog || existingDriveLog.userId !== userId) {
+        return res.status(404).json({ message: 'Drive log not found' });
+      }
+
+      const updateData = { ...req.body };
+      
+      // Handle image upload if present
+      if (req.file) {
+        updateData.titleImageUrl = `/uploads/${req.file.filename}`;
+      }
+
+      // Remove undefined values
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined || updateData[key] === '') {
+          delete updateData[key];
+        }
+      });
+
+      const updatedDriveLog = await storage.updateDriveLog(driveLogId, updateData);
+      res.json(updatedDriveLog);
+    } catch (error) {
+      console.error('Error updating drive log:', error);
+      res.status(500).json({ message: 'Failed to update drive log' });
+    }
+  });
+
+  app.delete('/api/drive-logs/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const driveLogId = parseInt(req.params.id);
+      
+      // Check if drive log exists and belongs to user
+      const existingDriveLog = await storage.getDriveLog(driveLogId);
+      if (!existingDriveLog || existingDriveLog.userId !== userId) {
+        return res.status(404).json({ message: 'Drive log not found' });
+      }
+
+      await storage.deleteDriveLog(driveLogId);
+      res.json({ message: 'Drive log deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting drive log:', error);
+      res.status(500).json({ message: 'Failed to delete drive log' });
+    }
+  });
+
   // AI blog generation route
   app.post('/api/drive-logs/:id/generate-blog', isAuthenticated, async (req, res) => {
     try {

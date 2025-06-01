@@ -66,6 +66,8 @@ export interface IStorage {
   getUserDriveLogs(userId: string): Promise<DriveLog[]>;
   getDriveLog(id: number): Promise<DriveLog | undefined>;
   getDriveLogWithPitstops(id: number): Promise<(DriveLog & { pitstops: Pitstop[] }) | undefined>;
+  updateDriveLog(id: number, updates: Partial<InsertDriveLog>): Promise<DriveLog>;
+  deleteDriveLog(id: number): Promise<void>;
   
   // Pitstop operations
   createPitstop(pitstop: InsertPitstop): Promise<Pitstop>;
@@ -301,6 +303,22 @@ export class DatabaseStorage implements IStorage {
 
     const pitstopsData = await this.getPitstopsByDriveLog(id);
     return { ...driveLog, pitstops: pitstopsData };
+  }
+
+  async updateDriveLog(id: number, updates: Partial<InsertDriveLog>): Promise<DriveLog> {
+    const [updatedDriveLog] = await db
+      .update(driveLogs)
+      .set(updates)
+      .where(eq(driveLogs.id, id))
+      .returning();
+    return updatedDriveLog;
+  }
+
+  async deleteDriveLog(id: number): Promise<void> {
+    // First delete associated pitstops
+    await db.delete(pitstops).where(eq(pitstops.driveLogId, id));
+    // Then delete the drive log
+    await db.delete(driveLogs).where(eq(driveLogs.id, id));
   }
 
   // Pitstop operations
