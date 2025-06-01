@@ -5,12 +5,13 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, MapPin, Camera, Clock, Car, Route } from "lucide-react";
+import { Plus, MapPin, Camera, Clock, Car, Route, Edit, Trash2, MoreHorizontal } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertDriveLogSchema } from "@shared/schema";
@@ -51,6 +52,8 @@ export default function DriveLogs() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedDriveLog, setSelectedDriveLog] = useState<DriveLog | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [driveLogToEdit, setDriveLogToEdit] = useState<DriveLog | null>(null);
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
     queryKey: ['/api/drive-logs'],
@@ -137,14 +140,132 @@ export default function DriveLogs() {
     },
   });
 
+  const deleteDriveLogMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/drive-logs/${id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete drive log');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/stats'] });
+      toast({
+        title: "Success",
+        description: "Drive log deleted successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to delete drive log. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const editDriveLogMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: DriveLogFormData & { titleImage?: File } }) => {
+      const formData = new FormData();
+      
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === 'titleImage') return;
+        if (value instanceof Date) {
+          formData.append(key, value.toISOString());
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+
+      if (data.titleImage && data.titleImage instanceof File) {
+        formData.append('titleImage', data.titleImage);
+      }
+
+      const response = await fetch(`/api/drive-logs/${id}`, {
+        method: 'PUT',
+        body: formData,
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`${response.status}: ${errorText}`);
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/stats'] });
+      setShowEditDialog(false);
+      form.reset();
+      setSelectedImage(null);
+      setDriveLogToEdit(null);
+      toast({
+        title: "Success",
+        description: "Drive log updated successfully!",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to update drive log. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (data: DriveLogFormData) => {
     console.log('Form submitted with data:', data);
     console.log('Form errors:', form.formState.errors);
     console.log('Selected image:', selectedImage);
-    createDriveLogMutation.mutate({
-      ...data,
-      titleImage: selectedImage || undefined,
+    
+    if (driveLogToEdit) {
+      // Edit mode
+      editDriveLogMutation.mutate({
+        id: driveLogToEdit.id,
+        data: {
+          ...data,
+          titleImage: selectedImage || undefined,
+        }
+      });
+    } else {
+      // Create mode
+      createDriveLogMutation.mutate({
+        ...data,
+        titleImage: selectedImage || undefined,
+      });
+    }
+  };
+
+  const handleEdit = (driveLog: DriveLog) => {
+    setDriveLogToEdit(driveLog);
+    form.reset({
+      title: driveLog.title,
+      description: driveLog.description || "",
+      startLocation: driveLog.startLocation,
+      endLocation: driveLog.endLocation,
+      routeName: (driveLog as any).routeName || "",
+      distance: driveLog.distance.toString(),
+      startTime: new Date(driveLog.startTime),
+      endTime: undefined,
+      weatherConditions: (driveLog as any).weatherConditions || "",
+      roadConditions: (driveLog as any).roadConditions || "",
+      vehicleId: driveLog.vehicleId || undefined,
+      notes: (driveLog as any).notes || "",
     });
+    setSelectedImage(null);
+    setShowEditDialog(true);
+  };
+
+  const handleDelete = (driveLog: DriveLog) => {
+    if (window.confirm('Are you sure you want to delete this drive log? This action cannot be undone.')) {
+      deleteDriveLogMutation.mutate(driveLog.id);
+    }
   };
 
   const onFormError = (errors: any) => {
@@ -461,16 +582,36 @@ export default function DriveLogs() {
                   <Badge variant="secondary">
                     {formatDistanceToNow(new Date(driveLog.createdAt))} ago
                   </Badge>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => {
-                      setSelectedDriveLog(driveLog);
-                      setShowDetailDialog(true);
-                    }}
-                  >
-                    View Details
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" size="sm">
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedDriveLog(driveLog);
+                          setShowDetailDialog(true);
+                        }}
+                      >
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleEdit(driveLog)}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => handleDelete(driveLog)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </CardContent>
             </Card>
@@ -597,6 +738,206 @@ export default function DriveLogs() {
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Drive Log Dialog */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Drive Log</DialogTitle>
+          </DialogHeader>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="title"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Title *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Epic road trip to..." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="vehicleId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Vehicle</FormLabel>
+                      <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select vehicle" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {(vehicles as any)?.map((vehicle: Vehicle) => (
+                            <SelectItem key={vehicle.id} value={vehicle.id.toString()}>
+                              {vehicle.year} {vehicle.make} {vehicle.model}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="startLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Location *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="New York, NY" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="endLocation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Location *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Los Angeles, CA" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="distance"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Distance *</FormLabel>
+                      <FormControl>
+                        <Input placeholder="2,800 miles" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="routeName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Route Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Route 66, I-80, etc." {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="weatherConditions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Weather Conditions</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Sunny, Rainy, Cloudy" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="roadConditions"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Road Conditions</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Dry, Wet, Construction" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Describe your journey, highlights, challenges..."
+                        className="min-h-[100px]"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div>
+                <Label htmlFor="editTitleImage">Title Image</Label>
+                <Input
+                  id="editTitleImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="mt-1"
+                />
+                {selectedImage && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Selected: {selectedImage.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowEditDialog(false);
+                    setDriveLogToEdit(null);
+                    form.reset();
+                    setSelectedImage(null);
+                  }}
+                  className="w-full sm:w-auto"
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  disabled={editDriveLogMutation.isPending}
+                  className="w-full sm:w-auto"
+                >
+                  {editDriveLogMutation.isPending ? "Updating..." : "Update Drive Log"}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </div>
