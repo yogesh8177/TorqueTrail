@@ -435,7 +435,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.titleImageUrl = `/uploads/${req.file.filename}`;
       }
 
-      // Remove undefined values
+      // Convert string timestamps to Date objects
+      if (updateData.startTime) {
+        updateData.startTime = new Date(updateData.startTime);
+      }
+      if (updateData.endTime) {
+        updateData.endTime = new Date(updateData.endTime);
+      }
+
+      // Convert vehicleId to number if present
+      if (updateData.vehicleId) {
+        updateData.vehicleId = parseInt(updateData.vehicleId);
+      }
+
+      // Remove undefined values and empty strings
       Object.keys(updateData).forEach(key => {
         if (updateData[key] === undefined || updateData[key] === '') {
           delete updateData[key];
