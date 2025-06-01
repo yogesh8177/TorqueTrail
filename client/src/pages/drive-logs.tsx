@@ -502,18 +502,9 @@ export default function DriveLogs() {
                   )}
                 />
 
-                {/* Pitstop Management - Debug */}
-                <div className="border-2 border-red-500 p-4 rounded bg-red-50">
-                  <p className="text-red-600 font-bold mb-2">🔧 DEBUG: PITSTOP SECTION</p>
-                  <p className="text-sm">Pitstops array length: {pitstops.length}</p>
-                  <p className="text-sm">Component should load below:</p>
-                  <div className="mt-2 p-2 bg-white border">
-                    <GoogleMapsPitstopSelector
-                      pitstops={pitstops}
-                      onPitstopsChange={setPitstops}
-                      maxPitstops={10}
-                    />
-                  </div>
+                {/* Simple test without component */}
+                <div className="w-full h-20 bg-yellow-300 border-4 border-black flex items-center justify-center">
+                  <h2 className="text-2xl font-bold text-black">TEST SECTION - CAN YOU SEE THIS?</h2>
                 </div>
 
                 <div>
