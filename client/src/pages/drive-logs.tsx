@@ -540,18 +540,25 @@ export default function DriveLogs() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {driveLogs?.map((driveLog: DriveLog) => (
-            <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              {driveLog.titleImageUrl && (
-                <div className="h-48 bg-gray-100">
-                  <img 
-                    src={driveLog.titleImageUrl} 
-                    alt={driveLog.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-              
-              <CardContent className="p-4">
+            <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+              <div 
+                onClick={() => {
+                  setSelectedDriveLog(driveLog);
+                  setShowDetailDialog(true);
+                }}
+                className="h-full"
+              >
+                {driveLog.titleImageUrl && (
+                  <div className="h-48 bg-gray-100">
+                    <img 
+                      src={driveLog.titleImageUrl} 
+                      alt={driveLog.title}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                
+                <CardContent className="p-4">
                 <h3 className="font-semibold text-lg mb-2 line-clamp-2">{driveLog.title}</h3>
                 
                 {driveLog.description && (
@@ -591,7 +598,11 @@ export default function DriveLogs() {
                   </Badge>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
@@ -621,6 +632,7 @@ export default function DriveLogs() {
                   </DropdownMenu>
                 </div>
               </CardContent>
+              </div>
             </Card>
           ))}
             </div>
@@ -872,18 +884,25 @@ export default function DriveLogs() {
             ) : (
               <div className="grid grid-cols-1 gap-4">
                 {driveLogs?.map((driveLog: DriveLog) => (
-                  <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-                    {driveLog.titleImageUrl && (
-                      <div className="h-48 bg-gray-100">
-                        <img 
-                          src={driveLog.titleImageUrl} 
-                          alt={driveLog.title}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    )}
-                    
-                    <CardContent className="p-4">
+                  <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+                    <div 
+                      onClick={() => {
+                        setSelectedDriveLog(driveLog);
+                        setShowDetailDialog(true);
+                      }}
+                      className="h-full"
+                    >
+                      {driveLog.titleImageUrl && (
+                        <div className="h-48 bg-gray-100">
+                          <img 
+                            src={driveLog.titleImageUrl} 
+                            alt={driveLog.title}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      )}
+                      
+                      <CardContent className="p-4">
                       <h3 className="font-semibold text-lg mb-2 line-clamp-2">{driveLog.title}</h3>
                       
                       {driveLog.description && (
@@ -923,7 +942,11 @@ export default function DriveLogs() {
                         </Badge>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -953,6 +976,7 @@ export default function DriveLogs() {
                         </DropdownMenu>
                       </div>
                     </CardContent>
+                    </div>
                   </Card>
                 ))}
               </div>
