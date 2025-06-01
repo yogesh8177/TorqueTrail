@@ -340,6 +340,11 @@ export default function DriveLogs() {
               <div>
                 <h1 className="text-3xl font-bold mb-2">Drive Logs</h1>
                 <p className="text-muted-foreground">Document your journeys and create memorable travel stories</p>
+                
+                {/* Test section outside dialog */}
+                <div className="w-full h-16 bg-red-500 border-4 border-blue-500 flex items-center justify-center my-4">
+                  <h2 className="text-2xl font-bold text-white">MAIN PAGE TEST - CAN YOU SEE THIS?</h2>
+                </div>
               </div>
               
               <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
