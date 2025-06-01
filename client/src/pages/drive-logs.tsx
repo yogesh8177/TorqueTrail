@@ -16,10 +16,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { insertDriveLogSchema } from "@shared/schema";
+import { insertDriveLogSchema, type PitstopLocation } from "@shared/schema";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { formatDistanceToNow } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import GoogleMapsPitstopSelector from "@/components/GoogleMapsPitstopSelector";
+import PitstopImageUpload from "@/components/PitstopImageUpload";
 import type { z } from "zod";
 
 type DriveLogFormData = z.infer<typeof insertDriveLogSchema>;
@@ -56,6 +58,8 @@ export default function DriveLogs() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [driveLogToEdit, setDriveLogToEdit] = useState<DriveLog | null>(null);
+  const [pitstops, setPitstops] = useState<PitstopLocation[]>([]);
+  const [pitstopImages, setPitstopImages] = useState<{[key: number]: File[]}>({});
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
     queryKey: ['/api/drive-logs'],
