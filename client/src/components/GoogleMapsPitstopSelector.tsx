@@ -6,7 +6,8 @@ import { Label } from './ui/label';
 import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Badge } from './ui/badge';
-import { X, MapPin, Plus, Camera } from 'lucide-react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import { X, MapPin, Plus, Camera, ChevronDown, ChevronUp } from 'lucide-react';
 import { PitstopLocation } from '@shared/schema';
 
 interface GoogleMapsPitstopSelectorProps {
@@ -33,6 +34,7 @@ export default function GoogleMapsPitstopSelector({
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [selectedPitstop, setSelectedPitstop] = useState<PitstopLocation | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [isMapOpen, setIsMapOpen] = useState(false);
 
   useEffect(() => {
     const loadGoogleMaps = async () => {
@@ -209,24 +211,43 @@ export default function GoogleMapsPitstopSelector({
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Select Pitstops ({pitstops.length}/{maxPitstops})
-          </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Click on the map to add pitstops to your route. You can add up to {maxPitstops} pitstops.
-          </p>
-        </CardHeader>
-        <CardContent>
-          <div 
-            ref={mapRef} 
-            className="w-full h-64 bg-gray-200 rounded-lg"
-            style={{ minHeight: '300px' }}
-          />
-        </CardContent>
-      </Card>
+      <Collapsible open={isMapOpen} onOpenChange={setIsMapOpen}>
+        <Card>
+          <CollapsibleTrigger asChild>
+            <CardHeader className="cursor-pointer hover:bg-muted/50 transition-colors">
+              <CardTitle className="flex items-center justify-between text-sm sm:text-base">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 sm:h-5 sm:w-5" />
+                  Pitstops ({pitstops.length}/{maxPitstops})
+                </div>
+                {isMapOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+              </CardTitle>
+              <p className="text-xs sm:text-sm text-muted-foreground text-left">
+                {pitstops.length === 0 
+                  ? "Tap to add pitstops to your route"
+                  : `${pitstops.length} pitstop${pitstops.length === 1 ? '' : 's'} added`
+                }
+              </p>
+            </CardHeader>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <p className="text-xs text-muted-foreground mb-3">
+                Click on the map to add pitstops to your route. You can add up to {maxPitstops} pitstops.
+              </p>
+              <div 
+                ref={mapRef} 
+                className="w-full h-40 sm:h-64 bg-gray-200 rounded-lg"
+                style={{ minHeight: '200px' }}
+              />
+            </CardContent>
+          </CollapsibleContent>
+        </Card>
+      </Collapsible>
 
       {pitstops.length > 0 && (
         <Card>
