@@ -32,7 +32,7 @@ export default function ConvoyDetail() {
   const convoyId = params?.id ? parseInt(params.id) : 0;
 
   const { data: convoy, isLoading, error } = useQuery({
-    queryKey: ['/api/convoys', convoyId],
+    queryKey: [`/api/convoys/${convoyId}`],
     enabled: !!convoyId,
   });
 
@@ -42,26 +42,24 @@ export default function ConvoyDetail() {
   console.log('Query error:', error);
 
   const { data: participants, isLoading: participantsLoading } = useQuery({
-    queryKey: ['/api/convoys', convoyId, 'participants'],
+    queryKey: [`/api/convoys/${convoyId}/participants`],
     enabled: !!convoyId,
   });
 
   const { data: isParticipant, isLoading: participantStatusLoading } = useQuery({
-    queryKey: ['/api/convoys', convoyId, 'is-participant'],
+    queryKey: [`/api/convoys/${convoyId}/is-participant`],
     enabled: !!convoyId && !!user?.id,
   });
 
   const joinConvoyMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest(`/api/convoys/${convoyId}/join`, {
-        method: 'POST',
-      });
+      await apiRequest('POST', `/api/convoys/${convoyId}/join`);
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Joined convoy successfully!" });
-      queryClient.invalidateQueries({ queryKey: ['/api/convoys', convoyId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/convoys', convoyId, 'participants'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/convoys', convoyId, 'is-participant'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/convoys/${convoyId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/convoys/${convoyId}/participants`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/convoys/${convoyId}/is-participant`] });
     },
     onError: (error) => {
       toast({
@@ -74,15 +72,13 @@ export default function ConvoyDetail() {
 
   const leaveConvoyMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest(`/api/convoys/${convoyId}/leave`, {
-        method: 'POST',
-      });
+      await apiRequest('POST', `/api/convoys/${convoyId}/leave`);
     },
     onSuccess: () => {
       toast({ title: "Success", description: "Left convoy successfully!" });
-      queryClient.invalidateQueries({ queryKey: ['/api/convoys', convoyId] });
-      queryClient.invalidateQueries({ queryKey: ['/api/convoys', convoyId, 'participants'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/convoys', convoyId, 'is-participant'] });
+      queryClient.invalidateQueries({ queryKey: [`/api/convoys/${convoyId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/convoys/${convoyId}/participants`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/convoys/${convoyId}/is-participant`] });
     },
     onError: (error) => {
       toast({
