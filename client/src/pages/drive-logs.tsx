@@ -107,6 +107,18 @@ export default function DriveLogs() {
         formData.append('titleImage', data.titleImage);
       }
 
+      // Add pitstops data
+      if (pitstops.length > 0) {
+        formData.append('pitstops', JSON.stringify(pitstops));
+      }
+
+      // Add pitstop images
+      Object.entries(pitstopImages).forEach(([pitstopIndex, images]) => {
+        images.forEach((image, imageIndex) => {
+          formData.append(`pitstop_${pitstopIndex}_image_${imageIndex}`, image);
+        });
+      });
+
       console.log('FormData entries:', Array.from(formData.entries()));
 
       const response = await fetch('/api/drive-logs', {
@@ -132,6 +144,8 @@ export default function DriveLogs() {
       setShowCreateDialog(false);
       form.reset();
       setSelectedImage(null);
+      setPitstops([]);
+      setPitstopImages({});
       toast({
         title: "Success",
         description: "Drive log created successfully!",
@@ -486,6 +500,13 @@ export default function DriveLogs() {
                       <FormMessage />
                     </FormItem>
                   )}
+                />
+
+                {/* Pitstop Management */}
+                <GoogleMapsPitstopSelector
+                  pitstops={pitstops}
+                  onPitstopsChange={setPitstops}
+                  maxPitstops={10}
                 />
 
                 <div>
