@@ -49,6 +49,8 @@ export default function DriveLogs() {
   const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [selectedDriveLog, setSelectedDriveLog] = useState<DriveLog | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
     queryKey: ['/api/drive-logs'],
@@ -92,7 +94,7 @@ export default function DriveLogs() {
       });
 
       // Add image if selected
-      if (data.titleImage) {
+      if (data.titleImage && data.titleImage instanceof File) {
         formData.append('titleImage', data.titleImage);
       }
 
@@ -157,7 +159,10 @@ export default function DriveLogs() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      console.log('Image selected:', file);
       setSelectedImage(file);
+    } else {
+      setSelectedImage(null);
     }
   };
 
@@ -456,7 +461,14 @@ export default function DriveLogs() {
                   <Badge variant="secondary">
                     {formatDistanceToNow(new Date(driveLog.createdAt))} ago
                   </Badge>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setSelectedDriveLog(driveLog);
+                      setShowDetailDialog(true);
+                    }}
+                  >
                     View Details
                   </Button>
                 </div>
@@ -465,6 +477,128 @@ export default function DriveLogs() {
           ))}
         </div>
       )}
+
+      {/* Drive Log Detail Dialog */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedDriveLog?.title}</DialogTitle>
+          </DialogHeader>
+          {selectedDriveLog && (
+            <div className="space-y-6">
+              {/* Image */}
+              {selectedDriveLog.titleImageUrl && (
+                <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                  <img 
+                    src={selectedDriveLog.titleImageUrl} 
+                    alt={selectedDriveLog.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+
+              {/* Route Info */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">ROUTE</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 text-green-500 mr-2" />
+                      <span className="text-sm">{selectedDriveLog.startLocation}</span>
+                    </div>
+                    <div className="flex items-center">
+                      <MapPin className="h-4 w-4 text-red-500 mr-2" />
+                      <span className="text-sm">{selectedDriveLog.endLocation}</span>
+                    </div>
+                    {selectedDriveLog.routeName && (
+                      <div className="flex items-center">
+                        <Route className="h-4 w-4 text-blue-500 mr-2" />
+                        <span className="text-sm">{selectedDriveLog.routeName}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">TRIP DETAILS</h3>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Distance:</span>
+                      <span className="text-sm font-medium">{selectedDriveLog.distance}</span>
+                    </div>
+                    {selectedDriveLog.duration && (
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Duration:</span>
+                        <span className="text-sm font-medium">{selectedDriveLog.duration} min</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Pitstops:</span>
+                      <span className="text-sm font-medium">{selectedDriveLog.totalPitstops}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Started:</span>
+                      <span className="text-sm font-medium">
+                        {new Date(selectedDriveLog.startTime).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Conditions */}
+              {(selectedDriveLog.weatherConditions || selectedDriveLog.roadConditions) && (
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">CONDITIONS</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {selectedDriveLog.weatherConditions && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">Weather:</span>
+                        <p className="text-sm font-medium">{selectedDriveLog.weatherConditions}</p>
+                      </div>
+                    )}
+                    {selectedDriveLog.roadConditions && (
+                      <div>
+                        <span className="text-sm text-muted-foreground">Road:</span>
+                        <p className="text-sm font-medium">{selectedDriveLog.roadConditions}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Description */}
+              {selectedDriveLog.description && (
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">DESCRIPTION</h3>
+                  <p className="text-sm">{selectedDriveLog.description}</p>
+                </div>
+              )}
+
+              {/* Notes */}
+              {selectedDriveLog.notes && (
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">NOTES</h3>
+                  <p className="text-sm">{selectedDriveLog.notes}</p>
+                </div>
+              )}
+
+              {/* Vehicle Info */}
+              {selectedDriveLog.vehicleId && (
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground mb-2">VEHICLE</h3>
+                  <div className="flex items-center">
+                    <Car className="h-4 w-4 text-muted-foreground mr-2" />
+                    <span className="text-sm">
+                      {vehicles?.find((v: any) => v.id === selectedDriveLog.vehicleId)?.make} {vehicles?.find((v: any) => v.id === selectedDriveLog.vehicleId)?.model}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
