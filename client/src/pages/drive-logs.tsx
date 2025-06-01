@@ -503,11 +503,14 @@ export default function DriveLogs() {
                 />
 
                 {/* Pitstop Management */}
-                <GoogleMapsPitstopSelector
-                  pitstops={pitstops}
-                  onPitstopsChange={setPitstops}
-                  maxPitstops={10}
-                />
+                <div className="border-2 border-blue-500 p-4 rounded">
+                  <p className="text-blue-600 font-bold mb-2">PITSTOP SECTION SHOULD APPEAR HERE</p>
+                  <GoogleMapsPitstopSelector
+                    pitstops={pitstops}
+                    onPitstopsChange={setPitstops}
+                    maxPitstops={10}
+                  />
+                </div>
 
                 <div>
                   <Label htmlFor="titleImage">Title Image</Label>
