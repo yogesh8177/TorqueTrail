@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import Sidebar from "@/components/layout/sidebar";
+import MobileNav from "@/components/layout/mobile-nav";
 import { Plus, MapPin, Camera, Clock, Car, Route, Edit, Trash2, MoreHorizontal } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -310,20 +312,25 @@ export default function DriveLogs() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Drive Logs</h1>
-          <p className="text-muted-foreground">Document your journeys and create memorable travel stories</p>
-        </div>
-        
-        <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              New Drive Log
-            </Button>
-          </DialogTrigger>
+    <div className="min-h-screen bg-background">
+      {/* Desktop Layout */}
+      <div className="hidden lg:flex">
+        <Sidebar />
+        <main className="flex-1 lg:pl-64">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex justify-between items-center mb-8">
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Drive Logs</h1>
+                <p className="text-muted-foreground">Document your journeys and create memorable travel stories</p>
+              </div>
+              
+              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Drive Log
+                  </Button>
+                </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto sm:max-w-2xl w-[95vw] sm:w-full">
             <DialogHeader>
               <DialogTitle>Create New Drive Log</DialogTitle>
@@ -616,8 +623,335 @@ export default function DriveLogs() {
               </CardContent>
             </Card>
           ))}
-        </div>
-      )}
+            </div>
+          )}
+          </div>
+        </main>
+      </div>
+
+      {/* Mobile Layout */}
+      <div className="lg:hidden">
+        <main className="pb-16">
+          <div className="px-4 py-6">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h1 className="text-2xl font-bold mb-1">Drive Logs</h1>
+                <p className="text-muted-foreground text-sm">Document your journeys</p>
+              </div>
+              
+              <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+                <DialogTrigger asChild>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    New Log
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto sm:max-w-2xl w-[95vw] sm:w-full">
+                  <DialogHeader>
+                    <DialogTitle>Create New Drive Log</DialogTitle>
+                  </DialogHeader>
+                  
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="title"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Title *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Epic road trip to..." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="vehicleId"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Vehicle</FormLabel>
+                              <Select onValueChange={(value) => field.onChange(parseInt(value))} value={field.value?.toString()}>
+                                <FormControl>
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select vehicle" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {(vehicles as any)?.map((vehicle: Vehicle) => (
+                                    <SelectItem key={vehicle.id} value={vehicle.id.toString()}>
+                                      {vehicle.year} {vehicle.make} {vehicle.model}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="startLocation"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Start Location *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="New York, NY" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="endLocation"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>End Location *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Los Angeles, CA" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="distance"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Distance *</FormLabel>
+                              <FormControl>
+                                <Input placeholder="2,800 miles" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="routeName"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Route Name</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Route 66, I-80, etc." {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="weatherConditions"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Weather Conditions</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Sunny, Rainy, Cloudy" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="roadConditions"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Road Conditions</FormLabel>
+                              <FormControl>
+                                <Input placeholder="Dry, Wet, Construction" {...field} />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+
+                      <FormField
+                        control={form.control}
+                        name="description"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Description</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Describe your journey, highlights, challenges..."
+                                className="min-h-[100px]"
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div>
+                        <Label htmlFor="titleImage">Title Image</Label>
+                        <Input
+                          id="titleImage"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                          className="mt-1"
+                        />
+                        {selectedImage && (
+                          <p className="text-sm text-muted-foreground mt-1">
+                            Selected: {selectedImage.name}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                        <Button 
+                          type="button" 
+                          variant="outline" 
+                          onClick={() => {
+                            setShowCreateDialog(false);
+                            form.reset();
+                            setSelectedImage(null);
+                          }}
+                          className="w-full sm:w-auto"
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          type="submit" 
+                          disabled={createDriveLogMutation.isPending}
+                          className="w-full sm:w-auto"
+                        >
+                          {createDriveLogMutation.isPending ? "Creating..." : "Create Drive Log"}
+                        </Button>
+                      </div>
+                    </form>
+                  </Form>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {/* Mobile Drive Logs Grid */}
+            {driveLogs && driveLogs.length === 0 ? (
+              <Card className="text-center py-12">
+                <CardContent>
+                  <Route className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No drive logs yet</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Start documenting your journeys by creating your first drive log
+                  </p>
+                  <Button onClick={() => setShowCreateDialog(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Your First Drive Log
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid grid-cols-1 gap-4">
+                {driveLogs?.map((driveLog: DriveLog) => (
+                  <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                    {driveLog.titleImageUrl && (
+                      <div className="h-48 bg-gray-100">
+                        <img 
+                          src={driveLog.titleImageUrl} 
+                          alt={driveLog.title}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    )}
+                    
+                    <CardContent className="p-4">
+                      <h3 className="font-semibold text-lg mb-2 line-clamp-2">{driveLog.title}</h3>
+                      
+                      {driveLog.description && (
+                        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                          {driveLog.description}
+                        </p>
+                      )}
+
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 mr-1" />
+                          {driveLog.startLocation} → {driveLog.endLocation}
+                        </div>
+                        
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Car className="h-4 w-4 mr-1" />
+                            {driveLog.distance} miles
+                          </div>
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Camera className="h-4 w-4 mr-1" />
+                            {driveLog.totalPitstops} stops
+                          </div>
+                        </div>
+
+                        {driveLog.estimatedReadTime && (
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Clock className="h-4 w-4 mr-1" />
+                            {driveLog.estimatedReadTime} min read
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex items-center justify-between">
+                        <Badge variant="secondary">
+                          {formatDistanceToNow(new Date(driveLog.createdAt))} ago
+                        </Badge>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              onClick={() => {
+                                setSelectedDriveLog(driveLog);
+                                setShowDetailDialog(true);
+                              }}
+                            >
+                              View Details
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleEdit(driveLog)}
+                            >
+                              <Edit className="h-4 w-4 mr-2" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleDelete(driveLog)}
+                              className="text-destructive"
+                            >
+                              <Trash2 className="h-4 w-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+        </main>
+        <MobileNav />
+      </div>
 
       {/* Drive Log Detail Dialog */}
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
