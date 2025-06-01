@@ -67,6 +67,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Google Maps configuration endpoint
+  app.get('/api/google-maps-config', async (req, res) => {
+    try {
+      if (!process.env.GOOGLE_MAPS_API_KEY) {
+        return res.status(500).json({ message: "Google Maps API key not configured" });
+      }
+      
+      const scriptUrl = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`;
+      res.json({ scriptUrl });
+    } catch (error) {
+      console.error("Error getting Google Maps config:", error);
+      res.status(500).json({ message: "Failed to get Google Maps configuration" });
+    }
+  });
+
   app.get('/api/user/stats', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

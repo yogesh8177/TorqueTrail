@@ -35,22 +35,30 @@ export default function GoogleMapsPitstopSelector({
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    const loadGoogleMaps = () => {
+    const loadGoogleMaps = async () => {
       if (window.google) {
         initializeMap();
         return;
       }
 
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initMap`;
-      script.async = true;
-      script.defer = true;
+      try {
+        // Fetch the Google Maps script URL from the server
+        const response = await fetch('/api/google-maps-config');
+        const config = await response.json();
+        
+        const script = document.createElement('script');
+        script.src = config.scriptUrl;
+        script.async = true;
+        script.defer = true;
 
-      window.initMap = () => {
-        initializeMap();
-      };
+        window.initMap = () => {
+          initializeMap();
+        };
 
-      document.head.appendChild(script);
+        document.head.appendChild(script);
+      } catch (error) {
+        console.error('Failed to load Google Maps configuration:', error);
+      }
     };
 
     const initializeMap = () => {
