@@ -31,10 +31,15 @@ export default function ConvoyDetail() {
   const queryClient = useQueryClient();
   const convoyId = params?.id ? parseInt(params.id) : 0;
 
-  const { data: convoy, isLoading } = useQuery({
+  const { data: convoy, isLoading, error } = useQuery({
     queryKey: ['/api/convoys', convoyId],
     enabled: !!convoyId,
   });
+
+  // Debug logging
+  console.log('Convoy ID from URL:', convoyId);
+  console.log('Convoy data:', convoy);
+  console.log('Query error:', error);
 
   const { data: participants, isLoading: participantsLoading } = useQuery({
     queryKey: ['/api/convoys', convoyId, 'participants'],
