@@ -31,6 +31,10 @@ export interface AIBlogResponse {
 
 export async function generateDriveBlog(request: AIBlogRequest): Promise<AIBlogResponse> {
   try {
+    console.log('OpenAI generateDriveBlog called with:', { 
+      imageCount: request.images?.length || 0, 
+      driveData: request.driveData 
+    });
     const { images, driveData } = request;
     
     const systemPrompt = `You are an expert automotive writer who creates engaging travel blogs from driving experiences. 
