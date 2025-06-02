@@ -333,24 +333,26 @@ export default function Profile() {
               {Array.isArray(userConvoys) && userConvoys.length > 0 ? (
                 <div className="space-y-4">
                   {userConvoys.map((convoy: any) => (
-                    <div key={convoy.id} className="border rounded-lg p-4">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold">{convoy.title}</h3>
-                          <div className="flex items-center text-sm text-muted-foreground mt-1">
-                            <MapPin className="h-3 w-3 mr-1" />
-                            {convoy.startLocation}
+                    <Link key={convoy.id} href={`/convoys/${convoy.id}`}>
+                      <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h3 className="font-semibold">{convoy.title}</h3>
+                            <div className="flex items-center text-sm text-muted-foreground mt-1">
+                              <MapPin className="h-3 w-3 mr-1" />
+                              {convoy.startLocation}
+                            </div>
+                            <div className="flex items-center text-sm text-muted-foreground mt-1">
+                              <Calendar className="h-3 w-3 mr-1" />
+                              {formatDate(convoy.startDateTime)}
+                            </div>
                           </div>
-                          <div className="flex items-center text-sm text-muted-foreground mt-1">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {formatDate(convoy.startDateTime)}
-                          </div>
+                          <Badge variant={convoy.status === 'open' ? 'default' : 'outline'}>
+                            {convoy.status}
+                          </Badge>
                         </div>
-                        <Badge variant={convoy.status === 'upcoming' ? 'default' : 'outline'}>
-                          {convoy.status}
-                        </Badge>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               ) : (
