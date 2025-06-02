@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
 import FeedPost from "@/components/post/feed-post";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { 
   User, 
   Mail, 
@@ -26,6 +26,7 @@ import {
 
 export default function Profile() {
   const { user } = useAuth();
+  const [, setLocation] = useLocation();
 
   const { data: vehicles, isLoading: vehiclesLoading } = useQuery({
     queryKey: ['/api/vehicles'],
@@ -333,26 +334,28 @@ export default function Profile() {
               {Array.isArray(userConvoys) && userConvoys.length > 0 ? (
                 <div className="space-y-4">
                   {userConvoys.map((convoy: any) => (
-                    <Link key={convoy.id} href={`/convoy/${convoy.id}`}>
-                      <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <h3 className="font-semibold">{convoy.title}</h3>
-                            <div className="flex items-center text-sm text-muted-foreground mt-1">
-                              <MapPin className="h-3 w-3 mr-1" />
-                              {convoy.startLocation}
-                            </div>
-                            <div className="flex items-center text-sm text-muted-foreground mt-1">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              {formatDate(convoy.startDateTime)}
-                            </div>
+                    <div 
+                      key={convoy.id} 
+                      className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                      onClick={() => setLocation(`/convoy/${convoy.id}`)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold">{convoy.title}</h3>
+                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                            <MapPin className="h-3 w-3 mr-1" />
+                            {convoy.startLocation}
                           </div>
-                          <Badge variant={convoy.status === 'open' ? 'default' : 'outline'}>
-                            {convoy.status}
-                          </Badge>
+                          <div className="flex items-center text-sm text-muted-foreground mt-1">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            {formatDate(convoy.startDateTime)}
+                          </div>
                         </div>
+                        <Badge variant={convoy.status === 'open' ? 'default' : 'outline'}>
+                          {convoy.status}
+                        </Badge>
                       </div>
-                    </Link>
+                    </div>
                   ))}
                 </div>
               ) : (
