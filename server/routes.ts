@@ -736,7 +736,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Convert images to base64
       const base64Images = req.files && Array.isArray(req.files) 
-        ? req.files.map((file: any) => file.buffer.toString('base64'))
+        ? req.files.map((file: any) => {
+            if (!file || !file.buffer) {
+              console.error('Invalid file object:', file);
+              return null;
+            }
+            return file.buffer.toString('base64');
+          }).filter(img => img !== null)
         : [];
       
       // Generate AI blog using OpenAI
