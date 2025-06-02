@@ -503,12 +503,12 @@ export default function DriveLogs() {
                 />
 
                 {/* Pitstop Management */}
-                <div className="space-y-4">
+                <div className="space-y-4 border-2 border-dashed border-blue-300 p-4 rounded-lg bg-blue-50/50">
                   <div className="flex justify-between items-center">
-                    <Label className="text-base font-medium">Pitstops ({pitstops.length}/10)</Label>
+                    <Label className="text-lg font-bold text-blue-800">🗺️ Pitstops ({pitstops.length}/10)</Label>
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="default"
                       size="sm"
                       onClick={() => {
                         if (pitstops.length < 10) {
@@ -522,10 +522,12 @@ export default function DriveLogs() {
                         }
                       }}
                       disabled={pitstops.length >= 10}
+                      className="bg-blue-600 hover:bg-blue-700"
                     >
-                      Add Pitstop
+                      ➕ Add Pitstop
                     </Button>
                   </div>
+                  <p className="text-sm text-blue-700">Add places you stopped during your journey (restaurants, scenic spots, gas stations, etc.)</p>
                   
                   {pitstops.length > 0 && (
                     <div className="space-y-2">
