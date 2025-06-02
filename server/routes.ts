@@ -723,12 +723,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // AI blog generation endpoint
   app.post('/api/ai/generate-blog', isAuthenticated, upload.array('media', 5), async (req: any, res) => {
     try {
+      console.log('AI blog generation request:', { body: req.body, files: req.files?.length || 0 });
       const { vehicleId, userContext } = req.body;
       
-      if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
-        return res.status(400).json({ message: "At least one image is required for AI blog generation" });
-      }
-      
+      // Images are optional for AI blog generation
       if (!userContext || !userContext.trim()) {
         return res.status(400).json({ message: "User context is required for AI blog generation" });
       }
@@ -737,7 +735,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const vehicle = vehicleId ? await storage.getVehicle(parseInt(vehicleId)) : null;
       
       // Convert images to base64
-      const base64Images = req.files.map((file: any) => file.buffer.toString('base64'));
+      const base64Images = req.files && Array.isArray(req.files) 
+        ? req.files.map((file: any) => file.buffer.toString('base64'))
+        : [];
       
       // Generate AI blog using OpenAI
       const blogResult = await generateDriveBlog({
