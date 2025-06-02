@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
 import FeedPost from "@/components/post/feed-post";
+import { Link } from "wouter";
 import { 
   User, 
   Mail, 
@@ -221,9 +222,11 @@ export default function Profile() {
                 <div className="text-center py-8">
                   <Car className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No vehicles added yet</p>
-                  <Button variant="outline" className="mt-4">
-                    Add Your First Vehicle
-                  </Button>
+                  <Link href="/garage">
+                    <Button variant="outline" className="mt-4">
+                      Add Your First Vehicle
+                    </Button>
+                  </Link>
                 </div>
               )}
             </CardContent>
@@ -287,9 +290,11 @@ export default function Profile() {
                     <div className="text-center py-8">
                       <FileText className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">No posts created yet</p>
-                      <Button variant="outline" className="mt-4">
-                        Create Your First Post
-                      </Button>
+                      <Link href="/home">
+                        <Button variant="outline" className="mt-4">
+                          Create Your First Post
+                        </Button>
+                      </Link>
                     </div>
                   )}
                 </TabsContent>
@@ -304,9 +309,11 @@ export default function Profile() {
                     <div className="text-center py-8">
                       <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                       <p className="text-muted-foreground">No saved posts yet</p>
-                      <Button variant="outline" className="mt-4">
-                        Browse Posts to Save
-                      </Button>
+                      <Link href="/home">
+                        <Button variant="outline" className="mt-4">
+                          Browse Posts to Save
+                        </Button>
+                      </Link>
                     </div>
                   )}
                 </TabsContent>
@@ -350,9 +357,11 @@ export default function Profile() {
                 <div className="text-center py-8">
                   <Users className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                   <p className="text-muted-foreground">No convoys joined yet</p>
-                  <Button variant="outline" className="mt-4">
-                    Browse Convoys
-                  </Button>
+                  <Link href="/convoys">
+                    <Button variant="outline" className="mt-4">
+                      Browse Convoys
+                    </Button>
+                  </Link>
                 </div>
               )}
             </CardContent>
