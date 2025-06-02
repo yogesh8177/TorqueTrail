@@ -333,7 +333,7 @@ export default function Profile() {
               {Array.isArray(userConvoys) && userConvoys.length > 0 ? (
                 <div className="space-y-4">
                   {userConvoys.map((convoy: any) => (
-                    <Link key={convoy.id} href={`/convoys/${convoy.id}`}>
+                    <Link key={convoy.id} href={`/convoy/${convoy.id}`}>
                       <div className="border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer">
                         <div className="flex items-start justify-between">
                           <div>
