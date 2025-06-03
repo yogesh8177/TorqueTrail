@@ -775,12 +775,12 @@ export default function DriveLogs() {
           setEditTitleImage(null);
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4">
             <DialogTitle>Edit Drive Log</DialogTitle>
           </DialogHeader>
           
-          <div className="flex-1 overflow-y-auto pr-2">
+          <div className="flex-1 overflow-y-auto pr-2 space-y-1">
             {editingDriveLog && (
               <form
               onSubmit={(e) => {
@@ -809,6 +809,37 @@ export default function DriveLogs() {
                     defaultValue={editingDriveLog.title}
                     placeholder="Trip title"
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="edit-titleImage" className="text-sm font-medium">Title Image</Label>
+                  {editingDriveLog.titleImageUrl && !editTitleImage && (
+                    <div className="mt-2 mb-2">
+                      <p className="text-sm text-muted-foreground mb-2">Current image:</p>
+                      <img
+                        src={editingDriveLog.titleImageUrl}
+                        alt={editingDriveLog.title}
+                        className="w-full h-32 object-cover rounded border"
+                      />
+                    </div>
+                  )}
+                  <Input
+                    id="edit-titleImage"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setEditTitleImage(e.target.files?.[0] || null)}
+                    className="mt-1"
+                  />
+                  {editTitleImage && (
+                    <div className="mt-2">
+                      <p className="text-sm text-muted-foreground mb-2">New image preview:</p>
+                      <img
+                        src={URL.createObjectURL(editTitleImage)}
+                        alt="Preview"
+                        className="w-full h-32 object-cover rounded border"
+                      />
+                    </div>
+                  )}
                 </div>
                 
                 <div>
@@ -856,36 +887,7 @@ export default function DriveLogs() {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="edit-titleImage" className="text-sm font-medium">Title Image</Label>
-                {editingDriveLog.titleImageUrl && !editTitleImage && (
-                  <div className="mt-2 mb-2">
-                    <p className="text-sm text-muted-foreground mb-2">Current image:</p>
-                    <img
-                      src={editingDriveLog.titleImageUrl}
-                      alt={editingDriveLog.title}
-                      className="w-full h-32 object-cover rounded border"
-                    />
-                  </div>
-                )}
-                <Input
-                  id="edit-titleImage"
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => setEditTitleImage(e.target.files?.[0] || null)}
-                  className="mt-1"
-                />
-                {editTitleImage && (
-                  <div className="mt-2">
-                    <p className="text-sm text-muted-foreground mb-2">New image preview:</p>
-                    <img
-                      src={URL.createObjectURL(editTitleImage)}
-                      alt="Preview"
-                      className="w-full h-32 object-cover rounded border"
-                    />
-                  </div>
-                )}
-              </div>
+
 
               {/* Pitstops Edit Section */}
               <div className="space-y-4">
