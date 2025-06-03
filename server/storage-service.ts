@@ -3,16 +3,16 @@ import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import * as fs from 'fs';
 
-// Enhanced local storage with better persistence
+// Enhanced persistent storage using Replit workspace directory
 export const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      // Store in a persistent uploads directory
-      const uploadsDir = path.join(process.cwd(), 'uploads');
-      if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
+      // Store in Replit's persistent workspace directory
+      const persistentDir = path.join('/home/runner/workspace', 'persistent-uploads');
+      if (!fs.existsSync(persistentDir)) {
+        fs.mkdirSync(persistentDir, { recursive: true });
       }
-      cb(null, uploadsDir);
+      cb(null, persistentDir);
     },
     filename: (req, file, cb) => {
       // Generate UUID-based filename for better uniqueness
