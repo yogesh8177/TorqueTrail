@@ -431,9 +431,13 @@ export default function DriveLogs() {
 
   return (
     <div className="flex h-screen overflow-hidden">
-      <Sidebar />
+      <div className="hidden lg:block">
+        <Sidebar />
+      </div>
       <div className="flex-1 flex flex-col overflow-hidden">
-        <MobileNav />
+        <div className="lg:hidden">
+          <MobileNav />
+        </div>
         <div className="flex-1 overflow-auto">
           <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-8">
