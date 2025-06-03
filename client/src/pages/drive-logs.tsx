@@ -70,7 +70,7 @@ export default function DriveLogs() {
   });
 
   const form = useForm<DriveLogFormData>({
-    resolver: zodResolver(insertDriveLogSchema.omit({ userId: true })),
+    // Remove validation temporarily to test form rendering
     defaultValues: {
       title: "",
       description: "",
