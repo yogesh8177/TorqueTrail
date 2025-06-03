@@ -56,29 +56,10 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <!-- Additional meta tags -->
     <meta name="author" content="${authorName}">
     <link rel="canonical" href="${shareUrl}">
-    
-    <!-- Initialize React app -->
-    <script type="module" src="/src/main.tsx"></script>
-    
-    <style>
-      /* Minimal styles for social media crawlers only */
-      .seo-only {
-        position: absolute;
-        left: -9999px;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-      }
-      
-      /* React app container */
-      #root {
-        min-height: 100vh;
-      }
-    </style>
 </head>
 <body>
     <!-- Hidden content for social media crawlers only -->
-    <div class="seo-only">
+    <div style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;">
         <h1>${driveLog.title}</h1>
         <p>Shared by ${authorName}</p>
         <p>${description || `Drive from ${driveLog.startLocation} to ${driveLog.endLocation}`}</p>
@@ -90,6 +71,7 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     
     <!-- React app container -->
     <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>`;
   } catch (error) {
