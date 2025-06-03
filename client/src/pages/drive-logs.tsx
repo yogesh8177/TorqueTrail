@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,6 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car } from "lucide-react";
 import type { DriveLog, PitstopLocation } from "@shared/schema";
+import GoogleMapsPitstopSelector from "@/components/GoogleMapsPitstopSelector";
+import PitstopImageUpload from "@/components/PitstopImageUpload";
 
 interface DriveLogFormData {
   title: string;
@@ -29,8 +31,10 @@ export default function DriveLogs() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [pitstops, setPitstops] = useState<PitstopLocation[]>([]);
+  const [pitstopImages, setPitstopImages] = useState<{[key: number]: File[]}>({});
   const [selectedDriveLog, setSelectedDriveLog] = useState<DriveLog | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const autocompleteRefs = useRef<{[key: number]: any}>({});
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
     queryKey: ['/api/drive-logs'],
@@ -254,7 +258,7 @@ export default function DriveLogs() {
                           Remove
                         </Button>
                       </div>
-                      <div className="grid grid-cols-1 gap-2">
+                      <div className="grid grid-cols-1 gap-3">
                         <Input
                           placeholder="Pitstop name"
                           value={pitstop.name}
@@ -264,15 +268,23 @@ export default function DriveLogs() {
                             setPitstops(updated);
                           }}
                         />
-                        <Input
-                          placeholder="Address or location"
-                          value={pitstop.address || ''}
-                          onChange={(e) => {
-                            const updated = [...pitstops];
-                            updated[index] = { ...updated[index], address: e.target.value };
-                            setPitstops(updated);
-                          }}
-                        />
+                        
+                        {/* Google Places Autocomplete Input */}
+                        <div className="relative">
+                          <Input
+                            id={`pitstop-location-${index}`}
+                            placeholder="Search for location..."
+                            value={pitstop.address || ''}
+                            onChange={(e) => {
+                              const updated = [...pitstops];
+                              updated[index] = { ...updated[index], address: e.target.value };
+                              setPitstops(updated);
+                            }}
+                            className="pr-10"
+                          />
+                          <MapPin className="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                        </div>
+                        
                         <select
                           value={pitstop.type}
                           onChange={(e) => {
@@ -289,6 +301,73 @@ export default function DriveLogs() {
                           <option value="attraction">Attraction</option>
                           <option value="other">Other</option>
                         </select>
+
+                        <textarea
+                          placeholder="Description (optional)"
+                          value={pitstop.description || ''}
+                          onChange={(e) => {
+                            const updated = [...pitstops];
+                            updated[index] = { ...updated[index], description: e.target.value };
+                            setPitstops(updated);
+                          }}
+                          className="p-2 border rounded min-h-[60px] resize-none"
+                        />
+
+                        {/* Image Upload for Pitstop */}
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Images (up to 3)</Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length > 3) {
+                                toast({
+                                  title: "Too many images",
+                                  description: "You can upload up to 3 images per pitstop",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              setPitstopImages(prev => ({
+                                ...prev,
+                                [index]: files
+                              }));
+                            }}
+                            className="text-sm"
+                          />
+                          
+                          {/* Image Preview */}
+                          {pitstopImages[index] && pitstopImages[index].length > 0 && (
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                              {pitstopImages[index].map((file, imgIndex) => (
+                                <div key={imgIndex} className="relative">
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Pitstop ${index + 1} - Image ${imgIndex + 1}`}
+                                    className="w-full h-16 object-cover rounded border"
+                                  />
+                                  <Button
+                                    size="sm"
+                                    variant="destructive"
+                                    className="absolute -top-1 -right-1 h-5 w-5 p-0"
+                                    onClick={() => {
+                                      const updatedImages = [...pitstopImages[index]];
+                                      updatedImages.splice(imgIndex, 1);
+                                      setPitstopImages(prev => ({
+                                        ...prev,
+                                        [index]: updatedImages
+                                      }));
+                                    }}
+                                  >
+                                    ×
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
