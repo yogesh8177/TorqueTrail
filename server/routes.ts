@@ -434,23 +434,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle title image upload if present
       const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
       if (titleImageFile) {
-        try {
-          // Convert file buffer and upload using Replit persistent storage
-          const buffer = fs.readFileSync(titleImageFile.path);
-          const userId = req.user.claims.sub;
-          const imageUrl = await replitStorage.uploadImage(buffer, titleImageFile.originalname, titleImageFile.mimetype, userId);
-          driveLogData.titleImageUrl = imageUrl;
-          console.log('Drive log creation - Title image uploaded to persistent storage:', driveLogData.titleImageUrl);
-          
-          // Clean up temporary file
-          if (titleImageFile.path && fs.existsSync(titleImageFile.path)) {
-            fs.unlinkSync(titleImageFile.path);
-          }
-        } catch (error) {
-          console.error('Error uploading title image:', error);
-          // Fallback to original file path
-          driveLogData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
-        }
+        // Use persistent storage path directly since multer is configured for it
+        driveLogData.titleImageUrl = `/persistent-uploads/${titleImageFile.filename}`;
+        console.log('Drive log creation - Title image saved to persistent storage:', driveLogData.titleImageUrl);
       }
       
       // Create the drive log first
@@ -480,7 +466,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               file.fieldname.startsWith(`pitstop_${i}_image_`)
             ) || [];
             
-            const imageUrls = pitstopImageFiles.map((file: any) => `/uploads/${file.filename}`);
+            const imageUrls = pitstopImageFiles.map((file: any) => `/persistent-uploads/${file.filename}`);
             
             // Create pitstop
             await storage.createPitstop({
@@ -572,7 +558,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               file.fieldname.startsWith(`pitstop_${i}_image_`)
             ) || [];
             
-            const imageUrls = pitstopImageFiles.map((file: any) => `/uploads/${file.filename}`);
+            const imageUrls = pitstopImageFiles.map((file: any) => `/persistent-uploads/${file.filename}`);
             
             // Create pitstop
             await storage.createPitstop({
@@ -821,7 +807,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Generate URLs for uploaded images
-      const imageUrls = files.map(file => `/uploads/${file.filename}`);
+      const imageUrls = files.map(file => `/persistent-uploads/${file.filename}`);
       
       // Get existing images and append new ones
       const existingImages = pitstop.imageUrls || [];
