@@ -935,13 +935,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/public/drive-logs/:id', async (req, res) => {
     try {
       const driveLogId = parseInt(req.params.id);
-      const driveLog = await storage.getDriveLog(driveLogId);
+      const driveLog = await storage.getDriveLogWithPitstops(driveLogId);
       
-      if (!driveLog) {
-        return res.status(404).json({ message: 'Drive log not found' });
+      if (!driveLog || !driveLog.isPublic) {
+        return res.status(404).json({ message: 'Drive log not found or not public' });
       }
-      
-      // Remove sensitive user data for public view
+
+      // Get user information
+      const user = await storage.getUser(driveLog.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Get vehicle information if available
+      let vehicle = null;
+      if (driveLog.vehicleId) {
+        vehicle = await storage.getVehicle(driveLog.vehicleId);
+      }
+
+      // Format the response for public sharing with title image and complete data
       const publicDriveLog = {
         id: driveLog.id,
         title: driveLog.title,
@@ -949,16 +961,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
         startLocation: driveLog.startLocation,
         endLocation: driveLog.endLocation,
         distance: driveLog.distance,
-        duration: driveLog.duration,
+        route: driveLog.route,
         startTime: driveLog.startTime,
         endTime: driveLog.endTime,
-        vehicleId: driveLog.vehicleId,
-        createdAt: driveLog.createdAt,
-        routeName: driveLog.routeName,
-        route: driveLog.route,
-        weatherConditions: driveLog.weatherConditions,
-        notes: driveLog.notes,
         titleImageUrl: driveLog.titleImageUrl,
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        },
+        vehicle: vehicle ? {
+          make: vehicle.make,
+          model: vehicle.model,
+          year: vehicle.year,
+        } : null,
+        pitstops: driveLog.pitstops.map(pitstop => ({
+          id: pitstop.id,
+          name: pitstop.name,
+          description: pitstop.description,
+          latitude: pitstop.latitude,
+          longitude: pitstop.longitude,
+          address: pitstop.address,
+          type: pitstop.type,
+          imageUrls: pitstop.imageUrls,
+        })),
       };
       
       res.json(publicDriveLog);

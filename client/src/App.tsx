@@ -41,6 +41,7 @@ function Router() {
       <Route path="/convoy/:id" component={ConvoyDetail} />
       <Route path="/drive-logs" component={DriveLogs} />
       <Route path="/drive-logs/:id" component={DriveLogs} />
+      <Route path="/share/:id" component={PublicDriveLog} />
       <Route path="/profile" component={Profile} />
       <Route path="/profile/posts" component={UserPosts} />
       <Route path="/routes" component={Routes} />

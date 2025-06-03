@@ -113,6 +113,7 @@ export const driveLogs = pgTable("drive_logs", {
   totalPitstops: integer("total_pitstops").default(0),
   estimatedReadTime: integer("estimated_read_time"), // in minutes for AI blog
   notes: text("notes"),
+  isPublic: boolean("is_public").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
