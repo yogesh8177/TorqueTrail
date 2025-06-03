@@ -427,6 +427,25 @@ export const insertPostSchema = createInsertSchema(posts).omit({
 export const insertDriveLogSchema = createInsertSchema(driveLogs).omit({
   id: true,
   createdAt: true,
+}).extend({
+  distance: z.union([
+    z.string().transform((str) => {
+      if (!str || str === "" || str === "undefined") return "0";
+      // Handle numeric strings from FormData
+      const numStr = str.replace(/[^\d.]/g, '');
+      return numStr || "0";
+    }),
+    z.number().transform((num) => num.toString()),
+  ]),
+  vehicleId: z.union([
+    z.number(),
+    z.string().transform((str) => {
+      if (!str || str === "" || str === "null" || str === "undefined") return null;
+      const num = parseInt(str);
+      return isNaN(num) ? null : num;
+    }),
+    z.null(),
+  ]).optional().nullable(),
 });
 
 export const insertConvoySchema = createInsertSchema(convoys).omit({

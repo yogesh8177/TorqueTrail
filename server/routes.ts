@@ -410,32 +410,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('Drive log creation - Request body:', JSON.stringify(req.body, null, 2));
       console.log('Drive log creation - Files:', req.files?.map(f => ({ fieldname: f.fieldname, filename: f.filename })));
       
-      // Sanitize and validate data with proper type conversion for FormData
+      // Prepare data for schema validation - let schema handle type conversion
       const cleanData = {
-        title: req.body.title || '',
-        description: req.body.description || null,
-        startLocation: req.body.startLocation || '',
-        endLocation: req.body.endLocation || '',
+        ...req.body,
         userId,
-        distance: req.body.distance && req.body.distance !== '' && req.body.distance !== 'undefined' ? parseFloat(req.body.distance) : 0,
-        vehicleId: req.body.vehicleId && req.body.vehicleId !== '' && req.body.vehicleId !== 'null' && req.body.vehicleId !== 'undefined' ? parseInt(req.body.vehicleId) : null,
-        startTime: req.body.startTime && req.body.startTime !== '' ? new Date(req.body.startTime) : new Date(),
-        endTime: req.body.endTime && req.body.endTime !== '' && req.body.endTime !== 'undefined' ? new Date(req.body.endTime) : null,
+        startTime: req.body.startTime ? new Date(req.body.startTime) : new Date(),
+        endTime: req.body.endTime && req.body.endTime !== '' ? new Date(req.body.endTime) : null,
         isPublic: req.body.isPublic === 'true' || req.body.isPublic === true,
-        routeName: req.body.routeName || null,
-        notes: req.body.notes || null,
-        weatherConditions: req.body.weatherConditions || null,
-        duration: req.body.duration && req.body.duration !== '' && req.body.duration !== 'undefined' ? parseInt(req.body.duration) : null,
       };
-      
-      // Remove empty strings and convert to null for optional fields
-      Object.keys(cleanData).forEach(key => {
-        if (cleanData[key] === '' || cleanData[key] === 'undefined' || cleanData[key] === undefined) {
-          if (key !== 'title' && key !== 'startLocation' && key !== 'endLocation' && key !== 'userId') {
-            cleanData[key] = null;
-          }
-        }
-      });
       
       console.log('Drive log creation - Cleaned data:', JSON.stringify(cleanData, null, 2));
       
