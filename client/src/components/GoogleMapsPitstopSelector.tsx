@@ -34,19 +34,24 @@ export default function GoogleMapsPitstopSelector({
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [selectedPitstop, setSelectedPitstop] = useState<PitstopLocation | null>(null);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
-  const [isMapOpen, setIsMapOpen] = useState(false);
+  const [isMapOpen, setIsMapOpen] = useState(true);
 
   useEffect(() => {
+    console.log('GoogleMapsPitstopSelector: Component mounted');
     const loadGoogleMaps = async () => {
+      console.log('GoogleMapsPitstopSelector: Loading Google Maps...');
       if (window.google) {
+        console.log('GoogleMapsPitstopSelector: Google Maps already loaded, initializing...');
         initializeMap();
         return;
       }
 
       try {
         // Fetch the Google Maps script URL from the server
+        console.log('GoogleMapsPitstopSelector: Fetching Google Maps config...');
         const response = await fetch('/api/google-maps-config');
         const config = await response.json();
+        console.log('GoogleMapsPitstopSelector: Config received:', config);
         
         const script = document.createElement('script');
         script.src = config.scriptUrl;
@@ -54,12 +59,14 @@ export default function GoogleMapsPitstopSelector({
         script.defer = true;
 
         window.initMap = () => {
+          console.log('GoogleMapsPitstopSelector: initMap callback called');
           initializeMap();
         };
 
         document.head.appendChild(script);
+        console.log('GoogleMapsPitstopSelector: Script added to head');
       } catch (error) {
-        console.error('Failed to load Google Maps configuration:', error);
+        console.error('GoogleMapsPitstopSelector: Failed to load Google Maps configuration:', error);
       }
     };
 
