@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
+import { Helmet } from "react-helmet-async";
 import Sidebar from "@/components/layout/sidebar";
 import MobileNav from "@/components/layout/mobile-nav";
 import CreatePost from "@/components/post/create-post";
@@ -8,10 +9,12 @@ import AIBlogPost from "@/components/post/ai-blog-post";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Car, Users, Trophy, MapPin, AlertTriangle, Info, CloudRain } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Car, Users, Trophy, MapPin, AlertTriangle, Info, CloudRain, Share2, Copy } from "lucide-react";
 
 export default function Home() {
   const { user } = useAuth();
+  const { toast } = useToast();
 
   // Fetch feed posts
   const { data: posts = [], isLoading: postsLoading } = useQuery({
@@ -46,6 +49,29 @@ export default function Home() {
     staleTime: 30000, // Cache for 30 seconds
   });
 
+  const shareHomePage = async () => {
+    const shareUrl = window.location.origin;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'TorqueTrail - Join the Ultimate Automotive Community',
+          text: 'Discover an advanced automotive social platform for tracking drives, sharing experiences, and connecting with fellow car enthusiasts.',
+          url: shareUrl,
+        });
+      } catch (error) {
+        // User cancelled share
+      }
+    } else {
+      // Fallback to copying URL
+      navigator.clipboard.writeText(shareUrl);
+      toast({
+        title: "Link copied!",
+        description: "TorqueTrail homepage link has been copied to your clipboard.",
+      });
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -56,6 +82,31 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>TorqueTrail - Ultimate Automotive Social Platform</title>
+        <meta name="description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide." />
+        
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={window.location.origin} />
+        <meta property="og:title" content="TorqueTrail - Ultimate Automotive Social Platform" />
+        <meta property="og:description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide." />
+        <meta property="og:image" content={`${window.location.origin}/generated-icon.png`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        
+        {/* Twitter */}
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content={window.location.origin} />
+        <meta property="twitter:title" content="TorqueTrail - Ultimate Automotive Social Platform" />
+        <meta property="twitter:description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide." />
+        <meta property="twitter:image" content={`${window.location.origin}/generated-icon.png`} />
+        
+        {/* WhatsApp / Telegram */}
+        <meta property="og:site_name" content="TorqueTrail" />
+        <meta property="og:locale" content="en_US" />
+      </Helmet>
+      
       {/* Desktop Layout */}
       <div className="hidden lg:flex">
         <Sidebar />
@@ -76,6 +127,14 @@ export default function Home() {
                     </Button>
                     <Button variant="outline" className="border-secondary text-secondary hover:bg-secondary/10">
                       Organize Convoy
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      className="border-blue-500 text-blue-500 hover:bg-blue-500/10"
+                      onClick={shareHomePage}
+                    >
+                      <Share2 className="w-4 h-4 mr-2" />
+                      Share TorqueTrail
                     </Button>
                   </div>
                 </div>
