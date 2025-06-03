@@ -5,6 +5,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useParams } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import Sidebar from "@/components/layout/sidebar";
+import MobileNav from "@/components/layout/mobile-nav";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -428,9 +430,14 @@ export default function DriveLogs() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Drive Logs</h1>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar />
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <MobileNav />
+        <div className="flex-1 overflow-auto">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold">Drive Logs</h1>
         <Button onClick={() => {
           // Reset all form state when opening create dialog
           form.reset({
@@ -2157,6 +2164,9 @@ export default function DriveLogs() {
           </form>
         </DialogContent>
       </Dialog>
-    </div>
+            </div>
+          </div>
+        </div>
+      </div>
   );
 }
