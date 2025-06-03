@@ -430,13 +430,14 @@ export default function DriveLogs() {
 
       {/* Enhanced Drive Log Form Modal */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-2xl font-bold text-center mb-6">Create New Drive Log</DialogTitle>
           </DialogHeader>
-
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
-            <div className="space-y-4">
+          
+          <div className="flex-1 overflow-y-auto pr-2">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+              <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <Label htmlFor="title" className="text-sm font-medium">Trip Title</Label>
@@ -756,6 +757,7 @@ export default function DriveLogs() {
               </Button>
             </div>
           </form>
+          </div>
         </DialogContent>
       </Dialog>
 
