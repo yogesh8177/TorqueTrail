@@ -2,17 +2,41 @@ import { storage } from "./storage";
 
 export async function generatePublicShareHTML(driveLogId: number, baseUrl: string): Promise<string> {
   try {
+    console.log(`Attempting to fetch drive log with ID: ${driveLogId}`);
     const driveLog = await storage.getDriveLogWithPitstops(driveLogId);
     
-    if (!driveLog || !driveLog.isPublic) {
+    if (!driveLog) {
+      console.log(`Drive log ${driveLogId} not found in database`);
+      return generateNotFoundHTML();
+    }
+    
+    console.log(`Drive log ${driveLogId} found. isPublic: ${driveLog.isPublic}`);
+    
+    if (!driveLog.isPublic) {
+      console.log(`Drive log ${driveLogId} is not public`);
       return generateNotFoundHTML();
     }
 
     // Get user information
+    console.log(`Fetching user for drive log ${driveLogId}, userId: ${driveLog.userId}`);
     const user = await storage.getUser(driveLog.userId);
     if (!user) {
+      console.log(`User ${driveLog.userId} not found for drive log ${driveLogId}`);
       return generateNotFoundHTML();
     }
+    console.log(`User found: ${user.firstName} ${user.lastName}`);
+    
+    console.log(`Drive log ${driveLogId} validation successful, generating HTML`);
+    
+    // Log the actual structure of driveLog for debugging
+    console.log(`Drive log structure:`, {
+      id: driveLog.id,
+      title: driveLog.title,
+      isPublic: driveLog.isPublic,
+      userId: driveLog.userId,
+      hasTitle: !!driveLog.title,
+      hasTitleImage: !!driveLog.titleImageUrl
+    });
 
     // Get vehicle information if available
     let vehicle = null;
