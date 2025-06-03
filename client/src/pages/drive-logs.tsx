@@ -15,6 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car, MoreVertical, Share, Edit, Facebook, Twitter, Instagram, Copy, ChevronDown, ChevronUp, Camera, X } from "lucide-react";
 import type { DriveLog, PitstopLocation } from "@shared/schema";
 import GoogleMapsPitstopSelector from "@/components/GoogleMapsPitstopSelector";
@@ -30,6 +31,7 @@ interface DriveLogFormData {
   startTime: Date;
   endTime?: Date;
   vehicleId?: number;
+  isPublic?: boolean;
 }
 
 export default function DriveLogs() {
@@ -134,6 +136,7 @@ export default function DriveLogs() {
       startTime: new Date(),
       endTime: undefined,
       vehicleId: undefined,
+      isPublic: true,
     },
   });
 
@@ -596,6 +599,21 @@ export default function DriveLogs() {
                     />
                   </div>
                 )}
+              </div>
+
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                <div className="space-y-1">
+                  <Label htmlFor="isPublic" className="text-sm font-medium">Make this drive log public</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Public drive logs can be shared and viewed by anyone with the link
+                  </p>
+                </div>
+                <Switch
+                  id="isPublic"
+                  {...form.register("isPublic")}
+                  defaultChecked={form.watch("isPublic")}
+                  onCheckedChange={(checked) => form.setValue("isPublic", checked)}
+                />
               </div>
             </div>
 
@@ -1063,7 +1081,19 @@ export default function DriveLogs() {
                 />
               </div>
 
-
+              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
+                <div className="space-y-1">
+                  <Label htmlFor="edit-isPublic" className="text-sm font-medium">Make this drive log public</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Public drive logs can be shared and viewed by anyone with the link
+                  </p>
+                </div>
+                <Switch
+                  id="edit-isPublic"
+                  name="isPublic"
+                  defaultChecked={editingDriveLog.isPublic}
+                />
+              </div>
 
               {/* Pitstops Edit Section */}
               <div className="space-y-4">
