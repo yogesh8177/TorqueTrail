@@ -18,6 +18,7 @@ import { calculateReadTime } from "./readTime";
 import { generatePublicShareHTML } from "./public-share";
 import { getUploadMiddleware, getImageUrl, isS3Configured, deleteImage, imageExists } from "./storage-service";
 import { imageStorage } from "./image-manager";
+import { replitStorage } from "./replit-storage";
 import { z } from "zod";
 import { fileURLToPath } from "url";
 import * as fs from "fs";
@@ -37,6 +38,9 @@ const upload = getUploadMiddleware();
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded files statically
   app.use('/uploads', express.static(uploadsDir));
+  
+  // Serve persistent uploads from workspace directory
+  app.use('/persistent-uploads', express.static(path.join('/home/runner/workspace', 'persistent-uploads')));
   
   // Auth middleware
   await setupAuth(app);
@@ -418,13 +422,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
       if (titleImageFile) {
         try {
-          // Convert file buffer and upload using image manager
+          // Convert file buffer and upload using Replit persistent storage
           const buffer = fs.readFileSync(titleImageFile.path);
-          const imageUrl = await imageStorage.uploadImage(buffer, titleImageFile.originalname, titleImageFile.mimetype);
+          const userId = req.user.claims.sub;
+          const imageUrl = await replitStorage.uploadImage(buffer, titleImageFile.originalname, titleImageFile.mimetype, userId);
           driveLogData.titleImageUrl = imageUrl;
-          console.log('Drive log creation - Title image uploaded:', driveLogData.titleImageUrl);
+          console.log('Drive log creation - Title image uploaded to persistent storage:', driveLogData.titleImageUrl);
           
-          // Clean up temporary file if using local storage
+          // Clean up temporary file
           if (titleImageFile.path && fs.existsSync(titleImageFile.path)) {
             fs.unlinkSync(titleImageFile.path);
           }
@@ -981,12 +986,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Storage configuration endpoint
   app.get('/api/storage/config', (req, res) => {
-    const hasReplitStorage = !!(process.env.REPLIT_STORAGE_URL && process.env.REPLIT_STORAGE_TOKEN);
+    const hasReplitKV = !!process.env.REPLIT_DB_URL;
     res.json({
-      type: hasReplitStorage ? 'replit' : 'local',
-      configured: hasReplitStorage,
-      url: hasReplitStorage ? process.env.REPLIT_STORAGE_URL : undefined
+      type: 'replit-persistent',
+      configured: hasReplitKV,
+      kvDatabase: hasReplitKV,
+      persistentDirectory: '/home/runner/workspace/persistent-uploads'
     });
+  });
+
+  // Migration endpoint to move images to persistent storage
+  app.post('/api/storage/migrate', isAuthenticated, async (req: any, res) => {
+    try {
+      await replitStorage.migrateFromUploads();
+      res.json({ success: true, message: 'Images migrated to persistent storage' });
+    } catch (error) {
+      console.error('Migration failed:', error);
+      res.status(500).json({ success: false, message: 'Migration failed' });
+    }
   });
 
   // Server-side rendered public sharing page for social media crawlers
