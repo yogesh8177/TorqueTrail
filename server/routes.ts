@@ -654,6 +654,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create pitstop
+  app.post('/api/pitstops', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Verify the drive log belongs to the user
+      const driveLog = await storage.getDriveLog(req.body.driveLogId);
+      if (!driveLog || driveLog.userId !== userId) {
+        return res.status(404).json({ message: 'Drive log not found' });
+      }
+
+      const pitstop = await storage.createPitstop(req.body);
+      res.json(pitstop);
+    } catch (error) {
+      console.error('Error creating pitstop:', error);
+      res.status(500).json({ message: 'Failed to create pitstop' });
+    }
+  });
+
+  // Update pitstop
+  app.patch('/api/pitstops/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const pitstopId = parseInt(req.params.id);
+      
+      // Verify the pitstop belongs to the user through the drive log
+      const pitstop = await storage.getPitstop(pitstopId);
+      if (!pitstop) {
+        return res.status(404).json({ message: 'Pitstop not found' });
+      }
+      
+      const driveLog = await storage.getDriveLog(pitstop.driveLogId);
+      if (!driveLog || driveLog.userId !== userId) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
+      const updatedPitstop = await storage.updatePitstop(pitstopId, req.body);
+      res.json(updatedPitstop);
+    } catch (error) {
+      console.error('Error updating pitstop:', error);
+      res.status(500).json({ message: 'Failed to update pitstop' });
+    }
+  });
+
+  // Upload images for pitstop
+  app.post('/api/pitstops/:id/images', isAuthenticated, upload.array('images', 3), async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const pitstopId = parseInt(req.params.id);
+      
+      // Verify the pitstop belongs to the user through the drive log
+      const pitstop = await storage.getPitstop(pitstopId);
+      if (!pitstop) {
+        return res.status(404).json({ message: 'Pitstop not found' });
+      }
+      
+      const driveLog = await storage.getDriveLog(pitstop.driveLogId);
+      if (!driveLog || driveLog.userId !== userId) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
+      const files = req.files as Express.Multer.File[];
+      if (!files || files.length === 0) {
+        return res.status(400).json({ message: 'No images uploaded' });
+      }
+
+      // Generate URLs for uploaded images
+      const imageUrls = files.map(file => `/uploads/${file.filename}`);
+      
+      // Get existing images and append new ones
+      const existingImages = pitstop.imageUrls || [];
+      const totalImages = [...existingImages, ...imageUrls];
+      
+      // Limit to 3 images total
+      if (totalImages.length > 3) {
+        return res.status(400).json({ message: 'Maximum 3 images per pitstop' });
+      }
+
+      // Update pitstop with new image URLs
+      const updatedPitstop = await storage.updatePitstop(pitstopId, {
+        imageUrls: totalImages
+      });
+
+      res.json({ 
+        message: 'Images uploaded successfully',
+        imageUrls: imageUrls,
+        pitstop: updatedPitstop
+      });
+    } catch (error) {
+      console.error('Error uploading pitstop images:', error);
+      res.status(500).json({ message: 'Failed to upload images' });
+    }
+  });
+
+  // Delete pitstop
+  app.delete('/api/pitstops/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const pitstopId = parseInt(req.params.id);
+      
+      // Verify the pitstop belongs to the user through the drive log
+      const pitstop = await storage.getPitstop(pitstopId);
+      if (!pitstop) {
+        return res.status(404).json({ message: 'Pitstop not found' });
+      }
+      
+      const driveLog = await storage.getDriveLog(pitstop.driveLogId);
+      if (!driveLog || driveLog.userId !== userId) {
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+
+      await storage.deletePitstop(pitstopId);
+      res.json({ message: 'Pitstop deleted successfully' });
+    } catch (error) {
+      console.error('Error deleting pitstop:', error);
+      res.status(500).json({ message: 'Failed to delete pitstop' });
+    }
+  });
+
   // AI blog generation route
   app.post('/api/drive-logs/:id/generate-blog', isAuthenticated, async (req, res) => {
     try {
