@@ -1082,31 +1082,7 @@ export default function DriveLogs() {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-                <div className="space-y-1">
-                  <Label htmlFor="edit-isPublic" className="text-sm font-medium">Make this drive log public</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Public drive logs can be shared and viewed by anyone with the link
-                  </p>
-                </div>
-                <Switch
-                  id="edit-isPublic-switch"
-                  name="isPublic"
-                  defaultChecked={Boolean(editingDriveLog.isPublic)}
-                  onCheckedChange={(checked) => {
-                    const hiddenInput = document.getElementById('edit-isPublic-hidden') as HTMLInputElement;
-                    if (hiddenInput) {
-                      hiddenInput.value = checked ? 'true' : 'false';
-                    }
-                  }}
-                />
-                <input
-                  type="hidden"
-                  id="edit-isPublic-hidden"
-                  name="isPublic"
-                  defaultValue={Boolean(editingDriveLog.isPublic) ? "true" : "false"}
-                />
-              </div>
+
 
               {/* Pitstops Edit Section */}
               <div className="space-y-4">
@@ -1957,6 +1933,33 @@ export default function DriveLogs() {
                       </span>
                     </div>
                   </div>
+                </div>
+
+                {/* Public/Private Toggle - positioned under title image */}
+                <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/30">
+                  <div className="space-y-1">
+                    <Label className="text-base font-medium">Visibility</Label>
+                    <p className="text-xs text-muted-foreground">
+                      Public drive logs can be shared and viewed by anyone with the link
+                    </p>
+                  </div>
+                  <Switch
+                    id="edit-isPublic-switch"
+                    name="isPublic"
+                    defaultChecked={Boolean(editingDriveLog?.isPublic)}
+                    onCheckedChange={(checked) => {
+                      const hiddenInput = document.getElementById('edit-isPublic-hidden') as HTMLInputElement;
+                      if (hiddenInput) {
+                        hiddenInput.value = checked ? 'true' : 'false';
+                      }
+                    }}
+                  />
+                  <input
+                    type="hidden"
+                    id="edit-isPublic-hidden"
+                    name="isPublic"
+                    defaultValue={Boolean(editingDriveLog?.isPublic) ? "true" : "false"}
+                  />
                 </div>
               </div>
 
