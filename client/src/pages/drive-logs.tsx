@@ -470,7 +470,7 @@ export default function DriveLogs() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="distance" className="text-sm font-medium">Distance (miles)</Label>
+                  <Label htmlFor="distance" className="text-sm font-medium">Distance (km)</Label>
                   <Input
                     id="distance"
                     {...form.register("distance")}
@@ -945,7 +945,7 @@ export default function DriveLogs() {
                 )}
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-4">
-                    <span>{driveLog.distance} miles</span>
+                    <span>{driveLog.distance} km</span>
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
                       {getPitstopCount(driveLog.id)} pitstops
@@ -994,7 +994,7 @@ export default function DriveLogs() {
                     <Route className="h-5 w-5 text-muted-foreground" />
                     <div>
                       <p className="font-medium">Distance</p>
-                      <p className="text-sm text-muted-foreground">{selectedDriveLog.distance} miles</p>
+                      <p className="text-sm text-muted-foreground">{selectedDriveLog.distance} km</p>
                     </div>
                   </div>
 
@@ -1225,7 +1225,7 @@ export default function DriveLogs() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="edit-distance" className="text-base font-medium">Distance (miles) *</Label>
+                  <Label htmlFor="edit-distance" className="text-base font-medium">Distance (km) *</Label>
                   <Input
                     id="edit-distance"
                     type="number"

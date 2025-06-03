@@ -264,7 +264,7 @@ export default function PublicDriveLog() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">{driveLog.distance}</div>
-                <div className="text-sm text-muted-foreground">Miles</div>
+                <div className="text-sm text-muted-foreground">Kilometers</div>
               </div>
               {driveLog.duration && (
                 <div className="text-center">
