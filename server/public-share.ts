@@ -78,6 +78,19 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
         ${vehicle ? `<p>Vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model}</p>` : ''}
     </div>
     
+    <!-- Client-side redirect for regular users -->
+    <script>
+      // Check if this is a social media crawler
+      const userAgent = navigator.userAgent || '';
+      const isCrawler = /facebookexternalhit|twitterbot|whatsapp|linkedinbot|slackbot|telegrambot/i.test(userAgent);
+      
+      // If not a crawler, redirect to the React app
+      if (!isCrawler && window.location.pathname.startsWith('/share/')) {
+        const driveLogId = window.location.pathname.split('/share/')[1];
+        window.location.replace('/public-drive-log/' + driveLogId);
+      }
+    </script>
+    
     <!-- React app container -->
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
