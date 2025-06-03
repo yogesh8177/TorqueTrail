@@ -481,20 +481,30 @@ export default function DriveLogs() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="vehicleId" className="text-sm font-medium">Vehicle</Label>
-                  <select 
-                    id="vehicleId"
-                    {...form.register("vehicleId")} 
-                    className="mt-1 w-full p-2 border border-input rounded-md bg-background"
-                  >
-                    <option value="">Select your vehicle</option>
-                    {Array.isArray(vehicles) && vehicles.map((vehicle: any) => (
-                      <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.make} {vehicle.model} ({vehicle.year})
-                      </option>
-                    ))}
-                  </select>
+                  <Label htmlFor="route" className="text-sm font-medium">Route</Label>
+                  <Input
+                    id="route"
+                    {...form.register("route")}
+                    placeholder="e.g., Highway 1, Route 66"
+                    className="mt-1"
+                  />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="vehicleId" className="text-sm font-medium">Vehicle</Label>
+                <select 
+                  id="vehicleId"
+                  {...form.register("vehicleId")} 
+                  className="mt-1 w-full p-2 border border-input rounded-md bg-background"
+                >
+                  <option value="">Select your vehicle</option>
+                  {Array.isArray(vehicles) && vehicles.map((vehicle: any) => (
+                    <option key={vehicle.id} value={vehicle.id}>
+                      {vehicle.make} {vehicle.model} ({vehicle.year})
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div>
@@ -1238,20 +1248,30 @@ export default function DriveLogs() {
                 </div>
 
                 <div>
-                  <Label htmlFor="edit-vehicle" className="text-base font-medium">Vehicle</Label>
-                  <select
-                    id="edit-vehicle"
-                    {...form.register("vehicleId")}
-                    className="mt-1 w-full p-2 border border-input rounded-md bg-background"
-                  >
-                    <option value="">Select a vehicle</option>
-                    {vehicles?.map((vehicle: any) => (
-                      <option key={vehicle.id} value={vehicle.id}>
-                        {vehicle.year} {vehicle.make} {vehicle.model}
-                      </option>
-                    ))}
-                  </select>
+                  <Label htmlFor="edit-route" className="text-base font-medium">Route</Label>
+                  <Input
+                    id="edit-route"
+                    placeholder="e.g., Highway 1, Route 66"
+                    {...form.register("route")}
+                    className="mt-1"
+                  />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-vehicle" className="text-base font-medium">Vehicle</Label>
+                <select
+                  id="edit-vehicle"
+                  {...form.register("vehicleId")}
+                  className="mt-1 w-full p-2 border border-input rounded-md bg-background"
+                >
+                  <option value="">Select a vehicle</option>
+                  {vehicles?.map((vehicle: any) => (
+                    <option key={vehicle.id} value={vehicle.id}>
+                      {vehicle.year} {vehicle.make} {vehicle.model}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

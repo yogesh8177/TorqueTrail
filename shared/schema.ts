@@ -98,6 +98,7 @@ export const driveLogs = pgTable("drive_logs", {
   endLatitude: decimal("end_latitude", { precision: 10, scale: 8 }),
   endLongitude: decimal("end_longitude", { precision: 11, scale: 8 }),
   routeName: varchar("route_name"),
+  route: varchar("route"),
   distance: decimal("distance", { precision: 8, scale: 2 }).notNull(),
   duration: integer("duration"), // in minutes
   startTime: timestamp("start_time").notNull(),
