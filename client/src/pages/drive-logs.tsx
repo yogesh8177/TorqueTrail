@@ -75,10 +75,7 @@ export default function DriveLogs() {
 
       formData.append('pitstops', JSON.stringify(pitstops));
 
-      return await apiRequest('/api/drive-logs', {
-        method: 'POST',
-        body: formData,
-      });
+      return await apiRequest('POST', '/api/drive-logs', formData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
