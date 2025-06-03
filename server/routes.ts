@@ -18,6 +18,10 @@ import { z } from "zod";
 import path from "path";
 import fs from "fs/promises";
 import { existsSync, mkdirSync } from "fs";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Ensure uploads directory exists
 const uploadsDir = path.join(process.cwd(), 'uploads');
