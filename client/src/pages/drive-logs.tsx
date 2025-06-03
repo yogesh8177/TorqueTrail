@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
+import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car, MoreVertical, Share, Edit, Facebook, Twitter, Instagram, Copy } from "lucide-react";
 import type { DriveLog, PitstopLocation } from "@shared/schema";
 import GoogleMapsPitstopSelector from "@/components/GoogleMapsPitstopSelector";
 import PitstopImageUpload from "@/components/PitstopImageUpload";
@@ -34,6 +36,8 @@ export default function DriveLogs() {
   const [pitstopImages, setPitstopImages] = useState<{[key: number]: File[]}>({});
   const [selectedDriveLog, setSelectedDriveLog] = useState<DriveLog | null>(null);
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingDriveLog, setEditingDriveLog] = useState<DriveLog | null>(null);
   const autocompleteRefs = useRef<{[key: number]: any}>({});
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
@@ -208,9 +212,75 @@ export default function DriveLogs() {
     createDriveLogMutation.mutate(data);
   };
 
+  const updateDriveLogMutation = useMutation({
+    mutationFn: async (data: { id: number; updates: Partial<DriveLogFormData> }) => {
+      const response = await fetch(`/api/drive-logs/${data.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data.updates),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
+      toast({
+        title: "Success",
+        description: "Drive log updated successfully!",
+      });
+      setShowEditDialog(false);
+      setEditingDriveLog(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update drive log",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleDelete = (driveLog: DriveLog) => {
     if (confirm(`Are you sure you want to delete "${driveLog.title}"?`)) {
       deleteDriveLogMutation.mutate(driveLog.id);
+    }
+  };
+
+  const handleEdit = (driveLog: DriveLog) => {
+    setEditingDriveLog(driveLog);
+    setShowEditDialog(true);
+  };
+
+  const handleShare = (driveLog: DriveLog, platform: string) => {
+    const url = `${window.location.origin}/drive-logs/${driveLog.id}`;
+    const text = `Check out my drive log: ${driveLog.title} - ${driveLog.startLocation} to ${driveLog.endLocation}`;
+    
+    switch (platform) {
+      case 'facebook':
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+        break;
+      case 'instagram':
+        // Instagram doesn't support direct URL sharing, copy to clipboard instead
+        navigator.clipboard.writeText(`${text} ${url}`);
+        toast({
+          title: "Copied to clipboard",
+          description: "Share text copied! You can paste it in Instagram.",
+        });
+        break;
+      case 'copy':
+        navigator.clipboard.writeText(url);
+        toast({
+          title: "Link copied",
+          description: "Drive log link copied to clipboard!",
+        });
+        break;
     }
   };
 
@@ -228,66 +298,260 @@ export default function DriveLogs() {
         </Button>
       </div>
 
-      {/* Working Pitstop Form Modal */}
-      {showCreateDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Create New Drive Log</h2>
-              <Button 
-                variant="outline" 
+      {/* Enhanced Drive Log Form Modal */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-center mb-6">Create New Drive Log</DialogTitle>
+          </DialogHeader>
+
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+            {/* Basic Drive Information */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <Label htmlFor="title" className="text-sm font-medium">Trip Title</Label>
+                  <Input
+                    id="title"
+                    {...form.register("title")}
+                    placeholder="Enter your trip title"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="description" className="text-sm font-medium">Description</Label>
+                  <Textarea
+                    id="description"
+                    {...form.register("description")}
+                    placeholder="Describe your drive experience..."
+                    className="mt-1 min-h-[100px]"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startLocation" className="text-sm font-medium">Start Location</Label>
+                  <Input
+                    id="startLocation"
+                    {...form.register("startLocation")}
+                    placeholder="Where did you start?"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="endLocation" className="text-sm font-medium">End Location</Label>
+                  <Input
+                    id="endLocation"
+                    {...form.register("endLocation")}
+                    placeholder="Where did you end?"
+                    className="mt-1"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="distance" className="text-sm font-medium">Distance (miles)</Label>
+                  <Input
+                    id="distance"
+                    {...form.register("distance")}
+                    placeholder="0"
+                    type="number"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="vehicleId" className="text-sm font-medium">Vehicle</Label>
+                  <select 
+                    id="vehicleId"
+                    {...form.register("vehicleId")} 
+                    className="mt-1 w-full p-2 border border-input rounded-md bg-background"
+                  >
+                    <option value="">Select your vehicle</option>
+                    {Array.isArray(vehicles) && vehicles.map((vehicle: any) => (
+                      <option key={vehicle.id} value={vehicle.id}>
+                        {vehicle.make} {vehicle.model} ({vehicle.year})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="titleImage" className="text-sm font-medium">Title Image</Label>
+                <Input
+                  id="titleImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setSelectedImage(e.target.files?.[0] || null)}
+                  className="mt-1"
+                />
+                {selectedImage && (
+                  <div className="mt-2">
+                    <img
+                      src={URL.createObjectURL(selectedImage)}
+                      alt="Preview"
+                      className="w-full h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
+              </div>
+            {/* Enhanced Pitstops Section */}
+            <div className="space-y-4">
+              <Label className="text-base font-medium">Pitstops (Optional)</Label>
+              <GoogleMapsPitstopSelector 
+                pitstops={pitstops}
+                onPitstopsChange={setPitstops}
+                maxPitstops={10}
+              />
+              
+              {/* Enhanced Pitstop Image Upload for each pitstop */}
+              {pitstops.map((pitstop, index) => (
+                <div key={index} className="border rounded-lg p-4 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-medium">{pitstop.name || `Pitstop ${index + 1}`}</h4>
+                    <span className="text-sm text-muted-foreground capitalize">{pitstop.type}</span>
+                  </div>
+                  
+                  <PitstopImageUpload
+                    images={pitstopImages[index] || []}
+                    onImagesChange={(images) => {
+                      setPitstopImages(prev => ({
+                        ...prev,
+                        [index]: images
+                      }));
+                    }}
+                    maxImages={3}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* Form Actions */}
+            <div className="flex gap-4 pt-6">
+              <Button
+                type="submit"
+                disabled={createDriveLogMutation.isPending}
+                className="flex-1"
+              >
+                {createDriveLogMutation.isPending ? "Creating..." : "Create Drive Log"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
                 onClick={() => setShowCreateDialog(false)}
               >
-                Close
+                Cancel
               </Button>
             </div>
-            
-            {/* BRIGHT TEST SECTION */}
-            <div className="p-8 bg-yellow-300 border-4 border-black text-center mb-4">
-              <h2 className="text-2xl font-bold">FORM TEST - CAN YOU SEE THIS?</h2>
-              <p>If you can see this yellow box, forms are working</p>
-            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-            {/* Complete Form with Pitstops */}
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input
-                  {...form.register("title")}
-                  placeholder="Trip Title"
-                  className="col-span-2"
-                />
-                <Input
-                  {...form.register("startLocation")}
-                  placeholder="Start Location"
-                />
-                <Input
-                  {...form.register("endLocation")}
-                  placeholder="End Location"
-                />
-                <Input
-                  {...form.register("distance")}
-                  placeholder="Distance (miles)"
-                  type="number"
-                />
-                <select {...form.register("vehicleId")} className="p-2 border rounded">
-                  <option value="">Select Vehicle</option>
-                  {Array.isArray(vehicles) && vehicles.map((vehicle: any) => (
-                    <option key={vehicle.id} value={vehicle.id}>
-                      {vehicle.make} {vehicle.model}
-                    </option>
-                  ))}
-                </select>
+      {/* Edit Drive Log Modal */}
+      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Drive Log</DialogTitle>
+          </DialogHeader>
+          
+          {editingDriveLog && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.target as HTMLFormElement);
+                updateDriveLogMutation.mutate({
+                  id: editingDriveLog.id,
+                  updates: {
+                    title: formData.get('title') as string,
+                    description: formData.get('description') as string,
+                    startLocation: formData.get('startLocation') as string,
+                    endLocation: formData.get('endLocation') as string,
+                    distance: formData.get('distance') as string,
+                  }
+                });
+              }}
+              className="space-y-6"
+            >
+              <div className="grid grid-cols-1 gap-4">
+                <div>
+                  <Label htmlFor="edit-title">Title</Label>
+                  <Input
+                    id="edit-title"
+                    name="title"
+                    defaultValue={editingDriveLog.title}
+                    placeholder="Trip title"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit-description">Description</Label>
+                  <Textarea
+                    id="edit-description"
+                    name="description"
+                    defaultValue={editingDriveLog.description || ''}
+                    placeholder="Describe your drive..."
+                    rows={4}
+                  />
+                </div>
               </div>
-              
-              <textarea
-                {...form.register("description")}
-                placeholder="Describe your journey..."
-                className="w-full p-2 border rounded min-h-[100px]"
-              />
 
-              {/* PITSTOP SECTION - Inside Form */}
-              <div className="p-6 bg-red-100 border-4 border-red-500 rounded-lg">
-              <h3 className="text-xl font-bold text-red-800 mb-4">PITSTOPS ({pitstops.length}/10)</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="edit-startLocation">Start Location</Label>
+                  <Input
+                    id="edit-startLocation"
+                    name="startLocation"
+                    defaultValue={editingDriveLog.startLocation}
+                    placeholder="Start location"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="edit-endLocation">End Location</Label>
+                  <Input
+                    id="edit-endLocation"
+                    name="endLocation"
+                    defaultValue={editingDriveLog.endLocation}
+                    placeholder="End location"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-distance">Distance (miles)</Label>
+                <Input
+                  id="edit-distance"
+                  name="distance"
+                  defaultValue={editingDriveLog.distance}
+                  type="number"
+                  placeholder="Distance"
+                />
+              </div>
+
+              <div className="flex gap-4">
+                <Button
+                  type="submit"
+                  disabled={updateDriveLogMutation.isPending}
+                >
+                  {updateDriveLogMutation.isPending ? "Updating..." : "Update Drive Log"}
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setShowEditDialog(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
               <Button
                 type="button"
                 onClick={() => {
@@ -519,51 +783,94 @@ export default function DriveLogs() {
           {Array.isArray(driveLogs) && driveLogs.map((driveLog: DriveLog) => (
             <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               {driveLog.titleImageUrl && (
-                <div className="aspect-video w-full overflow-hidden">
+                <div 
+                  className="aspect-video w-full overflow-hidden cursor-pointer"
+                  onClick={() => {
+                    setSelectedDriveLog(driveLog);
+                    setShowDetailDialog(true);
+                  }}
+                >
                   <img
                     src={driveLog.titleImageUrl}
                     alt={driveLog.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover hover:scale-105 transition-transform"
                   />
                 </div>
               )}
               <CardContent className="p-6">
-                <h3 className="font-semibold text-lg mb-2">{driveLog.title}</h3>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {driveLog.startLocation} → {driveLog.endLocation}
-                </p>
-                {driveLog.description && (
-                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-                    {driveLog.description}
-                  </p>
-                )}
-                <div className="flex justify-between text-sm text-muted-foreground mb-4">
-                  <span>{driveLog.distance} miles</span>
-                  <span>{new Date(driveLog.startTime).toLocaleDateString()}</span>
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    variant="outline"
+                <div className="flex justify-between items-start mb-2">
+                  <h3 
+                    className="font-semibold text-lg cursor-pointer hover:text-primary transition-colors"
                     onClick={() => {
                       setSelectedDriveLog(driveLog);
                       setShowDetailDialog(true);
                     }}
                   >
-                    <Eye className="h-4 w-4 mr-1" />
-                    View Details
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(driveLog);
+                    {driveLog.title}
+                  </h3>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={() => {
+                        setSelectedDriveLog(driveLog);
+                        setShowDetailDialog(true);
+                      }}>
+                        <Eye className="mr-2 h-4 w-4" />
+                        View Details
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleEdit(driveLog)}>
+                        <Edit className="mr-2 h-4 w-4" />
+                        Edit
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => handleShare(driveLog, 'facebook')}>
+                        <Facebook className="mr-2 h-4 w-4" />
+                        Share on Facebook
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(driveLog, 'twitter')}>
+                        <Twitter className="mr-2 h-4 w-4" />
+                        Share on Twitter
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(driveLog, 'instagram')}>
+                        <Instagram className="mr-2 h-4 w-4" />
+                        Share on Instagram
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleShare(driveLog, 'copy')}>
+                        <Copy className="mr-2 h-4 w-4" />
+                        Copy Link
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem 
+                        onClick={() => handleDelete(driveLog)}
+                        className="text-destructive"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+                <p className="text-sm text-muted-foreground mb-2">
+                  {driveLog.startLocation} → {driveLog.endLocation}
+                </p>
+                {driveLog.description && (
+                  <p 
+                    className="text-sm text-muted-foreground mb-4 line-clamp-2 cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => {
+                      setSelectedDriveLog(driveLog);
+                      setShowDetailDialog(true);
                     }}
                   >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
-                  </Button>
+                    {driveLog.description}
+                  </p>
+                )}
+                <div className="flex justify-between text-sm text-muted-foreground">
+                  <span>{driveLog.distance} miles</span>
+                  <span>{new Date(driveLog.startTime).toLocaleDateString()}</span>
                 </div>
               </CardContent>
             </Card>
