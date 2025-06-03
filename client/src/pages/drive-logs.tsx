@@ -53,7 +53,7 @@ export default function DriveLogs() {
       description: "",
       startLocation: "",
       endLocation: "",
-      distance: "0",
+      distance: "",
       startTime: new Date(),
       endTime: undefined,
       vehicleId: undefined,
