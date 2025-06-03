@@ -386,6 +386,7 @@ export default function DriveLogs() {
 
   const handleEdit = (driveLog: DriveLog) => {
     setEditingDriveLog(driveLog);
+    setEditTitleImage(null);
     setShowEditDialog(true);
     
     // Pre-populate form with existing data
