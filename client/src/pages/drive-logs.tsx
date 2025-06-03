@@ -185,6 +185,7 @@ export default function DriveLogs() {
 
   const updateDriveLogMutation = useMutation({
     mutationFn: async (data: { id: number; updates: Partial<DriveLogFormData> }) => {
+      // First update the drive log
       const response = await fetch(`/api/drive-logs/${data.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -195,16 +196,98 @@ export default function DriveLogs() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      const updatedDriveLog = await response.json();
+      
+      // Then handle pitstops if any exist
+      if (editPitstops.length > 0) {
+        for (let i = 0; i < editPitstops.length; i++) {
+          const pitstop = editPitstops[i];
+          const newImages = editPitstopImages[i] || [];
+          const existingImages = existingPitstopImages[i] || [];
+          
+          // Prepare pitstop data
+          const pitstopData = {
+            name: pitstop.name,
+            description: pitstop.description || '',
+            latitude: pitstop.latitude,
+            longitude: pitstop.longitude,
+            address: pitstop.address || '',
+            placeId: pitstop.placeId || '',
+            type: pitstop.type,
+            orderIndex: i,
+            notes: pitstop.notes || '',
+            driveLogId: data.id,
+            imageUrls: existingImages
+          };
+          
+          let pitstopResult;
+          
+          // Create or update pitstop
+          if (pitstop.id) {
+            // Update existing pitstop
+            const updateResponse = await fetch(`/api/pitstops/${pitstop.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(pitstopData),
+            });
+            
+            if (!updateResponse.ok) {
+              throw new Error(`Failed to update pitstop: ${updateResponse.status}`);
+            }
+            
+            pitstopResult = await updateResponse.json();
+          } else {
+            // Create new pitstop
+            const createResponse = await fetch('/api/pitstops', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(pitstopData),
+            });
+            
+            if (!createResponse.ok) {
+              throw new Error(`Failed to create pitstop: ${createResponse.status}`);
+            }
+            
+            pitstopResult = await createResponse.json();
+          }
+          
+          // Upload new images if any
+          if (newImages.length > 0) {
+            const formData = new FormData();
+            newImages.forEach(file => {
+              formData.append('images', file);
+            });
+            
+            const imageResponse = await fetch(`/api/pitstops/${pitstopResult.id}/images`, {
+              method: 'POST',
+              body: formData,
+            });
+            
+            if (!imageResponse.ok) {
+              console.warn(`Failed to upload images for pitstop ${pitstopResult.id}`);
+            }
+          }
+        }
+      }
+      
+      return updatedDriveLog;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/all-pitstops'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/pitstops/' + editingDriveLog?.id] });
+      
       toast({
         title: "Success",
         description: "Drive log updated successfully!",
       });
+      
       setShowEditDialog(false);
       setEditingDriveLog(null);
+      setEditPitstops([]);
+      setEditPitstopImages({});
+      setExistingPitstopImages({});
+      form.reset();
     },
     onError: (error) => {
       toast({
@@ -1038,6 +1121,43 @@ export default function DriveLogs() {
           </DialogHeader>
 
           <form onSubmit={form.handleSubmit((data) => {
+            // Frontend validation for required fields
+            if (!data.title.trim()) {
+              toast({
+                title: "Title is required",
+                description: "Please enter a title for your drive log",
+                variant: "destructive",
+              });
+              return;
+            }
+            
+            if (!data.startLocation.trim()) {
+              toast({
+                title: "Start location is required",
+                description: "Please enter the starting location",
+                variant: "destructive",
+              });
+              return;
+            }
+            
+            if (!data.endLocation.trim()) {
+              toast({
+                title: "End location is required", 
+                description: "Please enter the destination",
+                variant: "destructive",
+              });
+              return;
+            }
+            
+            if (!data.distance.trim() || data.distance === "0") {
+              toast({
+                title: "Distance is required",
+                description: "Please enter the distance traveled",
+                variant: "destructive",
+              });
+              return;
+            }
+            
             updateDriveLogMutation.mutate({
               id: editingDriveLog!.id,
               updates: data

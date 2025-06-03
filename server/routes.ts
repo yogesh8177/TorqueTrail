@@ -575,6 +575,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updateData.vehicleId = parseInt(updateData.vehicleId);
       }
 
+      // Convert distance to number if present
+      if (updateData.distance) {
+        updateData.distance = parseFloat(updateData.distance);
+      }
+
+      // Convert date strings to Date objects
+      if (updateData.startTime && typeof updateData.startTime === 'string') {
+        updateData.startTime = new Date(updateData.startTime);
+      }
+      if (updateData.endTime && typeof updateData.endTime === 'string') {
+        updateData.endTime = new Date(updateData.endTime);
+      }
+
       // Remove undefined values and empty strings
       Object.keys(updateData).forEach(key => {
         if (updateData[key] === undefined || updateData[key] === '') {
