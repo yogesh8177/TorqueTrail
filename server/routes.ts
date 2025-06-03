@@ -546,6 +546,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch('/api/drive-logs/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const driveLogId = parseInt(req.params.id);
+      
+      // Check if drive log exists and belongs to user
+      const existingDriveLog = await storage.getDriveLog(driveLogId);
+      if (!existingDriveLog || existingDriveLog.userId !== userId) {
+        return res.status(404).json({ message: 'Drive log not found' });
+      }
+
+      const updateData = { ...req.body };
+      
+      // Convert vehicleId to number if present
+      if (updateData.vehicleId) {
+        updateData.vehicleId = parseInt(updateData.vehicleId);
+      }
+
+      // Remove undefined values and empty strings
+      Object.keys(updateData).forEach(key => {
+        if (updateData[key] === undefined || updateData[key] === '') {
+          delete updateData[key];
+        }
+      });
+
+      const updatedDriveLog = await storage.updateDriveLog(driveLogId, updateData);
+      res.json(updatedDriveLog);
+    } catch (error) {
+      console.error('Error updating drive log:', error);
+      res.status(500).json({ message: 'Failed to update drive log' });
+    }
+  });
+
   app.delete('/api/drive-logs/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
