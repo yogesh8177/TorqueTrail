@@ -128,18 +128,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.user.claims.sub;
       
       // Handle image upload if present
-      let imageUrl = null;
+      let vehicleData = { ...req.body, userId };
       if (req.file) {
         const imagePath = `/uploads/${req.file.filename}`;
-        imageUrl = imagePath;
+        vehicleData.imageUrl = imagePath;
       }
       
-      const vehicleData = insertVehicleSchema.parse({ 
-        ...req.body, 
-        userId,
-        imageUrl 
-      });
-      const vehicle = await storage.createVehicle(vehicleData);
+      // Convert FormData string values to proper types
+      if (vehicleData.year) vehicleData.year = parseInt(vehicleData.year);
+      if (vehicleData.horsepower) vehicleData.horsepower = parseInt(vehicleData.horsepower);
+      if (vehicleData.isPublic !== undefined) vehicleData.isPublic = vehicleData.isPublic === 'true';
+      
+      const validatedData = insertVehicleSchema.parse(vehicleData);
+      const vehicle = await storage.createVehicle(validatedData);
       res.json(vehicle);
     } catch (error) {
       console.error("Error creating vehicle:", error);
@@ -182,6 +183,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const imagePath = `/uploads/${req.file.filename}`;
         updates.imageUrl = imagePath;
       }
+      
+      // Convert FormData string values to proper types
+      if (updates.year) updates.year = parseInt(updates.year);
+      if (updates.horsepower) updates.horsepower = parseInt(updates.horsepower);
+      if (updates.isPublic !== undefined) updates.isPublic = updates.isPublic === 'true';
       
       const validatedUpdates = insertVehicleSchema.partial().parse(updates);
       const vehicle = await storage.updateVehicle(vehicleId, validatedUpdates);
