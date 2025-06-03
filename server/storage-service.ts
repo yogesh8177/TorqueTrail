@@ -40,13 +40,13 @@ export function getUploadMiddleware() {
 
 // Get public URL for an image
 export function getImageUrl(filename: string, baseUrl?: string): string {
-  return `${baseUrl || ''}/uploads/${filename}`;
+  return `${baseUrl || ''}/persistent-uploads/${filename}`;
 }
 
 // Delete an image from storage
 export async function deleteImage(filename: string): Promise<void> {
   try {
-    const filePath = path.join(process.cwd(), 'uploads', filename);
+    const filePath = path.join('/home/runner/workspace', 'persistent-uploads', filename);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
       console.log(`Deleted image: ${filename}`);
@@ -63,6 +63,43 @@ export function isS3Configured(): boolean {
 
 // Utility function to check if an image file exists
 export function imageExists(filename: string): boolean {
-  const filePath = path.join(process.cwd(), 'uploads', filename);
+  const filePath = path.join('/home/runner/workspace', 'persistent-uploads', filename);
   return fs.existsSync(filePath);
+}
+
+// Migration function to move existing images to persistent storage
+export async function migrateImagesToPersistent(): Promise<void> {
+  const oldUploadsDir = path.join(process.cwd(), 'uploads');
+  const persistentDir = path.join('/home/runner/workspace', 'persistent-uploads');
+
+  // Ensure persistent directory exists
+  if (!fs.existsSync(persistentDir)) {
+    fs.mkdirSync(persistentDir, { recursive: true });
+  }
+
+  // Check if old uploads directory exists
+  if (!fs.existsSync(oldUploadsDir)) {
+    console.log('No old uploads directory found, migration not needed');
+    return;
+  }
+
+  const files = fs.readdirSync(oldUploadsDir);
+  console.log(`Migrating ${files.length} images to persistent storage...`);
+
+  for (const filename of files) {
+    try {
+      const oldPath = path.join(oldUploadsDir, filename);
+      const newPath = path.join(persistentDir, filename);
+
+      // Only migrate if file doesn't already exist in persistent storage
+      if (!fs.existsSync(newPath)) {
+        fs.copyFileSync(oldPath, newPath);
+        console.log(`Migrated: ${filename}`);
+      }
+    } catch (error) {
+      console.error(`Failed to migrate ${filename}:`, error);
+    }
+  }
+
+  console.log('Image migration completed');
 }

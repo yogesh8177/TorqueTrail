@@ -16,7 +16,7 @@ import {
 import { generateDriveBlog, analyzeVehicleImage, generateRouteRecommendations } from "./openai";
 import { calculateReadTime } from "./readTime";
 import { generatePublicShareHTML } from "./public-share";
-import { getUploadMiddleware, getImageUrl, isS3Configured, deleteImage, imageExists } from "./storage-service";
+import { getUploadMiddleware, getImageUrl, isS3Configured, deleteImage, imageExists, migrateImagesToPersistent } from "./storage-service";
 import { imageStorage } from "./image-manager";
 import { replitStorage } from "./replit-storage";
 import { z } from "zod";
@@ -47,6 +47,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     res.setHeader('Content-Type', 'image/svg+xml');
     res.sendFile(path.join(process.cwd(), 'torquetrail-social-preview.svg'));
   });
+  
+  // Auto-migrate images to persistent storage on startup
+  try {
+    await migrateImagesToPersistent();
+  } catch (error) {
+    console.error('Auto-migration failed:', error);
+  }
   
   // Auth middleware
   await setupAuth(app);
@@ -1004,7 +1011,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Migration endpoint to move images to persistent storage
   app.post('/api/storage/migrate', isAuthenticated, async (req: any, res) => {
     try {
-      await replitStorage.migrateFromUploads();
+      await migrateImagesToPersistent();
       res.json({ success: true, message: 'Images migrated to persistent storage' });
     } catch (error) {
       console.error('Migration failed:', error);
