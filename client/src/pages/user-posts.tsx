@@ -24,8 +24,13 @@ export default function UserPosts() {
   } = useInfiniteQuery({
     queryKey: ['/api/posts/user'],
     queryFn: async ({ pageParam = 0 }) => {
-      const response = await apiRequest(`/api/posts/user?limit=10&offset=${pageParam}`);
-      return response;
+      const response = await fetch(`/api/posts/user?limit=10&offset=${pageParam}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch posts');
+      }
+      return response.json();
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage: any[], pages) => {

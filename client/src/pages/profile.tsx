@@ -158,7 +158,10 @@ export default function Profile() {
                   <Badge 
                     variant="secondary" 
                     className="cursor-pointer hover:bg-secondary/80 transition-colors"
-                    onClick={() => setLocation('/profile/posts')}
+                    onClick={() => {
+                      console.log('Posts badge clicked, navigating to /profile/posts');
+                      setLocation('/profile/posts');
+                    }}
                   >
                     {(userPosts as any[])?.length || 0}
                   </Badge>
