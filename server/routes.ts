@@ -970,6 +970,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Simple in-memory storage for public likes (in production, use database)
+  const publicLikes = new Map<string, Set<string>>();
+
   app.post('/api/public/drive-logs/:id/like', async (req, res) => {
     try {
       const driveLogId = parseInt(req.params.id);
@@ -985,10 +988,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: 'Drive log not found' });
       }
       
-      // Simple like tracking using clientId (you could implement this in storage)
-      // For now, we'll return mock data
-      const hasLiked = Math.random() > 0.5; // Mock like status
-      const likeCount = Math.floor(Math.random() * 50); // Mock like count
+      const driveLogKey = driveLogId.toString();
+      
+      // Initialize likes set for this drive log if not exists
+      if (!publicLikes.has(driveLogKey)) {
+        publicLikes.set(driveLogKey, new Set());
+      }
+      
+      const likesSet = publicLikes.get(driveLogKey)!;
+      let hasLiked = false;
+      
+      // Toggle like status
+      if (likesSet.has(clientId)) {
+        likesSet.delete(clientId);
+        hasLiked = false;
+      } else {
+        likesSet.add(clientId);
+        hasLiked = true;
+      }
+      
+      const likeCount = likesSet.size;
       
       res.json({
         liked: hasLiked,
@@ -998,6 +1017,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Error handling like:', error);
       res.status(500).json({ message: 'Failed to handle like' });
+    }
+  });
+
+  app.get('/api/public/drive-logs/:id/likes', async (req, res) => {
+    try {
+      const driveLogId = parseInt(req.params.id);
+      const clientId = req.query.clientId as string;
+      
+      // Check if drive log exists
+      const driveLog = await storage.getDriveLog(driveLogId);
+      if (!driveLog) {
+        return res.status(404).json({ message: 'Drive log not found' });
+      }
+      
+      const driveLogKey = driveLogId.toString();
+      const likesSet = publicLikes.get(driveLogKey) || new Set();
+      
+      res.json({
+        liked: clientId ? likesSet.has(clientId) : false,
+        likeCount: likesSet.size
+      });
+    } catch (error) {
+      console.error('Error fetching likes:', error);
+      res.status(500).json({ message: 'Failed to fetch likes' });
     }
   });
 

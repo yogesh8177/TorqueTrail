@@ -36,13 +36,43 @@ export default function PublicDriveLog() {
     enabled: !!driveLog?.vehicleId,
   });
 
+  // Generate or get client ID for likes
+  const getClientId = () => {
+    let clientId = localStorage.getItem('publicClientId');
+    if (!clientId) {
+      clientId = 'public_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('publicClientId', clientId);
+    }
+    return clientId;
+  };
+
+  // Fetch initial like status
+  const { data: likeData } = useQuery({
+    queryKey: ['/api/public/drive-logs/' + params.id + '/likes', getClientId()],
+    enabled: !!params.id,
+    queryFn: async () => {
+      const response = await fetch(`/api/public/drive-logs/${params.id}/likes?clientId=${getClientId()}`);
+      if (!response.ok) throw new Error('Failed to fetch likes');
+      return response.json();
+    },
+  });
+
+  // Update like state when data is fetched
+  useEffect(() => {
+    if (likeData) {
+      setHasLiked(likeData.liked);
+      setLikeCount(likeData.likeCount);
+    }
+  }, [likeData]);
+
   // Like mutation for public users
   const likeMutation = useMutation({
     mutationFn: async () => {
+      const clientId = getClientId();
       const response = await fetch(`/api/public/drive-logs/${params.id}/like`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clientId: localStorage.getItem('publicClientId') || generateClientId() }),
+        body: JSON.stringify({ clientId }),
       });
       
       if (!response.ok) {
@@ -55,10 +85,10 @@ export default function PublicDriveLog() {
       setHasLiked(data.liked);
       setLikeCount(data.likeCount);
       
-      // Store client ID for future likes
-      if (!localStorage.getItem('publicClientId')) {
-        localStorage.setItem('publicClientId', generateClientId());
-      }
+      // Invalidate and refetch like data
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/public/drive-logs/' + params.id + '/likes', getClientId()] 
+      });
       
       toast({
         title: data.liked ? "Liked!" : "Like removed",
