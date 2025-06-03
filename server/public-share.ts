@@ -41,17 +41,26 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <meta property="og:title" content="${driveLog.title} - TorqueTrail">
     <meta property="og:description" content="${description} by ${authorName}">
     <meta property="og:image" content="${imageUrl}">
+    <meta property="og:image:secure_url" content="${imageUrl}">
+    <meta property="og:image:type" content="image/jpeg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="${driveLog.title} - Drive log shared on TorqueTrail">
     <meta property="og:url" content="${shareUrl}">
     <meta property="og:type" content="article">
     <meta property="og:site_name" content="TorqueTrail">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <meta property="article:author" content="${authorName}">
     
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${driveLog.title} - TorqueTrail">
     <meta name="twitter:description" content="${description} by ${authorName}">
     <meta name="twitter:image" content="${imageUrl}">
+    <meta name="twitter:image:alt" content="${driveLog.title} - Drive log shared on TorqueTrail">
+    
+    <!-- WhatsApp specific meta tags -->
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
     
     <!-- Additional meta tags -->
     <meta name="author" content="${authorName}">
