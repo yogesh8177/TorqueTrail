@@ -123,10 +123,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Vehicle routes
-  app.post('/api/vehicles', isAuthenticated, async (req: any, res) => {
+  app.post('/api/vehicles', isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const vehicleData = insertVehicleSchema.parse({ ...req.body, userId });
+      
+      // Handle image upload if present
+      let imageUrl = null;
+      if (req.file) {
+        const imagePath = `/uploads/${req.file.filename}`;
+        imageUrl = imagePath;
+      }
+      
+      const vehicleData = insertVehicleSchema.parse({ 
+        ...req.body, 
+        userId,
+        imageUrl 
+      });
       const vehicle = await storage.createVehicle(vehicleData);
       res.json(vehicle);
     } catch (error) {
@@ -160,11 +172,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/vehicles/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/vehicles/:id', isAuthenticated, upload.single('image'), async (req: any, res) => {
     try {
       const vehicleId = parseInt(req.params.id);
-      const updates = insertVehicleSchema.partial().parse(req.body);
-      const vehicle = await storage.updateVehicle(vehicleId, updates);
+      
+      // Handle image upload if present
+      let updates = { ...req.body };
+      if (req.file) {
+        const imagePath = `/uploads/${req.file.filename}`;
+        updates.imageUrl = imagePath;
+      }
+      
+      const validatedUpdates = insertVehicleSchema.partial().parse(updates);
+      const vehicle = await storage.updateVehicle(vehicleId, validatedUpdates);
       res.json(vehicle);
     } catch (error) {
       console.error("Error updating vehicle:", error);

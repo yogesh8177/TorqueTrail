@@ -65,8 +65,22 @@ export default function Garage() {
 
   // Create vehicle mutation
   const createVehicleMutation = useMutation({
-    mutationFn: async (data: VehicleFormData) => {
-      return await apiRequest("POST", "/api/vehicles", data);
+    mutationFn: async (data: VehicleFormData & { image?: File }) => {
+      const formData = new FormData();
+      
+      // Append all form fields
+      Object.entries(data).forEach(([key, value]) => {
+        if (key !== 'image' && value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Append image if present
+      if (data.image) {
+        formData.append('image', data.image);
+      }
+      
+      return await apiRequest("POST", "/api/vehicles", formData);
     },
     onSuccess: () => {
       toast({
@@ -88,8 +102,22 @@ export default function Garage() {
 
   // Update vehicle mutation
   const updateVehicleMutation = useMutation({
-    mutationFn: async (data: { id: number; updates: Partial<VehicleFormData> }) => {
-      return await apiRequest("PUT", `/api/vehicles/${data.id}`, data.updates);
+    mutationFn: async (data: { id: number; updates: Partial<VehicleFormData> & { image?: File } }) => {
+      const formData = new FormData();
+      
+      // Append all form fields
+      Object.entries(data.updates).forEach(([key, value]) => {
+        if (key !== 'image' && value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+      
+      // Append image if present
+      if (data.updates.image) {
+        formData.append('image', data.updates.image);
+      }
+      
+      return await apiRequest("PUT", `/api/vehicles/${data.id}`, formData);
     },
     onSuccess: () => {
       toast({
@@ -97,6 +125,7 @@ export default function Garage() {
         description: "Your vehicle information has been updated.",
       });
       setEditingVehicle(null);
+      setIsAddDialogOpen(false);
       resetForm();
       queryClient.invalidateQueries({ queryKey: ["/api/vehicles"] });
     },
@@ -746,25 +775,25 @@ export default function Garage() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
-                  <p className="text-xl font-bold">
+                  <div className="text-xl font-bold">
                     {vehiclesLoading ? (
                       <Skeleton className="h-6 w-6 inline-block" />
                     ) : (
                       vehicles.length
                     )}
-                  </p>
+                  </div>
                   <p className="text-xs text-muted-foreground">Vehicles</p>
                 </CardContent>
               </Card>
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
-                  <p className="text-xl font-bold">
+                  <div className="text-xl font-bold">
                     {userLoading ? (
                       <Skeleton className="h-6 w-12 inline-block" />
                     ) : (
                       `${user?.garageRating || "4.8"}⭐`
                     )}
-                  </p>
+                  </div>
                   <p className="text-xs text-muted-foreground">Rating</p>
                 </CardContent>
               </Card>
