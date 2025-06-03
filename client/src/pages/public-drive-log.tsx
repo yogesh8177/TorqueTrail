@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { MapPin, Calendar, Car, Route, Clock, Share2, ExternalLink, ChevronDown, ChevronRight } from "lucide-react";
+import { MapPin, Calendar, Car, Route, Clock, Share2, ExternalLink, ChevronDown, ChevronRight, Heart } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { Helmet } from "react-helmet-async";
 
 interface PublicDriveLog {
@@ -46,6 +47,20 @@ export default function PublicDriveLog() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedPitstops, setExpandedPitstops] = useState<{[key: number]: boolean}>({});
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [likesLoading, setLikesLoading] = useState(false);
+  const { toast } = useToast();
+
+  // Generate or get persistent client ID for anonymous likes
+  const getClientId = () => {
+    let clientId = localStorage.getItem('torquetrail_client_id');
+    if (!clientId) {
+      clientId = 'client_' + Math.random().toString(36).substr(2, 9) + '_' + Date.now();
+      localStorage.setItem('torquetrail_client_id', clientId);
+    }
+    return clientId;
+  };
 
   useEffect(() => {
     const fetchPublicDriveLog = async () => {
@@ -64,6 +79,9 @@ export default function PublicDriveLog() {
 
         const data = await response.json();
         setDriveLog(data);
+        
+        // Fetch like status
+        await fetchLikeStatus();
       } catch (err) {
         setError("Failed to load drive log");
       } finally {
@@ -71,10 +89,58 @@ export default function PublicDriveLog() {
       }
     };
 
+    const fetchLikeStatus = async () => {
+      try {
+        const clientId = getClientId();
+        const response = await fetch(`/api/public/drive-logs/${id}/likes?clientId=${clientId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setLiked(data.liked);
+          setLikeCount(data.likeCount);
+        }
+      } catch (err) {
+        console.error('Failed to fetch like status:', err);
+      }
+    };
+
     if (id) {
       fetchPublicDriveLog();
     }
   }, [id]);
+
+  const handleLike = async () => {
+    if (likesLoading || !id) return;
+    
+    try {
+      setLikesLoading(true);
+      const clientId = getClientId();
+      
+      const response = await fetch(`/api/public/drive-logs/${id}/like`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ clientId }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setLiked(data.liked);
+        setLikeCount(data.likeCount);
+        
+        toast({
+          description: data.message,
+        });
+      }
+    } catch (err) {
+      toast({
+        description: "Failed to update like",
+        variant: "destructive",
+      });
+    } finally {
+      setLikesLoading(false);
+    }
+  };
 
   const handleShare = () => {
     if (navigator.share && driveLog) {
@@ -179,6 +245,16 @@ export default function PublicDriveLog() {
               <p className="text-muted-foreground">Shared by {authorName}</p>
             </div>
             <div className="flex gap-2 flex-shrink-0">
+              <Button 
+                variant={liked ? "default" : "outline"} 
+                onClick={handleLike} 
+                size="sm" 
+                className="md:h-10"
+                disabled={likesLoading}
+              >
+                <Heart className={`h-4 w-4 mr-2 ${liked ? 'fill-current' : ''}`} />
+                {likeCount} {likeCount === 1 ? 'Like' : 'Likes'}
+              </Button>
               <Button variant="outline" onClick={handleShare} size="sm" className="md:h-10">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
