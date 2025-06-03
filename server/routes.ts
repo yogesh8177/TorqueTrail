@@ -988,14 +988,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/share/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
+      console.log(`Share route accessed for ID: ${id}, User-Agent: ${req.get('User-Agent')}`);
+      
       if (isNaN(id)) {
+        console.log(`Invalid ID provided: ${req.params.id}`);
         return res.status(404).send("Drive log not found");
       }
 
       // Always serve server-side HTML with meta tags for all requests
       // This ensures social media crawlers get the proper meta tags
       const baseUrl = `${req.protocol}://${req.get('host')}`;
+      console.log(`Generating HTML for drive log ${id} with baseUrl: ${baseUrl}`);
+      
       const html = await generatePublicShareHTML(id, baseUrl);
+      
+      // Check if we got the not found HTML
+      if (html.includes('Drive Log Not Found')) {
+        console.log(`Drive log ${id} not found or not public`);
+        return res.status(404).send(html);
+      }
       
       // Set cache-busting headers for social media crawlers
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -1004,6 +1015,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.setHeader('Expires', '0');
       res.setHeader('Last-Modified', new Date().toUTCString());
       
+      console.log(`Successfully serving share page for drive log ${id}`);
       res.send(html);
     } catch (error) {
       console.error("Error generating public share page:", error);
