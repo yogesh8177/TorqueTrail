@@ -2,6 +2,8 @@ import type { Express } from "express";
 import express from "express";
 import { createServer, type Server } from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import { existsSync, mkdirSync } from "fs";
+import * as path from "path";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import {
@@ -16,9 +18,6 @@ import { calculateReadTime } from "./readTime";
 import { generatePublicShareHTML } from "./public-share";
 import multer from "multer";
 import { z } from "zod";
-import path from "path";
-import fs from "fs/promises";
-import { existsSync, mkdirSync } from "fs";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -1048,14 +1047,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if title image exists on filesystem, use fallback if missing
       let titleImageUrl = driveLog.titleImageUrl;
       if (driveLog.titleImageUrl) {
-        const fs = require('fs');
-        const path = require('path');
         const imagePath = driveLog.titleImageUrl.startsWith('/') 
           ? path.join(process.cwd(), driveLog.titleImageUrl.substring(1))
           : path.join(process.cwd(), driveLog.titleImageUrl);
         
         try {
-          if (!fs.existsSync(imagePath)) {
+          if (!existsSync(imagePath)) {
             console.log(`Title image missing for drive log ${driveLogId}: ${imagePath} - using fallback in API`);
             titleImageUrl = '/generated-icon.png';
           }
