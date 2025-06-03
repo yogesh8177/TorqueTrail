@@ -3,7 +3,8 @@ import { useParams } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, Calendar, Car, Route, Clock, Share2, ExternalLink } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { MapPin, Calendar, Car, Route, Clock, Share2, ExternalLink, ChevronDown, ChevronRight } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 
 interface PublicDriveLog {
@@ -44,6 +45,7 @@ export default function PublicDriveLog() {
   const [driveLog, setDriveLog] = useState<PublicDriveLog | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [expandedPitstops, setExpandedPitstops] = useState<{[key: number]: boolean}>({});
 
   useEffect(() => {
     const fetchPublicDriveLog = async () => {
@@ -169,19 +171,19 @@ export default function PublicDriveLog() {
       </Helmet>
 
       <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
+        <div className="container mx-auto px-4 py-4 md:py-8 max-w-4xl">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">{driveLog.title}</h1>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold mb-2 break-words">{driveLog.title}</h1>
               <p className="text-muted-foreground">Shared by {authorName}</p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={handleShare}>
+            <div className="flex gap-2 flex-shrink-0">
+              <Button variant="outline" onClick={handleShare} size="sm" className="md:h-10">
                 <Share2 className="h-4 w-4 mr-2" />
                 Share
               </Button>
-              <Button onClick={() => window.location.href = '/'}>
+              <Button onClick={() => window.location.href = '/'} size="sm" className="md:h-10">
                 <ExternalLink className="h-4 w-4 mr-2" />
                 Visit TorqueTrail
               </Button>
@@ -277,37 +279,62 @@ export default function PublicDriveLog() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-6">
+                <div className="space-y-4">
                   {driveLog.pitstops.map((pitstop, index) => (
-                    <div key={pitstop.id} className="border-l-4 border-primary pl-4">
-                      <div className="flex items-start justify-between mb-2">
-                        <div>
-                          <h4 className="font-medium">{index + 1}. {pitstop.name}</h4>
-                          {pitstop.address && (
-                            <p className="text-sm text-muted-foreground">{pitstop.address}</p>
-                          )}
-                        </div>
-                        <Badge variant="secondary">{pitstop.type}</Badge>
+                    <Collapsible
+                      key={pitstop.id}
+                      open={expandedPitstops[pitstop.id]}
+                      onOpenChange={(open) => 
+                        setExpandedPitstops(prev => ({ ...prev, [pitstop.id]: open }))
+                      }
+                    >
+                      <div className="border rounded-lg overflow-hidden">
+                        <CollapsibleTrigger asChild>
+                          <div className="w-full p-4 bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3 min-w-0 flex-1">
+                                <div className="flex-shrink-0">
+                                  {expandedPitstops[pitstop.id] ? (
+                                    <ChevronDown className="h-4 w-4" />
+                                  ) : (
+                                    <ChevronRight className="h-4 w-4" />
+                                  )}
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                  <h4 className="font-medium truncate">{index + 1}. {pitstop.name}</h4>
+                                  {pitstop.address && (
+                                    <p className="text-sm text-muted-foreground truncate">{pitstop.address}</p>
+                                  )}
+                                </div>
+                              </div>
+                              <Badge variant="secondary" className="flex-shrink-0 ml-2">{pitstop.type}</Badge>
+                            </div>
+                          </div>
+                        </CollapsibleTrigger>
+                        
+                        <CollapsibleContent>
+                          <div className="p-4 pt-0">
+                            {pitstop.description && (
+                              <p className="text-sm mb-4 text-muted-foreground">{pitstop.description}</p>
+                            )}
+                            
+                            {pitstop.imageUrls && pitstop.imageUrls.length > 0 && (
+                              <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                {pitstop.imageUrls.map((imageUrl, imgIndex) => (
+                                  <img
+                                    key={imgIndex}
+                                    src={imageUrl}
+                                    alt={`${pitstop.name} - Image ${imgIndex + 1}`}
+                                    className="w-full h-32 object-cover rounded-md cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => window.open(imageUrl, '_blank')}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </CollapsibleContent>
                       </div>
-                      
-                      {pitstop.description && (
-                        <p className="text-sm mb-3">{pitstop.description}</p>
-                      )}
-                      
-                      {pitstop.imageUrls && pitstop.imageUrls.length > 0 && (
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                          {pitstop.imageUrls.map((imageUrl, imgIndex) => (
-                            <img
-                              key={imgIndex}
-                              src={imageUrl}
-                              alt={`${pitstop.name} - Image ${imgIndex + 1}`}
-                              className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
-                              onClick={() => window.open(imageUrl, '_blank')}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
+                    </Collapsible>
                   ))}
                 </div>
               </CardContent>
