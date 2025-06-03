@@ -287,45 +287,45 @@ export default function PublicDriveLog() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-2 min-w-0">
-                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex items-start gap-2 min-w-0">
+                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <span className="font-medium flex-shrink-0">From:</span>
-                  <span className="truncate">{driveLog.startLocation}</span>
+                  <span className="break-words">{driveLog.startLocation}</span>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex items-start gap-2 min-w-0">
+                  <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <span className="font-medium flex-shrink-0">To:</span>
-                  <span className="truncate">{driveLog.endLocation}</span>
+                  <span className="break-words">{driveLog.endLocation}</span>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Route className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex items-start gap-2 min-w-0">
+                  <Route className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <span className="font-medium flex-shrink-0">Distance:</span>
-                  <span className="truncate">{driveLog.distance} km</span>
+                  <span className="break-words">{driveLog.distance} km</span>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex items-start gap-2 min-w-0">
+                  <Calendar className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                   <span className="font-medium flex-shrink-0">Date:</span>
-                  <span className="truncate">{formatDate(driveLog.startTime)}</span>
+                  <span className="break-words">{formatDate(driveLog.startTime)}</span>
                 </div>
                 {driveLog.route && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Route className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-start gap-2 min-w-0">
+                    <Route className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                     <span className="font-medium flex-shrink-0">Route:</span>
-                    <span className="truncate">{driveLog.route}</span>
+                    <span className="break-words">{driveLog.route}</span>
                   </div>
                 )}
                 {driveLog.endTime && (
-                  <div className="flex items-center gap-2 min-w-0">
-                    <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-start gap-2 min-w-0">
+                    <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                     <span className="font-medium flex-shrink-0">Duration:</span>
-                    <span className="truncate">{formatDuration(driveLog.startTime, driveLog.endTime)}</span>
+                    <span className="break-words">{formatDuration(driveLog.startTime, driveLog.endTime)}</span>
                   </div>
                 )}
                 {driveLog.vehicle && (
-                  <div className="flex items-center gap-2 min-w-0 md:col-span-2 pt-2 border-t">
-                    <Car className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-start gap-2 min-w-0 md:col-span-2 pt-2 border-t">
+                    <Car className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
                     <span className="font-medium flex-shrink-0">Vehicle:</span>
-                    <span className="truncate">{driveLog.vehicle.year} {driveLog.vehicle.make} {driveLog.vehicle.model}</span>
+                    <span className="break-words">{driveLog.vehicle.year} {driveLog.vehicle.make} {driveLog.vehicle.model}</span>
                   </div>
                 )}
               </div>
