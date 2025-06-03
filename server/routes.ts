@@ -13,6 +13,7 @@ import {
 } from "@shared/schema";
 import { generateDriveBlog, analyzeVehicleImage, generateRouteRecommendations } from "./openai";
 import { calculateReadTime } from "./readTime";
+import { generatePublicShareHTML } from "./public-share";
 import multer from "multer";
 import { z } from "zod";
 import path from "path";
@@ -928,6 +929,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching convoy participants:", error);
       res.status(500).json({ message: "Failed to fetch convoy participants" });
+    }
+  });
+
+  // Server-side rendered public sharing page for social media crawlers
+  app.get("/share/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(404).send("Drive log not found");
+      }
+
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const html = await generatePublicShareHTML(id, baseUrl);
+      
+      res.setHeader('Content-Type', 'text/html');
+      res.send(html);
+    } catch (error) {
+      console.error("Error generating public share page:", error);
+      res.status(500).send("Error loading drive log");
     }
   });
 
