@@ -16,41 +16,21 @@ import {
 import { generateDriveBlog, analyzeVehicleImage, generateRouteRecommendations } from "./openai";
 import { calculateReadTime } from "./readTime";
 import { generatePublicShareHTML } from "./public-share";
-import multer from "multer";
+import { getUploadMiddleware, getImageUrl, isS3Configured, deleteImage } from "./storage-service";
 import { z } from "zod";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists for local fallback
 const uploadsDir = path.join(process.cwd(), 'uploads');
 if (!existsSync(uploadsDir)) {
   mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configure multer for file uploads
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, uploadsDir);
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
-  }),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only images and videos are allowed'));
-    }
-  },
-});
+// Get upload middleware (S3 or local based on configuration)
+const upload = getUploadMiddleware();
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Serve uploaded files statically
@@ -435,7 +415,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle title image upload if present
       const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
       if (titleImageFile) {
-        driveLogData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
+        if (isS3Configured()) {
+          // For S3/cloud storage, use the location URL provided by multer-s3
+          driveLogData.titleImageUrl = titleImageFile.location || titleImageFile.key;
+        } else {
+          // For local storage, use the uploads path
+          driveLogData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
+        }
         console.log('Drive log creation - Title image added:', driveLogData.titleImageUrl);
       }
       
