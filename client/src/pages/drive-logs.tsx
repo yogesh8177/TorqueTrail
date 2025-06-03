@@ -783,7 +783,7 @@ export default function DriveLogs() {
           <div className="flex-1 overflow-y-auto pr-2 space-y-1">
             {editingDriveLog && (
               <form
-              onSubmit={(e) => {
+                onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
                 updateDriveLogMutation.mutate({
@@ -811,8 +811,8 @@ export default function DriveLogs() {
                   />
                 </div>
 
-                <div>
-                  <Label htmlFor="edit-titleImage" className="text-sm font-medium">Title Image</Label>
+                <div className="border-2 border-blue-500 p-4 rounded">
+                  <Label htmlFor="edit-titleImage" className="text-sm font-medium text-blue-600">TITLE IMAGE FIELD (DEBUG)</Label>
                   {editingDriveLog.titleImageUrl && !editTitleImage && (
                     <div className="mt-2 mb-2">
                       <p className="text-sm text-muted-foreground mb-2">Current image:</p>
@@ -828,7 +828,7 @@ export default function DriveLogs() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setEditTitleImage(e.target.files?.[0] || null)}
-                    className="mt-1"
+                    className="mt-1 border-blue-500"
                   />
                   {editTitleImage && (
                     <div className="mt-2">
@@ -840,6 +840,7 @@ export default function DriveLogs() {
                       />
                     </div>
                   )}
+                  <p className="text-xs text-blue-600 mt-1">DEBUG: This field should be visible</p>
                 </div>
                 
                 <div>
@@ -1103,7 +1104,7 @@ export default function DriveLogs() {
                 </Button>
               </div>
             </form>
-          )}
+            )}
           </div>
         </DialogContent>
       </Dialog>
