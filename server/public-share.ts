@@ -75,10 +75,6 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
       }
     }
     
-    // Add timestamp for cache busting
-    const timestamp = Date.now();
-    const cacheBustedImageUrl = `${imageUrl}?v=${timestamp}`;
-
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -89,29 +85,30 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <meta name="description" content="${description} - Shared on TorqueTrail by ${authorName}">
     
     <!-- Open Graph meta tags -->
-    <meta property="og:title" content="${driveLog.title} - TorqueTrail">
-    <meta property="og:description" content="${description} by ${authorName}">
-    <meta property="og:image" content="${cacheBustedImageUrl}">
-    <meta property="og:image:secure_url" content="${cacheBustedImageUrl}">
+    <meta property="og:title" content="${driveLog.title}">
+    <meta property="og:description" content="${description}">
+    <meta property="og:image" content="${imageUrl}">
+    <meta property="og:image:secure_url" content="${imageUrl.replace('http://', 'https://')}">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="${driveLog.title} - Drive log shared on TorqueTrail">
+    <meta property="og:image:alt" content="${driveLog.title}">
     <meta property="og:url" content="${shareUrl}">
-    <meta property="og:type" content="article">
+    <meta property="og:type" content="website">
     <meta property="og:site_name" content="TorqueTrail">
-    <meta property="article:author" content="${authorName}">
     
     <!-- Twitter Card meta tags -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="${driveLog.title} - TorqueTrail">
-    <meta name="twitter:description" content="${description} by ${authorName}">
-    <meta name="twitter:image" content="${cacheBustedImageUrl}">
-    <meta name="twitter:image:alt" content="${driveLog.title} - Drive log shared on TorqueTrail">
+    <meta name="twitter:site" content="@TorqueTrail">
+    <meta name="twitter:title" content="${driveLog.title}">
+    <meta name="twitter:description" content="${description}">
+    <meta name="twitter:image" content="${imageUrl}">
+    <meta name="twitter:image:alt" content="${driveLog.title}">
     
-    <!-- WhatsApp specific meta tags -->
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
+    <!-- Additional meta tags for better compatibility -->
+    <meta property="og:locale" content="en_US">
+    <meta name="robots" content="index, follow">
+    <meta name="theme-color" content="#3b82f6">
     
     <!-- Additional meta tags -->
     <meta name="author" content="${authorName}">
