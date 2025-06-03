@@ -3,6 +3,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useParams } from "wouter";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ interface DriveLogFormData {
 export default function DriveLogs() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const params = useParams();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [pitstops, setPitstops] = useState<PitstopLocation[]>([]);
@@ -102,6 +104,19 @@ export default function DriveLogs() {
       setExistingPitstopImages(existingImages);
     }
   }, [editingDriveLogPitstops]);
+
+  // Handle shared drive log URLs
+  useEffect(() => {
+    if (params.id && driveLogs && Array.isArray(driveLogs)) {
+      const driveLogId = parseInt(params.id);
+      const sharedDriveLog = driveLogs.find((log: DriveLog) => log.id === driveLogId);
+      
+      if (sharedDriveLog) {
+        setSelectedDriveLog(sharedDriveLog);
+        setShowDetailDialog(true);
+      }
+    }
+  }, [params.id, driveLogs]);
 
   const form = useForm<DriveLogFormData>({
     defaultValues: {

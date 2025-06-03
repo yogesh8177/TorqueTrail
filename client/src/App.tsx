@@ -37,6 +37,7 @@ function Router() {
       <Route path="/convoys" component={Convoys} />
       <Route path="/convoy/:id" component={ConvoyDetail} />
       <Route path="/drive-logs" component={DriveLogs} />
+      <Route path="/drive-logs/:id" component={DriveLogs} />
       <Route path="/profile" component={Profile} />
       <Route path="/routes" component={Routes} />
       <Route component={NotFound} />
