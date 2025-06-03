@@ -1006,6 +1006,148 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Homepage live preview route for social media sharing
+  app.get("/preview", async (req, res) => {
+    try {
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      const html = `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TorqueTrail - Ultimate Automotive Social Platform</title>
+  <meta name="description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide.">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="${baseUrl}">
+  <meta property="og:title" content="TorqueTrail - Ultimate Automotive Social Platform">
+  <meta property="og:description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide.">
+  <meta property="og:image" content="${baseUrl}/generated-icon.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="TorqueTrail">
+  <meta property="og:locale" content="en_US">
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="${baseUrl}">
+  <meta property="twitter:title" content="TorqueTrail - Ultimate Automotive Social Platform">
+  <meta property="twitter:description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide.">
+  <meta property="twitter:image" content="${baseUrl}/generated-icon.png">
+  
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      margin: 0;
+      padding: 40px 20px;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      background: white;
+      border-radius: 20px;
+      padding: 40px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      max-width: 600px;
+    }
+    h1 {
+      color: #2d3748;
+      margin-bottom: 20px;
+      font-size: 2.5rem;
+    }
+    p {
+      color: #4a5568;
+      font-size: 1.2rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 20px;
+      margin: 30px 0;
+    }
+    .feature {
+      padding: 20px;
+      background: #f7fafc;
+      border-radius: 10px;
+      border: 2px solid #e2e8f0;
+    }
+    .feature h3 {
+      color: #2d3748;
+      margin: 0 0 10px 0;
+      font-size: 1.1rem;
+    }
+    .feature p {
+      color: #718096;
+      margin: 0;
+      font-size: 0.9rem;
+    }
+    .cta {
+      background: #667eea;
+      color: white;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 10px;
+      font-size: 1.1rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .cta:hover {
+      background: #5a67d8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚗 TorqueTrail</h1>
+    <p>The ultimate automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide.</p>
+    
+    <div class="features">
+      <div class="feature">
+        <h3>📍 Track Drives</h3>
+        <p>Log your journeys with detailed route information and pitstops</p>
+      </div>
+      <div class="feature">
+        <h3>👥 Join Convoys</h3>
+        <p>Organize and participate in group drives with real-time coordination</p>
+      </div>
+      <div class="feature">
+        <h3>📱 Share Stories</h3>
+        <p>Create engaging posts with photos and AI-generated travel blogs</p>
+      </div>
+      <div class="feature">
+        <h3>🏆 Community</h3>
+        <p>Connect with fellow enthusiasts and showcase your garage</p>
+      </div>
+    </div>
+    
+    <a href="${baseUrl}" class="cta">Join TorqueTrail Today</a>
+  </div>
+</body>
+</html>`;
+      
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Last-Modified', new Date().toUTCString());
+      res.send(html);
+    } catch (error) {
+      console.error('Error generating homepage preview:', error);
+      res.status(500).send('<h1>Error loading preview</h1>');
+    }
+  });
+
   // Server-side rendered public sharing page for social media crawlers
   app.get("/share/:id", async (req, res) => {
     try {

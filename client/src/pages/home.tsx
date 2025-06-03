@@ -50,7 +50,7 @@ export default function Home() {
   });
 
   const shareHomePage = async () => {
-    const shareUrl = window.location.origin;
+    const shareUrl = `${window.location.origin}/preview`;
     
     if (navigator.share) {
       try {
@@ -67,7 +67,7 @@ export default function Home() {
       navigator.clipboard.writeText(shareUrl);
       toast({
         title: "Link copied!",
-        description: "TorqueTrail homepage link has been copied to your clipboard.",
+        description: "TorqueTrail live preview link has been copied to your clipboard.",
       });
     }
   };
