@@ -61,83 +61,13 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <script type="module" src="/src/main.tsx"></script>
     
     <style>
-      /* Hide static content once React loads */
-      .static-content {
-        display: block;
-      }
-      .react-loaded .static-content {
-        display: none;
-      }
-      
-      /* Static fallback styles for social media crawlers */
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        margin: 0;
-        padding: 0;
-        background-color: #0a0a0a;
-        color: #ffffff;
-      }
-      .container {
-        max-width: 800px;
-        margin: 0 auto;
-        background: #1a1a1a;
-        border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+      /* Minimal styles for social media crawlers only */
+      .seo-only {
+        position: absolute;
+        left: -9999px;
+        width: 1px;
+        height: 1px;
         overflow: hidden;
-        margin-top: 20px;
-      }
-      .hero-image {
-        width: 100%;
-        height: 300px;
-        object-fit: cover;
-      }
-      .content {
-        padding: 24px;
-      }
-      .title {
-        font-size: 24px;
-        font-weight: bold;
-        margin: 0 0 8px 0;
-        color: #ffffff;
-      }
-      .author {
-        color: #94a3b8;
-        margin-bottom: 16px;
-      }
-      .description {
-        line-height: 1.6;
-        margin-bottom: 20px;
-        color: #e2e8f0;
-      }
-      .details {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        margin-bottom: 20px;
-      }
-      .detail {
-        padding: 12px;
-        background-color: #2a2a2a;
-        border-radius: 6px;
-      }
-      .detail-label {
-        font-weight: 600;
-        margin-bottom: 4px;
-        color: #ffffff;
-      }
-      .button {
-        display: inline-block;
-        background-color: #3b82f6;
-        color: white;
-        padding: 12px 24px;
-        border-radius: 6px;
-        text-decoration: none;
-        font-weight: 500;
-      }
-      .loading {
-        text-align: center;
-        padding: 40px;
-        color: #94a3b8;
       }
       
       /* React app container */
@@ -145,52 +75,17 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
         min-height: 100vh;
       }
     </style>
-    
-    <script>
-      // Mark when React has loaded
-      window.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-          document.body.classList.add('react-loaded');
-        }, 1000);
-      });
-    </script>
 </head>
 <body>
-    <!-- Static content for social media crawlers -->
-    <div class="static-content">
-        <div class="container">
-            ${driveLog.titleImageUrl ? `<img src="${imageUrl}" alt="${driveLog.title}" class="hero-image">` : ''}
-            <div class="content">
-                <h1 class="title">${driveLog.title}</h1>
-                <p class="author">Shared by ${authorName}</p>
-                ${description ? `<p class="description">${description}</p>` : ''}
-                
-                <div class="details">
-                    <div class="detail">
-                        <div class="detail-label">From</div>
-                        <div>${driveLog.startLocation}</div>
-                    </div>
-                    <div class="detail">
-                        <div class="detail-label">To</div>
-                        <div>${driveLog.endLocation}</div>
-                    </div>
-                    <div class="detail">
-                        <div class="detail-label">Distance</div>
-                        <div>${driveLog.distance} km</div>
-                    </div>
-                    ${vehicle ? `
-                    <div class="detail">
-                        <div class="detail-label">Vehicle</div>
-                        <div>${vehicle.year} ${vehicle.make} ${vehicle.model}</div>
-                    </div>
-                    ` : ''}
-                </div>
-                
-                <div class="loading">
-                    <p>Loading full experience...</p>
-                </div>
-            </div>
-        </div>
+    <!-- Hidden content for social media crawlers only -->
+    <div class="seo-only">
+        <h1>${driveLog.title}</h1>
+        <p>Shared by ${authorName}</p>
+        <p>${description || `Drive from ${driveLog.startLocation} to ${driveLog.endLocation}`}</p>
+        <p>From: ${driveLog.startLocation}</p>
+        <p>To: ${driveLog.endLocation}</p>
+        <p>Distance: ${driveLog.distance} km</p>
+        ${vehicle ? `<p>Vehicle: ${vehicle.year} ${vehicle.make} ${vehicle.model}</p>` : ''}
     </div>
     
     <!-- React app container -->
