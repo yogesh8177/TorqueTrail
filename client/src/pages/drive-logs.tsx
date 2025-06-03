@@ -502,14 +502,17 @@ export default function DriveLogs() {
                   )}
                 />
 
-                {/* Pitstop Management */}
-                <div className="space-y-4 border-2 border-dashed border-blue-300 p-4 rounded-lg bg-blue-50/50">
+                {/* Pitstop Management - Prominent Section */}
+                <div className="space-y-4 border-4 border-solid border-orange-400 p-6 rounded-lg bg-gradient-to-r from-orange-50 to-yellow-50 shadow-lg">
                   <div className="flex justify-between items-center">
-                    <Label className="text-lg font-bold text-blue-800">🗺️ Pitstops ({pitstops.length}/10)</Label>
+                    <div>
+                      <Label className="text-xl font-bold text-orange-800 block">PITSTOPS ({pitstops.length}/10)</Label>
+                      <p className="text-sm text-orange-700 mt-1">Add places you stopped during your journey</p>
+                    </div>
                     <Button
                       type="button"
                       variant="default"
-                      size="sm"
+                      size="lg"
                       onClick={() => {
                         if (pitstops.length < 10) {
                           setPitstops([...pitstops, {
@@ -522,12 +525,11 @@ export default function DriveLogs() {
                         }
                       }}
                       disabled={pitstops.length >= 10}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-3"
                     >
-                      ➕ Add Pitstop
+                      + ADD PITSTOP
                     </Button>
                   </div>
-                  <p className="text-sm text-blue-700">Add places you stopped during your journey (restaurants, scenic spots, gas stations, etc.)</p>
                   
                   {pitstops.length > 0 && (
                     <div className="space-y-2">
