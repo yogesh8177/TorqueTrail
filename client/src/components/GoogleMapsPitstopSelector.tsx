@@ -60,7 +60,10 @@ export default function GoogleMapsPitstopSelector({
 
         window.initMap = () => {
           console.log('GoogleMapsPitstopSelector: initMap callback called');
-          initializeMap();
+          // Wait for DOM to be ready
+          setTimeout(() => {
+            initializeMap();
+          }, 100);
         };
 
         document.head.appendChild(script);

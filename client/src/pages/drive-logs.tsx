@@ -502,18 +502,113 @@ export default function DriveLogs() {
                   )}
                 />
 
-                {/* Google Maps Pitstop Management */}
-                <div className="space-y-4 border-4 border-solid border-orange-400 p-6 rounded-lg bg-gradient-to-r from-orange-50 to-yellow-50 shadow-lg">
+                {/* Simple Pitstop Management - Always Visible */}
+                <div className="space-y-4 border-4 border-solid border-red-500 p-6 rounded-lg bg-red-50 min-h-[200px]">
                   <div className="mb-4">
-                    <Label className="text-xl font-bold text-orange-800 block">PITSTOPS WITH GOOGLE MAPS ({pitstops.length}/10)</Label>
-                    <p className="text-sm text-orange-700 mt-1">Click on the map to add pitstop locations with details and photos</p>
+                    <Label className="text-2xl font-bold text-red-800 block mb-2">🚗 PITSTOPS ({pitstops.length}/10)</Label>
+                    <p className="text-red-700 font-medium">Add places you stopped during your journey</p>
                   </div>
                   
-                  <GoogleMapsPitstopSelector
-                    pitstops={pitstops}
-                    onPitstopsChange={setPitstops}
-                    maxPitstops={10}
-                  />
+                  <div className="flex gap-4 mb-4">
+                    <Button
+                      type="button"
+                      variant="default"
+                      onClick={() => {
+                        if (pitstops.length < 10) {
+                          setPitstops([...pitstops, {
+                            name: `Pitstop ${pitstops.length + 1}`,
+                            latitude: 0,
+                            longitude: 0,
+                            type: 'other' as const,
+                            orderIndex: pitstops.length,
+                            description: '',
+                            address: ''
+                          }]);
+                        }
+                      }}
+                      disabled={pitstops.length >= 10}
+                      className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                    >
+                      ➕ Add Pitstop
+                    </Button>
+                    
+                    {pitstops.length > 0 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setPitstops([])}
+                        className="border-red-300 text-red-700"
+                      >
+                        Clear All
+                      </Button>
+                    )}
+                  </div>
+
+                  {pitstops.length > 0 && (
+                    <div className="space-y-3">
+                      <h4 className="font-semibold text-red-800">Your Pitstops:</h4>
+                      {pitstops.map((pitstop, index) => (
+                        <div key={index} className="bg-white p-4 rounded border-2 border-red-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-red-800">#{index + 1}</span>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                setPitstops(pitstops.filter((_, i) => i !== index));
+                              }}
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                          <div className="grid grid-cols-1 gap-2">
+                            <Input
+                              placeholder="Pitstop name"
+                              value={pitstop.name}
+                              onChange={(e) => {
+                                const updated = [...pitstops];
+                                updated[index] = { ...updated[index], name: e.target.value };
+                                setPitstops(updated);
+                              }}
+                            />
+                            <Input
+                              placeholder="Address or location"
+                              value={pitstop.address || ''}
+                              onChange={(e) => {
+                                const updated = [...pitstops];
+                                updated[index] = { ...updated[index], address: e.target.value };
+                                setPitstops(updated);
+                              }}
+                            />
+                            <select
+                              value={pitstop.type}
+                              onChange={(e) => {
+                                const updated = [...pitstops];
+                                updated[index] = { ...updated[index], type: e.target.value as any };
+                                setPitstops(updated);
+                              }}
+                              className="p-2 border rounded"
+                            >
+                              <option value="food">Food & Dining</option>
+                              <option value="fuel">Fuel Station</option>
+                              <option value="scenic">Scenic Spot</option>
+                              <option value="rest">Rest Area</option>
+                              <option value="attraction">Attraction</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {pitstops.length === 0 && (
+                    <div className="text-center py-8 text-red-600">
+                      <p className="text-lg">No pitstops added yet</p>
+                      <p className="text-sm">Click "Add Pitstop" to get started</p>
+                    </div>
+                  )}
                 </div>
 
                 <div>
