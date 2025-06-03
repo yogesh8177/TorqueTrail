@@ -128,7 +128,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle image upload if present
       let vehicleData = { ...req.body, userId };
       if (req.file) {
-        const imagePath = `/uploads/${req.file.filename}`;
+        const imagePath = `/persistent-uploads/${req.file.filename}`;
         vehicleData.imageUrl = imagePath;
       }
       
@@ -178,7 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle image upload if present
       let updates = { ...req.body };
       if (req.file) {
-        const imagePath = `/uploads/${req.file.filename}`;
+        const imagePath = `/persistent-uploads/${req.file.filename}`;
         updates.imageUrl = imagePath;
       }
       
@@ -539,7 +539,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle title image upload if present
       const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
       if (titleImageFile) {
-        driveLogData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
+        driveLogData.titleImageUrl = `/persistent-uploads/${titleImageFile.filename}`;
       }
       
       // Create the drive log first
@@ -612,7 +612,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log('Old image file not found or already deleted:', oldImagePath);
           }
         }
-        updateData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
+        updateData.titleImageUrl = `/persistent-uploads/${titleImageFile.filename}`;
       }
 
       // Convert string timestamps to Date objects
