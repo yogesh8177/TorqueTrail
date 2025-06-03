@@ -41,6 +41,7 @@ export default function DriveLogs() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingDriveLog, setEditingDriveLog] = useState<DriveLog | null>(null);
+  const [editTitleImage, setEditTitleImage] = useState<File | null>(null);
   const [expandedPitstops, setExpandedPitstops] = useState<{[key: number]: boolean}>({});
   const [editPitstops, setEditPitstops] = useState<PitstopLocation[]>([]);
   const [editPitstopImages, setEditPitstopImages] = useState<{[key: number]: File[]}>({});
@@ -200,12 +201,22 @@ export default function DriveLogs() {
   });
 
   const updateDriveLogMutation = useMutation({
-    mutationFn: async (data: { id: number; updates: Partial<DriveLogFormData> }) => {
-      // First update the drive log
+    mutationFn: async (data: { id: number; updates: Partial<DriveLogFormData>; titleImage?: File }) => {
+      // First update the drive log with title image if provided
+      const formData = new FormData();
+      Object.entries(data.updates).forEach(([key, value]) => {
+        if (value !== undefined) {
+          formData.append(key, value.toString());
+        }
+      });
+
+      if (data.titleImage) {
+        formData.append('titleImage', data.titleImage);
+      }
+
       const response = await fetch(`/api/drive-logs/${data.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data.updates),
+        body: formData,
       });
 
       if (!response.ok) {
@@ -300,6 +311,7 @@ export default function DriveLogs() {
       
       setShowEditDialog(false);
       setEditingDriveLog(null);
+      setEditTitleImage(null);
       setEditPitstops([]);
       setEditPitstopImages({});
       setExistingPitstopImages({});
@@ -767,7 +779,8 @@ export default function DriveLogs() {
                     startLocation: formData.get('startLocation') as string,
                     endLocation: formData.get('endLocation') as string,
                     distance: formData.get('distance') as string,
-                  }
+                  },
+                  titleImage: editTitleImage || undefined
                 });
               }}
               className="space-y-6"
@@ -818,7 +831,7 @@ export default function DriveLogs() {
               </div>
 
               <div>
-                <Label htmlFor="edit-distance">Distance (miles)</Label>
+                <Label htmlFor="edit-distance">Distance (km)</Label>
                 <Input
                   id="edit-distance"
                   name="distance"
@@ -826,6 +839,37 @@ export default function DriveLogs() {
                   type="number"
                   placeholder="Distance"
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-titleImage" className="text-sm font-medium">Title Image</Label>
+                {editingDriveLog.titleImageUrl && !editTitleImage && (
+                  <div className="mt-2 mb-2">
+                    <p className="text-sm text-muted-foreground mb-2">Current image:</p>
+                    <img
+                      src={editingDriveLog.titleImageUrl}
+                      alt={editingDriveLog.title}
+                      className="w-full h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
+                <Input
+                  id="edit-titleImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setEditTitleImage(e.target.files?.[0] || null)}
+                  className="mt-1"
+                />
+                {editTitleImage && (
+                  <div className="mt-2">
+                    <p className="text-sm text-muted-foreground mb-2">New image preview:</p>
+                    <img
+                      src={URL.createObjectURL(editTitleImage)}
+                      alt="Preview"
+                      className="w-full h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex gap-4">
