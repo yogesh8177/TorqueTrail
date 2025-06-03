@@ -1393,13 +1393,33 @@ export default function DriveLogs() {
               )}
 
               <div className="flex gap-3 pt-4">
-                <Button
-                  variant="destructive"
-                  onClick={() => handleDelete(selectedDriveLog)}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Drive Log
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="default">
+                      <Share className="h-4 w-4 mr-2" />
+                      Share Drive Log
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleShare(selectedDriveLog, 'facebook')}>
+                      <Facebook className="mr-2 h-4 w-4" />
+                      Share on Facebook
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare(selectedDriveLog, 'twitter')}>
+                      <Twitter className="mr-2 h-4 w-4" />
+                      Share on Twitter
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleShare(selectedDriveLog, 'instagram')}>
+                      <Instagram className="mr-2 h-4 w-4" />
+                      Copy for Instagram
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleShare(selectedDriveLog, 'copy')}>
+                      <Copy className="mr-2 h-4 w-4" />
+                      Copy Public Link
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="outline"
                   onClick={() => setShowDetailDialog(false)}
