@@ -897,6 +897,109 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public API routes (no authentication required)
+  app.get('/api/public/drive-logs/:id', async (req, res) => {
+    try {
+      const driveLogId = parseInt(req.params.id);
+      const driveLog = await storage.getDriveLog(driveLogId);
+      
+      if (!driveLog) {
+        return res.status(404).json({ message: 'Drive log not found' });
+      }
+      
+      // Remove sensitive user data for public view
+      const publicDriveLog = {
+        id: driveLog.id,
+        title: driveLog.title,
+        description: driveLog.description,
+        startLocation: driveLog.startLocation,
+        endLocation: driveLog.endLocation,
+        distance: driveLog.distance,
+        duration: driveLog.duration,
+        startTime: driveLog.startTime,
+        endTime: driveLog.endTime,
+        vehicleId: driveLog.vehicleId,
+        createdAt: driveLog.createdAt,
+        routeName: driveLog.routeName,
+        weatherConditions: driveLog.weatherConditions,
+        notes: driveLog.notes,
+      };
+      
+      res.json(publicDriveLog);
+    } catch (error) {
+      console.error('Error fetching public drive log:', error);
+      res.status(500).json({ message: 'Failed to fetch drive log' });
+    }
+  });
+
+  app.get('/api/public/pitstops/:driveLogId', async (req, res) => {
+    try {
+      const driveLogId = parseInt(req.params.driveLogId);
+      const pitstops = await storage.getPitstopsByDriveLog(driveLogId);
+      res.json(pitstops);
+    } catch (error) {
+      console.error('Error fetching public pitstops:', error);
+      res.status(500).json({ message: 'Failed to fetch pitstops' });
+    }
+  });
+
+  app.get('/api/public/vehicles/:id', async (req, res) => {
+    try {
+      const vehicleId = parseInt(req.params.id);
+      const vehicle = await storage.getVehicle(vehicleId);
+      
+      if (!vehicle) {
+        return res.status(404).json({ message: 'Vehicle not found' });
+      }
+      
+      // Remove sensitive user data for public view
+      const publicVehicle = {
+        id: vehicle.id,
+        make: vehicle.make,
+        model: vehicle.model,
+        year: vehicle.year,
+        color: vehicle.color,
+        type: vehicle.type,
+      };
+      
+      res.json(publicVehicle);
+    } catch (error) {
+      console.error('Error fetching public vehicle:', error);
+      res.status(500).json({ message: 'Failed to fetch vehicle' });
+    }
+  });
+
+  app.post('/api/public/drive-logs/:id/like', async (req, res) => {
+    try {
+      const driveLogId = parseInt(req.params.id);
+      const clientId = req.body.clientId;
+      
+      if (!clientId) {
+        return res.status(400).json({ message: 'Client ID required' });
+      }
+      
+      // Check if drive log exists
+      const driveLog = await storage.getDriveLog(driveLogId);
+      if (!driveLog) {
+        return res.status(404).json({ message: 'Drive log not found' });
+      }
+      
+      // Simple like tracking using clientId (you could implement this in storage)
+      // For now, we'll return mock data
+      const hasLiked = Math.random() > 0.5; // Mock like status
+      const likeCount = Math.floor(Math.random() * 50); // Mock like count
+      
+      res.json({
+        liked: hasLiked,
+        likeCount: likeCount,
+        message: hasLiked ? 'Drive log liked' : 'Like removed'
+      });
+    } catch (error) {
+      console.error('Error handling like:', error);
+      res.status(500).json({ message: 'Failed to handle like' });
+    }
+  });
+
   // Comment routes
   app.post('/api/posts/:id/comments', isAuthenticated, async (req: any, res) => {
     try {

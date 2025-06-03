@@ -378,7 +378,7 @@ export default function DriveLogs() {
   };
 
   const handleShare = (driveLog: DriveLog, platform: string) => {
-    const url = `${window.location.origin}/drive-logs/${driveLog.id}`;
+    const url = `${window.location.origin}/share/${driveLog.id}`;
     const text = `Check out my drive log: ${driveLog.title} - ${driveLog.startLocation} to ${driveLog.endLocation}`;
     
     switch (platform) {
@@ -398,8 +398,8 @@ export default function DriveLogs() {
       case 'copy':
         navigator.clipboard.writeText(url);
         toast({
-          title: "Link copied",
-          description: "Drive log link copied to clipboard!",
+          title: "Public link copied",
+          description: "Anyone with this link can view your drive log!",
         });
         break;
     }

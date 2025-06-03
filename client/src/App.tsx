@@ -10,6 +10,7 @@ import Garage from "@/pages/garage";
 import Convoys from "@/pages/convoys";
 import ConvoyDetail from "@/pages/convoy-detail";
 import DriveLogs from "@/pages/drive-logs";
+import PublicDriveLog from "@/pages/public-drive-log";
 import Profile from "@/pages/profile";
 import Routes from "@/pages/routes";
 import NotFound from "@/pages/not-found";
@@ -25,6 +26,7 @@ function Router() {
     return (
       <Switch>
         <Route path="/" component={Landing} />
+        <Route path="/share/:id" component={PublicDriveLog} />
         <Route component={Landing} />
       </Switch>
     );
