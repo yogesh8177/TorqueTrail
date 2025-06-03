@@ -12,6 +12,7 @@ import ConvoyDetail from "@/pages/convoy-detail";
 import DriveLogs from "@/pages/drive-logs";
 import PublicDriveLog from "@/pages/public-drive-log";
 import Profile from "@/pages/profile";
+import UserPosts from "@/pages/user-posts";
 import Routes from "@/pages/routes";
 import NotFound from "@/pages/not-found";
 
@@ -41,6 +42,7 @@ function Router() {
       <Route path="/drive-logs" component={DriveLogs} />
       <Route path="/drive-logs/:id" component={DriveLogs} />
       <Route path="/profile" component={Profile} />
+      <Route path="/profile/posts" component={UserPosts} />
       <Route path="/routes" component={Routes} />
       <Route component={NotFound} />
     </Switch>

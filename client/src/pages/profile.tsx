@@ -155,7 +155,11 @@ export default function Profile() {
                 {postsLoading ? (
                   <Skeleton className="h-5 w-8 rounded" />
                 ) : (
-                  <Badge variant="secondary">
+                  <Badge 
+                    variant="secondary" 
+                    className="cursor-pointer hover:bg-secondary/80 transition-colors"
+                    onClick={() => setLocation('/profile/posts')}
+                  >
                     {(userPosts as any[])?.length || 0}
                   </Badge>
                 )}
