@@ -625,7 +625,7 @@ export default function DriveLogs() {
                   {pitstops.map((pitstop, index) => (
                     <Collapsible 
                       key={index}
-                      open={expandedPitstops[index] !== false}
+                      open={expandedPitstops[index] === true}
                       onOpenChange={(open) => {
                         setExpandedPitstops(prev => ({ ...prev, [index]: open }));
                       }}
@@ -638,7 +638,7 @@ export default function DriveLogs() {
                               <span className="text-sm text-muted-foreground">
                                 {pitstop.name || 'Untitled'}
                               </span>
-                              {expandedPitstops[index] !== false ? (
+                              {expandedPitstops[index] === true ? (
                                 <ChevronUp className="h-4 w-4" />
                               ) : (
                                 <ChevronDown className="h-4 w-4" />
@@ -1092,7 +1092,7 @@ export default function DriveLogs() {
                     {editPitstops.map((pitstop, index) => (
                       <Collapsible 
                         key={index}
-                        open={expandedEditPitstops[index] !== false}
+                        open={expandedEditPitstops[index] === true}
                         onOpenChange={(open) => {
                           setExpandedEditPitstops(prev => ({ ...prev, [index]: open }));
                         }}
@@ -1105,7 +1105,7 @@ export default function DriveLogs() {
                                 <span className="text-sm text-muted-foreground">
                                   {pitstop.name || 'Untitled'}
                                 </span>
-                                {expandedEditPitstops[index] !== false ? (
+                                {expandedEditPitstops[index] === true ? (
                                   <ChevronUp className="h-4 w-4" />
                                 ) : (
                                   <ChevronDown className="h-4 w-4" />
