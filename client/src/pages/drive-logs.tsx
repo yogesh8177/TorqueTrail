@@ -349,7 +349,7 @@ export default function DriveLogs() {
                     New Drive Log
                   </Button>
                 </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto sm:max-w-2xl w-[95vw] sm:w-full">
+          <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto w-[98vw] lg:w-full">
             <DialogHeader>
               <DialogTitle>Create New Drive Log</DialogTitle>
             </DialogHeader>
