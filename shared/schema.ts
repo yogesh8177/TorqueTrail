@@ -123,18 +123,12 @@ export const pitstops = pgTable("pitstops", {
   description: text("description"),
   latitude: decimal("latitude", { precision: 10, scale: 8 }).notNull(),
   longitude: decimal("longitude", { precision: 11, scale: 8 }).notNull(),
-  address: text("address"), // Full address from Google Maps
-  placeId: varchar("place_id"), // Google Places ID for reference
-  type: varchar("type").notNull(), // 'food', 'scenic', 'fuel', 'rest', 'attraction', 'other'
-  arrivalTime: timestamp("arrival_time"),
-  departureTime: timestamp("departure_time"),
-  duration: integer("duration"), // in minutes
-  rating: integer("rating"), // 1-5 stars
-  cost: decimal("cost", { precision: 8, scale: 2 }),
-  imageUrls: text("image_urls").array(), // Up to 3 images per pitstop
-  videoUrls: text("video_urls").array(),
+  address: varchar("address"),
+  placeId: varchar("place_id"),
+  type: varchar("type").notNull(),
+  orderIndex: integer("order_index").notNull(),
+  imageUrls: text("image_urls").array(),
   notes: text("notes"),
-  orderIndex: integer("order_index").notNull(), // Order of pitstop in the journey
   createdAt: timestamp("created_at").defaultNow(),
 });
 
