@@ -768,13 +768,14 @@ export default function DriveLogs() {
           setEditTitleImage(null);
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
             <DialogTitle>Edit Drive Log</DialogTitle>
           </DialogHeader>
           
-          {editingDriveLog && (
-            <form
+          <div className="flex-1 overflow-y-auto pr-2">
+            {editingDriveLog && (
+              <form
               onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
@@ -899,6 +900,7 @@ export default function DriveLogs() {
               </div>
             </form>
           )}
+          </div>
         </DialogContent>
       </Dialog>
 
