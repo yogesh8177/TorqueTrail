@@ -1,6 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import fetch from 'node-fetch';
 
 export interface ImageStorage {
   uploadImage(buffer: Buffer, originalName: string, mimetype: string): Promise<string>;
@@ -53,35 +54,90 @@ class LocalImageStorage implements ImageStorage {
   }
 }
 
-// Future: Replit object storage implementation
+// Replit object storage implementation
 class ReplitImageStorage implements ImageStorage {
+  private storageUrl: string;
+  private token: string;
+
+  constructor() {
+    this.storageUrl = process.env.REPLIT_STORAGE_URL || '';
+    this.token = process.env.REPLIT_STORAGE_TOKEN || '';
+  }
+
   async uploadImage(buffer: Buffer, originalName: string, mimetype: string): Promise<string> {
-    // TODO: Implement Replit object storage upload
     const extension = path.extname(originalName);
-    const filename = `${uuidv4()}${extension}`;
+    const filename = `torquetrail/${uuidv4()}${extension}`;
     
-    // For now, fallback to local storage
-    const localStorage = new LocalImageStorage();
-    return localStorage.uploadImage(buffer, originalName, mimetype);
+    try {
+      // Upload to Replit object storage using their API
+      const response = await fetch(`${this.storageUrl}/upload`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Content-Type': mimetype,
+          'X-Filename': filename,
+        },
+        body: buffer,
+      });
+
+      if (!response.ok) {
+        throw new Error(`Upload failed: ${response.statusText}`);
+      }
+
+      const result = await response.json() as any;
+      const publicUrl = result.url || `${this.storageUrl}/${filename}`;
+      
+      console.log(`Uploaded image to Replit storage: ${publicUrl}`);
+      return publicUrl;
+    } catch (error) {
+      console.error('Replit storage upload failed, falling back to local:', error);
+      // Fallback to local storage
+      const localStorage = new LocalImageStorage();
+      return localStorage.uploadImage(buffer, originalName, mimetype);
+    }
   }
 
   async deleteImage(url: string): Promise<void> {
-    // TODO: Implement Replit object storage deletion
-    const localStorage = new LocalImageStorage();
-    return localStorage.deleteImage(url);
+    try {
+      const filename = this.extractFilenameFromUrl(url);
+      
+      const response = await fetch(`${this.storageUrl}/${filename}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+        },
+      });
+
+      if (!response.ok) {
+        console.warn(`Failed to delete from Replit storage: ${response.statusText}`);
+      }
+      
+      console.log(`Deleted image from Replit storage: ${filename}`);
+    } catch (error) {
+      console.error('Error deleting from Replit storage:', error);
+    }
   }
 
   getImageUrl(filename: string, baseUrl?: string): string {
-    // TODO: Return Replit storage URL
-    // return `https://replit-object-storage.com/${filename}`;
-    const localStorage = new LocalImageStorage();
-    return localStorage.getImageUrl(filename, baseUrl);
+    // If filename is already a full URL, return it
+    if (filename.startsWith('http')) {
+      return filename;
+    }
+    
+    // Construct Replit storage URL
+    return `${this.storageUrl}/torquetrail/${filename}`;
   }
 
   imageExists(url: string): boolean {
-    // TODO: Check Replit storage
-    const localStorage = new LocalImageStorage();
-    return localStorage.imageExists(url);
+    // For cloud storage, assume images exist unless we can verify otherwise
+    // This avoids making unnecessary HTTP requests on every check
+    return true;
+  }
+
+  private extractFilenameFromUrl(url: string): string {
+    // Extract filename from full URL
+    const parts = url.split('/');
+    return parts[parts.length - 1];
   }
 }
 

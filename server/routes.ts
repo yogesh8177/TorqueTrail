@@ -20,6 +20,7 @@ import { getUploadMiddleware, getImageUrl, isS3Configured, deleteImage, imageExi
 import { imageStorage } from "./image-manager";
 import { z } from "zod";
 import { fileURLToPath } from "url";
+import * as fs from "fs";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -416,14 +417,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Handle title image upload if present
       const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
       if (titleImageFile) {
-        if (isS3Configured()) {
-          // For S3/cloud storage, use the location URL provided by multer-s3
-          driveLogData.titleImageUrl = titleImageFile.location || titleImageFile.key;
-        } else {
-          // For local storage, use the uploads path
+        try {
+          // Convert file buffer and upload using image manager
+          const buffer = fs.readFileSync(titleImageFile.path);
+          const imageUrl = await imageStorage.uploadImage(buffer, titleImageFile.originalname, titleImageFile.mimetype);
+          driveLogData.titleImageUrl = imageUrl;
+          console.log('Drive log creation - Title image uploaded:', driveLogData.titleImageUrl);
+          
+          // Clean up temporary file if using local storage
+          if (titleImageFile.path && fs.existsSync(titleImageFile.path)) {
+            fs.unlinkSync(titleImageFile.path);
+          }
+        } catch (error) {
+          console.error('Error uploading title image:', error);
+          // Fallback to original file path
           driveLogData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
         }
-        console.log('Drive log creation - Title image added:', driveLogData.titleImageUrl);
       }
       
       // Create the drive log first
@@ -968,6 +977,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error fetching convoy participants:", error);
       res.status(500).json({ message: "Failed to fetch convoy participants" });
     }
+  });
+
+  // Storage configuration endpoint
+  app.get('/api/storage/config', (req, res) => {
+    const hasReplitStorage = !!(process.env.REPLIT_STORAGE_URL && process.env.REPLIT_STORAGE_TOKEN);
+    res.json({
+      type: hasReplitStorage ? 'replit' : 'local',
+      configured: hasReplitStorage,
+      url: hasReplitStorage ? process.env.REPLIT_STORAGE_URL : undefined
+    });
   });
 
   // Server-side rendered public sharing page for social media crawlers
