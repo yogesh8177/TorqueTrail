@@ -36,22 +36,24 @@ export default function PublicDriveLog() {
     enabled: !!driveLog?.vehicleId,
   });
 
-  // Generate or get client ID for likes
-  const getClientId = () => {
-    let clientId = localStorage.getItem('publicClientId');
-    if (!clientId) {
-      clientId = 'public_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-      localStorage.setItem('publicClientId', clientId);
+  // Generate or get client ID for likes (use useEffect to ensure it's stable)
+  const [clientId, setClientId] = useState<string>('');
+
+  useEffect(() => {
+    let storedClientId = localStorage.getItem('publicClientId');
+    if (!storedClientId) {
+      storedClientId = 'public_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('publicClientId', storedClientId);
     }
-    return clientId;
-  };
+    setClientId(storedClientId);
+  }, []);
 
   // Fetch initial like status
   const { data: likeData } = useQuery({
-    queryKey: ['/api/public/drive-logs/' + params.id + '/likes', getClientId()],
-    enabled: !!params.id,
+    queryKey: ['/api/public/drive-logs/' + params.id + '/likes', clientId],
+    enabled: !!params.id && !!clientId,
     queryFn: async () => {
-      const response = await fetch(`/api/public/drive-logs/${params.id}/likes?clientId=${getClientId()}`);
+      const response = await fetch(`/api/public/drive-logs/${params.id}/likes?clientId=${clientId}`);
       if (!response.ok) throw new Error('Failed to fetch likes');
       return response.json();
     },
@@ -68,7 +70,8 @@ export default function PublicDriveLog() {
   // Like mutation for public users
   const likeMutation = useMutation({
     mutationFn: async () => {
-      const clientId = getClientId();
+      if (!clientId) throw new Error('Client ID not ready');
+      
       const response = await fetch(`/api/public/drive-logs/${params.id}/like`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -87,7 +90,7 @@ export default function PublicDriveLog() {
       
       // Invalidate and refetch like data
       queryClient.invalidateQueries({ 
-        queryKey: ['/api/public/drive-logs/' + params.id + '/likes', getClientId()] 
+        queryKey: ['/api/public/drive-logs/' + params.id + '/likes', clientId] 
       });
       
       toast({
@@ -104,10 +107,7 @@ export default function PublicDriveLog() {
     },
   });
 
-  // Generate unique client ID for anonymous likes
-  const generateClientId = () => {
-    return 'public_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  };
+
 
   // Handle share functionality
   const handleShare = () => {
