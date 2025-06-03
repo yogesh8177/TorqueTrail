@@ -188,6 +188,30 @@ export async function setupAuth(app: Express) {
     })(req, res, next);
   });
 
+  // Google OAuth routes
+  app.get("/api/auth/google", passport.authenticate("google", {
+    scope: ["profile", "email"]
+  }));
+
+  app.get("/api/auth/google/callback", 
+    passport.authenticate("google", { failureRedirect: "/login" }),
+    (req, res) => {
+      res.redirect("/");
+    }
+  );
+
+  // Facebook OAuth routes
+  app.get("/api/auth/facebook", passport.authenticate("facebook", {
+    scope: ["email"]
+  }));
+
+  app.get("/api/auth/facebook/callback",
+    passport.authenticate("facebook", { failureRedirect: "/login" }),
+    (req, res) => {
+      res.redirect("/");
+    }
+  );
+
   app.get("/api/logout", (req, res) => {
     req.logout(() => {
       res.redirect(
