@@ -7,6 +7,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
 import { Plus, Route } from "lucide-react";
 import type { DriveLog, PitstopLocation } from "@shared/schema";
 
@@ -25,6 +26,7 @@ export default function DriveLogs() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [pitstops, setPitstops] = useState<PitstopLocation[]>([]);
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
@@ -49,17 +51,32 @@ export default function DriveLogs() {
   });
 
   const createDriveLogMutation = useMutation({
-    mutationFn: async (data: DriveLogFormData) => {
+    mutationFn: async (data: DriveLogFormData & { titleImage?: File }) => {
+      const formData = new FormData();
+      
+      // Add all form fields
+      Object.entries(data).forEach(([key, value]) => {
+        if (key === 'titleImage') return;
+        if (value instanceof Date) {
+          formData.append(key, value.toISOString());
+        } else if (value !== undefined && value !== null) {
+          formData.append(key, value.toString());
+        }
+      });
+
+      // Add pitstops data
+      if (pitstops.length > 0) {
+        formData.append('pitstopsData', JSON.stringify(pitstops));
+      }
+
+      // Add image if selected
+      if (selectedImage) {
+        formData.append('titleImage', selectedImage);
+      }
+
       return await apiRequest('/api/drive-logs', {
         method: 'POST',
-        body: JSON.stringify({
-          ...data,
-          pitstops: pitstops,
-          userId: user?.id
-        }),
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        body: formData,
       });
     },
     onSuccess: () => {
@@ -119,8 +136,8 @@ export default function DriveLogs() {
               <p>If you can see this yellow box, forms are working</p>
             </div>
 
-            {/* Basic Form Fields */}
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 mb-6">
+            {/* Complete Form with Pitstops */}
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <Input
                   {...form.register("title")}
@@ -156,13 +173,8 @@ export default function DriveLogs() {
                 className="w-full p-2 border rounded min-h-[100px]"
               />
 
-              <Button type="submit" disabled={createDriveLogMutation.isPending}>
-                {createDriveLogMutation.isPending ? "Creating..." : "Create Drive Log"}
-              </Button>
-            </form>
-
-            {/* PITSTOP SECTION */}
-            <div className="p-6 bg-red-100 border-4 border-red-500 rounded-lg">
+              {/* PITSTOP SECTION - Inside Form */}
+              <div className="p-6 bg-red-100 border-4 border-red-500 rounded-lg">
               <h3 className="text-xl font-bold text-red-800 mb-4">PITSTOPS ({pitstops.length}/10)</h3>
               <Button
                 type="button"
@@ -245,7 +257,55 @@ export default function DriveLogs() {
                   <p className="text-sm">Click "Add Pitstop" to get started</p>
                 </div>
               )}
-            </div>
+              </div>
+
+              {/* Image Upload Section */}
+              <div className="space-y-2">
+                <Label htmlFor="titleImage">Title Image</Label>
+                <Input
+                  id="titleImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSelectedImage(file);
+                    }
+                  }}
+                  className="mt-1"
+                />
+                {selectedImage && (
+                  <div className="mt-2">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Selected: {selectedImage.name}
+                    </p>
+                    <img
+                      src={URL.createObjectURL(selectedImage)}
+                      alt="Preview"
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowCreateDialog(false);
+                    form.reset();
+                    setSelectedImage(null);
+                    setPitstops([]);
+                  }}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={createDriveLogMutation.isPending}>
+                  {createDriveLogMutation.isPending ? "Creating..." : "Create Drive Log"}
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
       )}
