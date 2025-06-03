@@ -609,6 +609,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get pitstops for a drive log
+  app.get('/api/pitstops/:driveLogId', isAuthenticated, async (req, res) => {
+    try {
+      const driveLogId = parseInt(req.params.driveLogId);
+      const pitstops = await storage.getPitstopsByDriveLog(driveLogId);
+      res.json(pitstops);
+    } catch (error) {
+      console.error('Error fetching pitstops:', error);
+      res.status(500).json({ message: 'Failed to fetch pitstops' });
+    }
+  });
+
   // AI blog generation route
   app.post('/api/drive-logs/:id/generate-blog', isAuthenticated, async (req, res) => {
     try {

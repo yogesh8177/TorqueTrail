@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car, MoreVertical, Share, Edit, Facebook, Twitter, Instagram, Copy } from "lucide-react";
+import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car, MoreVertical, Share, Edit, Facebook, Twitter, Instagram, Copy, ChevronDown, ChevronUp } from "lucide-react";
 import type { DriveLog, PitstopLocation } from "@shared/schema";
 import GoogleMapsPitstopSelector from "@/components/GoogleMapsPitstopSelector";
 import PitstopImageUpload from "@/components/PitstopImageUpload";
@@ -38,6 +38,7 @@ export default function DriveLogs() {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [editingDriveLog, setEditingDriveLog] = useState<DriveLog | null>(null);
+  const [expandedPitstops, setExpandedPitstops] = useState<{[key: number]: boolean}>({});
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
     queryKey: ['/api/drive-logs'],
@@ -45,6 +46,12 @@ export default function DriveLogs() {
 
   const { data: vehicles } = useQuery({
     queryKey: ['/api/vehicles'],
+  });
+
+  // Fetch pitstops for selected drive log
+  const { data: selectedDriveLogPitstops } = useQuery({
+    queryKey: ['/api/pitstops', selectedDriveLog?.id],
+    enabled: !!selectedDriveLog?.id,
   });
 
   const form = useForm<DriveLogFormData>({
@@ -778,7 +785,13 @@ export default function DriveLogs() {
                   </p>
                 )}
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{driveLog.distance} miles</span>
+                  <div className="flex items-center gap-4">
+                    <span>{driveLog.distance} miles</span>
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      {driveLog.pitstops?.length || 0} pitstops
+                    </span>
+                  </div>
                   <span>{new Date(driveLog.startTime).toLocaleDateString()}</span>
                 </div>
               </CardContent>
@@ -846,6 +859,95 @@ export default function DriveLogs() {
                   )}
                 </div>
               </div>
+
+              {/* Pitstops Section */}
+              {selectedDriveLogPitstops && selectedDriveLogPitstops.length > 0 && (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <h3 className="font-medium text-lg">Pitstops ({selectedDriveLogPitstops.length})</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {selectedDriveLogPitstops.map((pitstop: any, index: number) => (
+                      <div key={pitstop.id} className="border rounded-lg overflow-hidden">
+                        <div 
+                          className="p-4 bg-muted/50 cursor-pointer hover:bg-muted/70 transition-colors"
+                          onClick={() => {
+                            setExpandedPitstops(prev => ({
+                              ...prev,
+                              [pitstop.id]: !prev[pitstop.id]
+                            }));
+                          }}
+                        >
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                              <div className="w-6 h-6 bg-primary text-primary-foreground rounded-full flex items-center justify-center text-sm font-medium">
+                                {index + 1}
+                              </div>
+                              <div>
+                                <h4 className="font-medium">{pitstop.name}</h4>
+                                <p className="text-sm text-muted-foreground capitalize">{pitstop.type}</p>
+                              </div>
+                            </div>
+                            {expandedPitstops[pitstop.id] ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        {expandedPitstops[pitstop.id] && (
+                          <div className="p-4 space-y-4">
+                            {pitstop.address && (
+                              <div>
+                                <p className="font-medium text-sm mb-1">Location</p>
+                                <p className="text-sm text-muted-foreground">{pitstop.address}</p>
+                              </div>
+                            )}
+                            
+                            {pitstop.description && (
+                              <div>
+                                <p className="font-medium text-sm mb-1">Description</p>
+                                <p className="text-sm text-muted-foreground">{pitstop.description}</p>
+                              </div>
+                            )}
+                            
+                            {pitstop.notes && (
+                              <div>
+                                <p className="font-medium text-sm mb-1">Notes</p>
+                                <p className="text-sm text-muted-foreground">{pitstop.notes}</p>
+                              </div>
+                            )}
+                            
+                            {pitstop.imageUrls && pitstop.imageUrls.length > 0 && (
+                              <div>
+                                <p className="font-medium text-sm mb-2">Images ({pitstop.imageUrls.length})</p>
+                                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                  {pitstop.imageUrls.map((imageUrl: string, imgIndex: number) => (
+                                    <div key={imgIndex} className="relative">
+                                      <img
+                                        src={imageUrl}
+                                        alt={`${pitstop.name} - Image ${imgIndex + 1}`}
+                                        className="w-full h-24 object-cover rounded border cursor-pointer hover:opacity-90 transition-opacity"
+                                        onClick={() => {
+                                          // Could implement image lightbox here
+                                          window.open(imageUrl, '_blank');
+                                        }}
+                                      />
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <Button
