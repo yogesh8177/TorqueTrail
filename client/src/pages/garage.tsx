@@ -226,10 +226,10 @@ export default function Garage() {
       if (editingVehicle) {
         updateVehicleMutation.mutate({
           id: editingVehicle.id,
-          updates: validatedData,
+          updates: { ...validatedData, image: uploadedImage },
         });
       } else {
-        createVehicleMutation.mutate(validatedData);
+        createVehicleMutation.mutate({ ...validatedData, image: uploadedImage });
       }
     } catch (error) {
       if (error instanceof z.ZodError) {
