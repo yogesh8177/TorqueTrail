@@ -148,6 +148,13 @@ export default function DriveLogs() {
 
       formData.append('pitstops', JSON.stringify(pitstops));
 
+      // Add pitstop images
+      Object.entries(pitstopImages).forEach(([pitstopIndex, images]) => {
+        images.forEach((image, imageIndex) => {
+          formData.append(`pitstop_${pitstopIndex}_image_${imageIndex}`, image);
+        });
+      });
+
       return await apiRequest('POST', '/api/drive-logs', formData);
     },
     onSuccess: () => {
@@ -880,7 +887,200 @@ export default function DriveLogs() {
                 )}
               </div>
 
+              {/* Pitstops Edit Section */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label className="text-base font-medium">Pitstops</Label>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (editPitstops.length >= 10) {
+                        toast({
+                          title: "Maximum pitstops reached",
+                          description: "You can add up to 10 pitstops per drive log",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+                      
+                      setEditPitstops([...editPitstops, {
+                        name: '',
+                        address: '',
+                        latitude: 0,
+                        longitude: 0,
+                        type: 'other',
+                        orderIndex: editPitstops.length,
+                        description: '',
+                      }]);
+                    }}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Add Pitstop
+                  </Button>
+                </div>
 
+                {editPitstops.length > 0 && (
+                  <div className="space-y-4">
+                    {editPitstops.map((pitstop, index) => (
+                      <div key={index} className="border rounded-lg p-4 space-y-4">
+                        <div className="flex justify-between items-center">
+                          <h4 className="font-medium">Pitstop {index + 1}</h4>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              const updated = editPitstops.filter((_, i) => i !== index);
+                              setEditPitstops(updated.map((p, i) => ({ ...p, orderIndex: i })));
+                              setEditPitstopImages(prev => {
+                                const newImages = { ...prev };
+                                delete newImages[index];
+                                return newImages;
+                              });
+                              setExistingPitstopImages(prev => {
+                                const newImages = { ...prev };
+                                delete newImages[index];
+                                return newImages;
+                              });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Remove
+                          </Button>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 gap-4">
+                          <div>
+                            <Label htmlFor={`edit-pitstop-name-${index}`}>Pitstop Name</Label>
+                            <Input
+                              id={`edit-pitstop-name-${index}`}
+                              placeholder="Enter pitstop name"
+                              value={pitstop.name}
+                              onChange={(e) => {
+                                const updated = [...editPitstops];
+                                updated[index] = { ...updated[index], name: e.target.value };
+                                setEditPitstops(updated);
+                              }}
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`edit-pitstop-type-${index}`}>Type</Label>
+                            <select
+                              id={`edit-pitstop-type-${index}`}
+                              value={pitstop.type}
+                              onChange={(e) => {
+                                const updated = [...editPitstops];
+                                updated[index] = { ...updated[index], type: e.target.value as any };
+                                setEditPitstops(updated);
+                              }}
+                              className="w-full p-2 border border-input rounded-md bg-background"
+                            >
+                              <option value="food">Food & Drink</option>
+                              <option value="scenic">Scenic View</option>
+                              <option value="fuel">Fuel Station</option>
+                              <option value="rest">Rest Area</option>
+                              <option value="attraction">Attraction</option>
+                              <option value="other">Other</option>
+                            </select>
+                          </div>
+                          
+                          <div>
+                            <Label htmlFor={`edit-pitstop-address-${index}`}>Address</Label>
+                            <Input
+                              id={`edit-pitstop-address-${index}`}
+                              placeholder="Enter address"
+                              value={pitstop.address || ''}
+                              onChange={(e) => {
+                                const updated = [...editPitstops];
+                                updated[index] = { ...updated[index], address: e.target.value };
+                                setEditPitstops(updated);
+                              }}
+                            />
+                          </div>
+                          
+                          <div>
+                            <Label>Pitstop Images</Label>
+                            
+                            {existingPitstopImages[index] && existingPitstopImages[index].length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-sm text-muted-foreground mb-2">Current images:</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {existingPitstopImages[index].map((imageUrl, imgIndex) => (
+                                    <img
+                                      key={imgIndex}
+                                      src={imageUrl}
+                                      alt={`Pitstop ${index + 1} image ${imgIndex + 1}`}
+                                      className="w-full h-24 object-cover rounded border"
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            
+                            <Input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files || []);
+                                setEditPitstopImages(prev => ({
+                                  ...prev,
+                                  [index]: files
+                                }));
+                              }}
+                              className="mt-2"
+                            />
+                            
+                            {editPitstopImages[index] && editPitstopImages[index].length > 0 && (
+                              <div className="mt-2">
+                                <p className="text-sm text-muted-foreground mb-2">New images preview:</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                  {editPitstopImages[index].map((file, imgIndex) => (
+                                    <div key={imgIndex} className="relative">
+                                      <img
+                                        src={URL.createObjectURL(file)}
+                                        alt={`Preview ${imgIndex + 1}`}
+                                        className="w-full h-24 object-cover rounded border"
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        className="absolute top-1 right-1 h-6 w-6 p-0 text-xs"
+                                        onClick={() => {
+                                          const updatedImages = [...editPitstopImages[index]];
+                                          updatedImages.splice(imgIndex, 1);
+                                          setEditPitstopImages(prev => ({
+                                            ...prev,
+                                            [index]: updatedImages
+                                          }));
+                                        }}
+                                      >
+                                        ×
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {editPitstops.length === 0 && (
+                  <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                    <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                    <p className="text-muted-foreground mb-2">No pitstops added yet</p>
+                    <p className="text-sm text-muted-foreground">Click "Add Pitstop" to start adding stops to your route</p>
+                  </div>
+                )}
+              </div>
 
               <div className="flex gap-4">
                 <Button
