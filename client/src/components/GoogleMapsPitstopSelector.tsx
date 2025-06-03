@@ -71,8 +71,14 @@ export default function GoogleMapsPitstopSelector({
     };
 
     const initializeMap = () => {
-      if (!mapRef.current) return;
+      console.log('GoogleMapsPitstopSelector: initializeMap called');
+      console.log('GoogleMapsPitstopSelector: mapRef.current:', mapRef.current);
+      if (!mapRef.current) {
+        console.log('GoogleMapsPitstopSelector: mapRef.current is null, returning');
+        return;
+      }
 
+      console.log('GoogleMapsPitstopSelector: Creating Google Maps instance...');
       const map = new window.google.maps.Map(mapRef.current, {
         zoom: 8,
         center: { lat: 12.9716, lng: 77.5946 }, // Default to Bangalore
@@ -81,7 +87,9 @@ export default function GoogleMapsPitstopSelector({
         fullscreenControl: true,
       });
 
+      console.log('GoogleMapsPitstopSelector: Map created successfully:', map);
       mapInstanceRef.current = map;
+      setIsMapLoaded(true);
 
       // Add click listener to add pitstops
       map.addListener('click', (event: any) => {
