@@ -181,6 +181,17 @@ export default function PublicDriveLog() {
           <p className="text-muted-foreground text-lg">{driveLog.description}</p>
         </div>
 
+        {/* Title Image */}
+        {driveLog.titleImageUrl && (
+          <div className="mb-6">
+            <img
+              src={driveLog.titleImageUrl}
+              alt={driveLog.title}
+              className="w-full h-64 md:h-80 object-cover rounded-lg border shadow-lg"
+            />
+          </div>
+        )}
+
         {/* Main Drive Log Card */}
         <Card className="mb-6">
           <CardHeader>

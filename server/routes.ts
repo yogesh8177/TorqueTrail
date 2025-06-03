@@ -923,6 +923,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         routeName: driveLog.routeName,
         weatherConditions: driveLog.weatherConditions,
         notes: driveLog.notes,
+        titleImageUrl: driveLog.titleImageUrl,
       };
       
       res.json(publicDriveLog);
