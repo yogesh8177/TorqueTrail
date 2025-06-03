@@ -61,20 +61,30 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <script type="module" src="/src/main.tsx"></script>
     
     <style>
+      /* Hide static content once React loads */
+      .static-content {
+        display: block;
+      }
+      .react-loaded .static-content {
+        display: none;
+      }
+      
+      /* Static fallback styles for social media crawlers */
       body {
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         margin: 0;
-        padding: 20px;
-        background-color: #f8fafc;
-        color: #1e293b;
+        padding: 0;
+        background-color: #0a0a0a;
+        color: #ffffff;
       }
       .container {
         max-width: 800px;
         margin: 0 auto;
-        background: white;
+        background: #1a1a1a;
         border-radius: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         overflow: hidden;
+        margin-top: 20px;
       }
       .hero-image {
         width: 100%;
@@ -88,14 +98,16 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
         font-size: 24px;
         font-weight: bold;
         margin: 0 0 8px 0;
+        color: #ffffff;
       }
       .author {
-        color: #64748b;
+        color: #94a3b8;
         margin-bottom: 16px;
       }
       .description {
         line-height: 1.6;
         margin-bottom: 20px;
+        color: #e2e8f0;
       }
       .details {
         display: grid;
@@ -105,12 +117,13 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
       }
       .detail {
         padding: 12px;
-        background-color: #f1f5f9;
+        background-color: #2a2a2a;
         border-radius: 6px;
       }
       .detail-label {
         font-weight: 600;
         margin-bottom: 4px;
+        color: #ffffff;
       }
       .button {
         display: inline-block;
@@ -124,40 +137,59 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
       .loading {
         text-align: center;
         padding: 40px;
-        color: #64748b;
+        color: #94a3b8;
+      }
+      
+      /* React app container */
+      #root {
+        min-height: 100vh;
       }
     </style>
+    
+    <script>
+      // Mark when React has loaded
+      window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(() => {
+          document.body.classList.add('react-loaded');
+        }, 1000);
+      });
+    </script>
 </head>
 <body>
-    <div class="container">
-        ${driveLog.titleImageUrl ? `<img src="${imageUrl}" alt="${driveLog.title}" class="hero-image">` : ''}
-        <div class="content">
-            <h1 class="title">${driveLog.title}</h1>
-            <p class="author">Shared by ${authorName}</p>
-            ${description ? `<p class="description">${description}</p>` : ''}
-            
-            <div class="details">
-                <div class="detail">
-                    <div class="detail-label">From</div>
-                    <div>${driveLog.startLocation}</div>
+    <!-- Static content for social media crawlers -->
+    <div class="static-content">
+        <div class="container">
+            ${driveLog.titleImageUrl ? `<img src="${imageUrl}" alt="${driveLog.title}" class="hero-image">` : ''}
+            <div class="content">
+                <h1 class="title">${driveLog.title}</h1>
+                <p class="author">Shared by ${authorName}</p>
+                ${description ? `<p class="description">${description}</p>` : ''}
+                
+                <div class="details">
+                    <div class="detail">
+                        <div class="detail-label">From</div>
+                        <div>${driveLog.startLocation}</div>
+                    </div>
+                    <div class="detail">
+                        <div class="detail-label">To</div>
+                        <div>${driveLog.endLocation}</div>
+                    </div>
+                    <div class="detail">
+                        <div class="detail-label">Distance</div>
+                        <div>${driveLog.distance} km</div>
+                    </div>
+                    ${vehicle ? `
+                    <div class="detail">
+                        <div class="detail-label">Vehicle</div>
+                        <div>${vehicle.year} ${vehicle.make} ${vehicle.model}</div>
+                    </div>
+                    ` : ''}
                 </div>
-                <div class="detail">
-                    <div class="detail-label">To</div>
-                    <div>${driveLog.endLocation}</div>
+                
+                <div class="loading">
+                    <p>Loading full experience...</p>
                 </div>
-                <div class="detail">
-                    <div class="detail-label">Distance</div>
-                    <div>${driveLog.distance} km</div>
-                </div>
-                ${vehicle ? `
-                <div class="detail">
-                    <div class="detail-label">Vehicle</div>
-                    <div>${vehicle.year} ${vehicle.make} ${vehicle.model}</div>
-                </div>
-                ` : ''}
             </div>
-            
-            <a href="${baseUrl}" class="button">Visit TorqueTrail</a>
         </div>
     </div>
     
