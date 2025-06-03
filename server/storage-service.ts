@@ -1,57 +1,24 @@
-import { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import multer from 'multer';
-import multerS3 from 'multer-s3';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
+import * as fs from 'fs';
 
-// S3 client configuration
-const s3Client = new S3Client({
-  region: process.env.AWS_REGION || 'us-east-1',
-  credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
-  },
-  endpoint: process.env.S3_ENDPOINT, // For S3-compatible services like DigitalOcean Spaces
-  forcePathStyle: process.env.S3_FORCE_PATH_STYLE === 'true', // Required for some S3-compatible services
-});
-
-const BUCKET_NAME = process.env.S3_BUCKET_NAME || 'torquetrail-images';
-
-// Multer configuration for S3 uploads
-export const s3Upload = multer({
-  storage: multerS3({
-    s3: s3Client,
-    bucket: BUCKET_NAME,
-    acl: 'public-read',
-    key: function (req, file, cb) {
+// Enhanced local storage with better persistence
+export const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      // Store in a persistent uploads directory
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
+      cb(null, uploadsDir);
+    },
+    filename: (req, file, cb) => {
+      // Generate UUID-based filename for better uniqueness
       const extension = path.extname(file.originalname);
       const filename = `${file.fieldname}-${uuidv4()}${extension}`;
       cb(null, filename);
-    },
-    contentType: multerS3.AUTO_CONTENT_TYPE,
-  }),
-  limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/') || file.mimetype.startsWith('video/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only images and videos are allowed'));
-    }
-  },
-});
-
-// Fallback to local storage if S3 is not configured
-export const localUpload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
     }
   }),
   limits: {
@@ -66,66 +33,36 @@ export const localUpload = multer({
   },
 });
 
-// Check if S3 is configured
-export function isS3Configured(): boolean {
-  return !!(
-    process.env.AWS_ACCESS_KEY_ID &&
-    process.env.AWS_SECRET_ACCESS_KEY &&
-    process.env.S3_BUCKET_NAME
-  );
-}
-
-// Get the appropriate upload middleware based on configuration
+// Get the upload middleware (simplified)
 export function getUploadMiddleware() {
-  return isS3Configured() ? s3Upload : localUpload;
+  return upload;
 }
 
 // Get public URL for an image
 export function getImageUrl(filename: string, baseUrl?: string): string {
-  if (isS3Configured()) {
-    // Return S3 URL
-    const endpoint = process.env.S3_ENDPOINT || `https://s3.${process.env.AWS_REGION || 'us-east-1'}.amazonaws.com`;
-    return `${endpoint}/${BUCKET_NAME}/${filename}`;
-  } else {
-    // Return local URL
-    return `${baseUrl || ''}/uploads/${filename}`;
-  }
+  return `${baseUrl || ''}/uploads/${filename}`;
 }
 
 // Delete an image from storage
 export async function deleteImage(filename: string): Promise<void> {
-  if (isS3Configured()) {
-    try {
-      await s3Client.send(new DeleteObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: filename,
-      }));
-    } catch (error) {
-      console.error('Error deleting image from S3:', error);
+  try {
+    const filePath = path.join(process.cwd(), 'uploads', filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`Deleted image: ${filename}`);
     }
-  } else {
-    // For local storage, we'll keep the existing file cleanup logic
-    // This would be handled in the routes where files are deleted
+  } catch (error) {
+    console.error('Error deleting image:', error);
   }
 }
 
-// Generate a signed URL for temporary access (useful for private images)
-export async function generateSignedUrl(filename: string, expiresIn: number = 3600): Promise<string> {
-  if (isS3Configured()) {
-    try {
-      const command = new GetObjectCommand({
-        Bucket: BUCKET_NAME,
-        Key: filename,
-      });
-      return await getSignedUrl(s3Client, command, { expiresIn });
-    } catch (error) {
-      console.error('Error generating signed URL:', error);
-      throw error;
-    }
-  } else {
-    // For local storage, return the direct URL
-    return `/uploads/${filename}`;
-  }
+// Check if cloud storage is configured (returns false for local storage)
+export function isS3Configured(): boolean {
+  return false;
 }
 
-export { s3Client, BUCKET_NAME };
+// Utility function to check if an image file exists
+export function imageExists(filename: string): boolean {
+  const filePath = path.join(process.cwd(), 'uploads', filename);
+  return fs.existsSync(filePath);
+}

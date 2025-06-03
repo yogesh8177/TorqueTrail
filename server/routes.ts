@@ -16,7 +16,8 @@ import {
 import { generateDriveBlog, analyzeVehicleImage, generateRouteRecommendations } from "./openai";
 import { calculateReadTime } from "./readTime";
 import { generatePublicShareHTML } from "./public-share";
-import { getUploadMiddleware, getImageUrl, isS3Configured, deleteImage } from "./storage-service";
+import { getUploadMiddleware, getImageUrl, isS3Configured, deleteImage, imageExists } from "./storage-service";
+import { imageStorage } from "./image-manager";
 import { z } from "zod";
 import { fileURLToPath } from "url";
 
