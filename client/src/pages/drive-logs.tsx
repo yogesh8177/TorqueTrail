@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Plus, Route } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car } from "lucide-react";
 import type { DriveLog, PitstopLocation } from "@shared/schema";
 
 interface DriveLogFormData {
@@ -28,6 +29,8 @@ export default function DriveLogs() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [pitstops, setPitstops] = useState<PitstopLocation[]>([]);
+  const [selectedDriveLog, setSelectedDriveLog] = useState<DriveLog | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
 
   const { data: driveLogs, isLoading: driveLogsLoading } = useQuery({
     queryKey: ['/api/drive-logs'],
@@ -104,8 +107,43 @@ export default function DriveLogs() {
     },
   });
 
+  const deleteDriveLogMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/drive-logs/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
+      toast({
+        title: "Success",
+        description: "Drive log deleted successfully!",
+      });
+      setShowDetailDialog(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete drive log",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmit = (data: DriveLogFormData) => {
     createDriveLogMutation.mutate(data);
+  };
+
+  const handleDelete = (driveLog: DriveLog) => {
+    if (confirm(`Are you sure you want to delete "${driveLog.title}"?`)) {
+      deleteDriveLogMutation.mutate(driveLog.id);
+    }
   };
 
   return (
@@ -336,7 +374,7 @@ export default function DriveLogs() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.isArray(driveLogs) && driveLogs.map((driveLog: DriveLog) => (
-            <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+            <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow">
               {driveLog.titleImageUrl && (
                 <div className="aspect-video w-full overflow-hidden">
                   <img
@@ -356,15 +394,119 @@ export default function DriveLogs() {
                     {driveLog.description}
                   </p>
                 )}
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <div className="flex justify-between text-sm text-muted-foreground mb-4">
                   <span>{driveLog.distance} miles</span>
                   <span>{new Date(driveLog.startTime).toLocaleDateString()}</span>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      setSelectedDriveLog(driveLog);
+                      setShowDetailDialog(true);
+                    }}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View Details
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(driveLog);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Delete
+                  </Button>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Drive Log Detail Modal */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedDriveLog?.title}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedDriveLog && (
+            <div className="space-y-6">
+              {selectedDriveLog.titleImageUrl && (
+                <div className="w-full">
+                  <img
+                    src={selectedDriveLog.titleImageUrl}
+                    alt={selectedDriveLog.title}
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">Route</p>
+                      <p className="text-sm text-muted-foreground">
+                        {selectedDriveLog.startLocation} → {selectedDriveLog.endLocation}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Route className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">Distance</p>
+                      <p className="text-sm text-muted-foreground">{selectedDriveLog.distance} miles</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">Date</p>
+                      <p className="text-sm text-muted-foreground">
+                        {new Date(selectedDriveLog.startTime).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  {selectedDriveLog.description && (
+                    <div>
+                      <p className="font-medium mb-2">Description</p>
+                      <p className="text-sm text-muted-foreground">{selectedDriveLog.description}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="destructive"
+                  onClick={() => handleDelete(selectedDriveLog)}
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Drive Log
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowDetailDialog(false)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
