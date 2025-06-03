@@ -372,37 +372,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Drive log routes
-  app.post('/api/drive-logs', isAuthenticated, upload.single('titleImage'), async (req: any, res) => {
+  app.post('/api/drive-logs', isAuthenticated, upload.any(), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       
-      // Handle file upload
-      let titleImageUrl = null;
-      if (req.file) {
-        titleImageUrl = `/uploads/${req.file.filename}`;
-      }
-
-      // Parse form data
-      const formData = {
+      // Sanitize and validate data
+      const cleanData = {
         ...req.body,
         userId,
-        titleImageUrl,
-        vehicleId: req.body.vehicleId ? parseInt(req.body.vehicleId) : null,
-        startTime: new Date(req.body.startTime || new Date()),
-        totalPitstops: 0, // Will be updated when pitstops are added
+        distance: req.body.distance && req.body.distance !== '' ? parseFloat(req.body.distance) : 0,
+        vehicleId: req.body.vehicleId && req.body.vehicleId !== '' ? parseInt(req.body.vehicleId) : undefined,
+        startTime: req.body.startTime ? new Date(req.body.startTime) : new Date(),
+        endTime: req.body.endTime ? new Date(req.body.endTime) : undefined,
       };
-
-      // Calculate estimated read time based on description
-      const estimatedReadTime = formData.description 
-        ? calculateReadTime(formData.description, formData.title)
-        : null;
-
-      const driveLogData = insertDriveLogSchema.parse({
-        ...formData,
-        estimatedReadTime,
-      });
       
+      const driveLogData = insertDriveLogSchema.parse(cleanData);
+      
+      // Handle title image upload if present
+      const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
+      if (titleImageFile) {
+        driveLogData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
+      }
+      
+      // Create the drive log first
       const driveLog = await storage.createDriveLog(driveLogData);
+      
+      // Handle pitstops if provided
+      if (req.body.pitstops) {
+        try {
+          const pitstopsData = JSON.parse(req.body.pitstops);
+          
+          for (let i = 0; i < pitstopsData.length; i++) {
+            const pitstopData = pitstopsData[i];
+            
+            // Process pitstop images
+            const pitstopImageFiles = req.files?.filter((file: any) => 
+              file.fieldname.startsWith(`pitstop_${i}_image_`)
+            ) || [];
+            
+            const imageUrls = pitstopImageFiles.map((file: any) => `/uploads/${file.filename}`);
+            
+            // Create pitstop
+            await storage.createPitstop({
+              driveLogId: driveLog.id,
+              name: pitstopData.name,
+              description: pitstopData.description,
+              latitude: pitstopData.latitude,
+              longitude: pitstopData.longitude,
+              address: pitstopData.address,
+              placeId: pitstopData.placeId,
+              type: pitstopData.type,
+              orderIndex: pitstopData.orderIndex,
+              imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+              notes: pitstopData.notes,
+            });
+          }
+        } catch (pitstopError) {
+          console.error("Error processing pitstops:", pitstopError);
+        }
+      }
+      
       res.json(driveLog);
     } catch (error) {
       console.error("Error creating drive log:", error);
@@ -502,7 +531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.put('/api/drive-logs/:id', isAuthenticated, upload.single('titleImage'), async (req: any, res) => {
+  app.put('/api/drive-logs/:id', isAuthenticated, upload.any(), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const driveLogId = parseInt(req.params.id);
@@ -515,8 +544,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const updateData = { ...req.body };
       
-      // Handle image upload if present
-      if (req.file) {
+      // Handle title image upload if present
+      const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
+      if (titleImageFile) {
         // Delete old image if it exists
         if (existingDriveLog.titleImageUrl) {
           const oldImagePath = path.join(__dirname, '..', existingDriveLog.titleImageUrl);
@@ -526,7 +556,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.log('Old image file not found or already deleted:', oldImagePath);
           }
         }
-        updateData.titleImageUrl = `/uploads/${req.file.filename}`;
+        updateData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
       }
 
       // Convert string timestamps to Date objects
