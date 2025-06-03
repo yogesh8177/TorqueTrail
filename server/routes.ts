@@ -407,26 +407,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
+      console.log('Drive log creation - Request body:', JSON.stringify(req.body, null, 2));
+      console.log('Drive log creation - Files:', req.files?.map(f => ({ fieldname: f.fieldname, filename: f.filename })));
+      
       // Sanitize and validate data
       const cleanData = {
         ...req.body,
         userId,
         distance: req.body.distance && req.body.distance !== '' ? parseFloat(req.body.distance) : 0,
-        vehicleId: req.body.vehicleId && req.body.vehicleId !== '' ? parseInt(req.body.vehicleId) : undefined,
+        vehicleId: req.body.vehicleId && req.body.vehicleId !== '' && req.body.vehicleId !== 'null' ? parseInt(req.body.vehicleId) : null,
         startTime: req.body.startTime ? new Date(req.body.startTime) : new Date(),
-        endTime: req.body.endTime ? new Date(req.body.endTime) : undefined,
+        endTime: req.body.endTime && req.body.endTime !== '' ? new Date(req.body.endTime) : null,
+        isPublic: req.body.isPublic === 'true' || req.body.isPublic === true,
       };
       
-      const driveLogData = insertDriveLogSchema.parse(cleanData);
+      // Remove empty strings and undefined values
+      Object.keys(cleanData).forEach(key => {
+        if (cleanData[key] === '' || cleanData[key] === 'undefined') {
+          cleanData[key] = null;
+        }
+      });
+      
+      console.log('Drive log creation - Cleaned data:', JSON.stringify(cleanData, null, 2));
+      
+      let driveLogData;
+      try {
+        driveLogData = insertDriveLogSchema.parse(cleanData);
+        console.log('Drive log creation - Schema validation passed');
+      } catch (validationError) {
+        console.error('Drive log creation - Schema validation failed:', validationError);
+        return res.status(400).json({ 
+          message: "Invalid data provided", 
+          details: validationError.issues || validationError.message 
+        });
+      }
       
       // Handle title image upload if present
       const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
       if (titleImageFile) {
         driveLogData.titleImageUrl = `/uploads/${titleImageFile.filename}`;
+        console.log('Drive log creation - Title image added:', driveLogData.titleImageUrl);
       }
       
       // Create the drive log first
-      const driveLog = await storage.createDriveLog(driveLogData);
+      console.log('Drive log creation - Creating drive log with data:', JSON.stringify(driveLogData, null, 2));
+      let driveLog;
+      try {
+        driveLog = await storage.createDriveLog(driveLogData);
+        console.log('Drive log creation - Successfully created drive log:', driveLog.id);
+      } catch (dbError) {
+        console.error('Drive log creation - Database error:', dbError);
+        return res.status(500).json({ 
+          message: "Database error while creating drive log", 
+          details: dbError.message || 'Unknown database error' 
+        });
+      }
       
       // Handle pitstops if provided
       if (req.body.pitstops) {
