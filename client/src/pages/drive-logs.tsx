@@ -44,6 +44,70 @@ export default function DriveLogs() {
     queryKey: ['/api/vehicles'],
   });
 
+  // Initialize Google Places Autocomplete for pitstop inputs
+  useEffect(() => {
+    const initializeAutocomplete = async () => {
+      if (!window.google || !window.google.maps || !window.google.maps.places) {
+        // Load Google Maps API if not already loaded
+        try {
+          const response = await fetch('/api/google-maps-config');
+          const config = await response.json();
+          
+          const script = document.createElement('script');
+          script.src = config.scriptUrl;
+          script.async = true;
+          script.defer = true;
+          
+          script.onload = () => {
+            setTimeout(() => {
+              setupAutocompleteForPitstops();
+            }, 500);
+          };
+          
+          document.head.appendChild(script);
+        } catch (error) {
+          console.error('Failed to load Google Maps:', error);
+        }
+      } else {
+        setupAutocompleteForPitstops();
+      }
+    };
+
+    const setupAutocompleteForPitstops = () => {
+      pitstops.forEach((_, index) => {
+        const input = document.getElementById(`pitstop-location-${index}`);
+        if (input && window.google?.maps?.places && !autocompleteRefs.current[index]) {
+          const autocomplete = new window.google.maps.places.Autocomplete(input, {
+            types: ['establishment', 'geocode'],
+            fields: ['place_id', 'geometry', 'name', 'formatted_address']
+          });
+
+          autocomplete.addListener('place_changed', () => {
+            const place = autocomplete.getPlace();
+            if (place.geometry) {
+              const updated = [...pitstops];
+              updated[index] = {
+                ...updated[index],
+                name: place.name || updated[index].name,
+                address: place.formatted_address || '',
+                latitude: place.geometry.location.lat(),
+                longitude: place.geometry.location.lng(),
+                placeId: place.place_id
+              };
+              setPitstops(updated);
+            }
+          });
+
+          autocompleteRefs.current[index] = autocomplete;
+        }
+      });
+    };
+
+    if (pitstops.length > 0) {
+      initializeAutocomplete();
+    }
+  }, [pitstops.length]);
+
   const form = useForm<DriveLogFormData>({
     defaultValues: {
       title: "",
