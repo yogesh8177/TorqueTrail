@@ -15,7 +15,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Textarea } from "@/components/ui/textarea";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car, MoreVertical, Share, Edit, Facebook, Twitter, Instagram, Copy, ChevronDown, ChevronUp } from "lucide-react";
+import { Plus, Route, Eye, Trash2, Calendar, MapPin, Car, MoreVertical, Share, Edit, Facebook, Twitter, Instagram, Copy, ChevronDown, ChevronUp, Camera, X } from "lucide-react";
 import type { DriveLog, PitstopLocation } from "@shared/schema";
 import GoogleMapsPitstopSelector from "@/components/GoogleMapsPitstopSelector";
 import PitstopImageUpload from "@/components/PitstopImageUpload";
@@ -1805,7 +1805,8 @@ export default function DriveLogs() {
             
             updateDriveLogMutation.mutate({
               id: editingDriveLog!.id,
-              updates: data
+              updates: data,
+              titleImage: editTitleImage || undefined
             });
           })} className="space-y-8">
             <div className="space-y-4">
@@ -1828,6 +1829,87 @@ export default function DriveLogs() {
                     {...form.register("description")}
                     className="mt-1 min-h-[100px]"
                   />
+                </div>
+
+                {/* Title Image Upload */}
+                <div className="space-y-2">
+                  <Label className="text-base font-medium">Title Image</Label>
+                  <div className="space-y-4">
+                    {/* Show current title image if exists */}
+                    {editingDriveLog?.titleImageUrl && !editTitleImage && (
+                      <div className="relative">
+                        <img
+                          src={editingDriveLog.titleImageUrl}
+                          alt="Current title image"
+                          className="w-full h-48 object-cover rounded-lg border"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => {
+                              // Clear the existing title image by setting a placeholder file
+                              setEditTitleImage(null);
+                            }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Current title image</p>
+                      </div>
+                    )}
+
+                    {/* Show new title image preview */}
+                    {editTitleImage && (
+                      <div className="relative">
+                        <img
+                          src={URL.createObjectURL(editTitleImage)}
+                          alt="Title image preview"
+                          className="w-full h-48 object-cover rounded-lg border"
+                        />
+                        <div className="absolute top-2 right-2">
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => setEditTitleImage(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">New title image</p>
+                      </div>
+                    )}
+
+                    {/* Upload button */}
+                    <div className="flex items-center gap-2">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => document.getElementById('edit-title-image-upload')?.click()}
+                        className="flex items-center gap-2"
+                      >
+                        <Camera className="h-4 w-4" />
+                        {editTitleImage || editingDriveLog?.titleImageUrl ? 'Change Title Image' : 'Add Title Image'}
+                      </Button>
+                      <input
+                        id="edit-title-image-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            setEditTitleImage(file);
+                          }
+                        }}
+                        className="hidden"
+                      />
+                      <span className="text-xs text-muted-foreground">
+                        JPG, PNG or GIF (max 10MB)
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
 
