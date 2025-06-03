@@ -979,6 +979,7 @@ export default function DriveLogs() {
                 onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
+                const isPublicValue = formData.get('isPublic') as string;
                 updateDriveLogMutation.mutate({
                   id: editingDriveLog.id,
                   updates: {
@@ -987,6 +988,7 @@ export default function DriveLogs() {
                     startLocation: formData.get('startLocation') as string,
                     endLocation: formData.get('endLocation') as string,
                     distance: formData.get('distance') as string,
+                    isPublic: isPublicValue === 'true',
                   },
                   titleImage: editTitleImage || undefined
                 });
@@ -1088,9 +1090,21 @@ export default function DriveLogs() {
                   </p>
                 </div>
                 <Switch
-                  id="edit-isPublic"
+                  id="edit-isPublic-switch"
                   name="isPublic"
                   defaultChecked={Boolean(editingDriveLog.isPublic)}
+                  onCheckedChange={(checked) => {
+                    const hiddenInput = document.getElementById('edit-isPublic-hidden') as HTMLInputElement;
+                    if (hiddenInput) {
+                      hiddenInput.value = checked ? 'true' : 'false';
+                    }
+                  }}
+                />
+                <input
+                  type="hidden"
+                  id="edit-isPublic-hidden"
+                  name="isPublic"
+                  defaultValue={Boolean(editingDriveLog.isPublic) ? "true" : "false"}
                 />
               </div>
 
