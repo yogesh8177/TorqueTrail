@@ -610,8 +610,7 @@ export default function DriveLogs() {
                 </div>
                 <Switch
                   id="isPublic"
-                  {...form.register("isPublic")}
-                  defaultChecked={form.watch("isPublic")}
+                  defaultChecked={true}
                   onCheckedChange={(checked) => form.setValue("isPublic", checked)}
                 />
               </div>
@@ -1091,7 +1090,7 @@ export default function DriveLogs() {
                 <Switch
                   id="edit-isPublic"
                   name="isPublic"
-                  defaultChecked={editingDriveLog.isPublic}
+                  defaultChecked={Boolean(editingDriveLog.isPublic)}
                 />
               </div>
 
