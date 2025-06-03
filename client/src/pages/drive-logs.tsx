@@ -502,63 +502,18 @@ export default function DriveLogs() {
                   )}
                 />
 
-                {/* Pitstop Management - Prominent Section */}
+                {/* Google Maps Pitstop Management */}
                 <div className="space-y-4 border-4 border-solid border-orange-400 p-6 rounded-lg bg-gradient-to-r from-orange-50 to-yellow-50 shadow-lg">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <Label className="text-xl font-bold text-orange-800 block">PITSTOPS ({pitstops.length}/10)</Label>
-                      <p className="text-sm text-orange-700 mt-1">Add places you stopped during your journey</p>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="default"
-                      size="lg"
-                      onClick={() => {
-                        if (pitstops.length < 10) {
-                          setPitstops([...pitstops, {
-                            name: '',
-                            latitude: 0,
-                            longitude: 0,
-                            type: 'other' as const,
-                            orderIndex: pitstops.length
-                          }]);
-                        }
-                      }}
-                      disabled={pitstops.length >= 10}
-                      className="bg-orange-600 hover:bg-orange-700 text-white font-bold px-6 py-3"
-                    >
-                      + ADD PITSTOP
-                    </Button>
+                  <div className="mb-4">
+                    <Label className="text-xl font-bold text-orange-800 block">PITSTOPS WITH GOOGLE MAPS ({pitstops.length}/10)</Label>
+                    <p className="text-sm text-orange-700 mt-1">Click on the map to add pitstop locations with details and photos</p>
                   </div>
                   
-                  {pitstops.length > 0 && (
-                    <div className="space-y-2">
-                      {pitstops.map((pitstop, index) => (
-                        <div key={index} className="flex items-center space-x-2 p-2 border rounded">
-                          <Input
-                            placeholder="Pitstop name"
-                            value={pitstop.name}
-                            onChange={(e) => {
-                              const updated = [...pitstops];
-                              updated[index] = { ...updated[index], name: e.target.value };
-                              setPitstops(updated);
-                            }}
-                            className="flex-1"
-                          />
-                          <Button
-                            type="button"
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              setPitstops(pitstops.filter((_, i) => i !== index));
-                            }}
-                          >
-                            Remove
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <GoogleMapsPitstopSelector
+                    pitstops={pitstops}
+                    onPitstopsChange={setPitstops}
+                    maxPitstops={10}
+                  />
                 </div>
 
                 <div>
