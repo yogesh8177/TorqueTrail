@@ -160,7 +160,44 @@ export default function DriveLogs() {
   });
 
   const handleSubmit = (data: DriveLogFormData) => {
-    createDriveLogMutation.mutate(data);
+    // Frontend validation for required fields
+    if (!data.title.trim()) {
+      toast({
+        title: "Title is required",
+        description: "Please enter a title for your drive log",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.startLocation.trim()) {
+      toast({
+        title: "Start location is required",
+        description: "Please enter the starting location",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.endLocation.trim()) {
+      toast({
+        title: "End location is required", 
+        description: "Please enter the destination",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!data.distance.trim() || data.distance === "0") {
+      toast({
+        title: "Distance is required",
+        description: "Please enter the distance traveled",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    createDriveLogMutation.mutate({ ...data, titleImage: selectedImage || undefined });
   };
 
   const handleDelete = (driveLog: DriveLog) => {

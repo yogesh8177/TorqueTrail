@@ -438,7 +438,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/drive-logs', isAuthenticated, upload.any(), async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const driveLogData = insertDriveLogSchema.parse({ ...req.body, userId });
+      
+      // Sanitize and validate data
+      const cleanData = {
+        ...req.body,
+        userId,
+        distance: req.body.distance && req.body.distance !== '' ? parseFloat(req.body.distance) : 0,
+        vehicleId: req.body.vehicleId && req.body.vehicleId !== '' ? parseInt(req.body.vehicleId) : undefined,
+        startTime: req.body.startTime ? new Date(req.body.startTime) : new Date(),
+        endTime: req.body.endTime ? new Date(req.body.endTime) : undefined,
+      };
+      
+      const driveLogData = insertDriveLogSchema.parse(cleanData);
       
       // Handle title image upload if present
       const titleImageFile = req.files?.find((file: any) => file.fieldname === 'titleImage');
