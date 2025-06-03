@@ -1885,27 +1885,30 @@ export default function DriveLogs() {
 
                     {/* Upload button */}
                     <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => document.getElementById('edit-title-image-upload')?.click()}
-                        className="flex items-center gap-2"
-                      >
-                        <Camera className="h-4 w-4" />
-                        {editTitleImage || editingDriveLog?.titleImageUrl ? 'Change Title Image' : 'Add Title Image'}
-                      </Button>
-                      <input
-                        id="edit-title-image-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setEditTitleImage(file);
-                          }
-                        }}
-                        className="hidden"
-                      />
+                      <label className="cursor-pointer">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setEditTitleImage(file);
+                            }
+                          }}
+                          className="hidden"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="flex items-center gap-2 pointer-events-none"
+                          asChild
+                        >
+                          <span>
+                            <Camera className="h-4 w-4" />
+                            {editTitleImage || editingDriveLog?.titleImageUrl ? 'Change Title Image' : 'Add Title Image'}
+                          </span>
+                        </Button>
+                      </label>
                       <span className="text-xs text-muted-foreground">
                         JPG, PNG or GIF (max 10MB)
                       </span>
