@@ -1,4 +1,6 @@
 import { storage } from "./storage";
+import * as fs from 'fs';
+import * as path from 'path';
 
 export async function generatePublicShareHTML(driveLogId: number, baseUrl: string): Promise<string> {
   try {
@@ -49,8 +51,29 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
       : (user.email || 'Unknown User').split('@')[0];
 
     const shareUrl = `${baseUrl}/share/${driveLogId}`;
-    const imageUrl = driveLog.titleImageUrl ? `${baseUrl}${driveLog.titleImageUrl}` : `${baseUrl}/generated-icon.png`;
     const description = driveLog.description || `Drive from ${driveLog.startLocation} to ${driveLog.endLocation}`;
+    
+    // Check if title image exists on filesystem
+    let imageUrl = `${baseUrl}/generated-icon.png`; // Default fallback
+    if (driveLog.titleImageUrl) {
+      const imagePath = driveLog.titleImageUrl.startsWith('/') 
+        ? path.join(process.cwd(), driveLog.titleImageUrl.substring(1))
+        : path.join(process.cwd(), driveLog.titleImageUrl);
+      
+      console.log(`Checking image path for drive log ${driveLogId}: ${imagePath}`);
+      
+      try {
+        if (fs.existsSync(imagePath)) {
+          imageUrl = `${baseUrl}${driveLog.titleImageUrl}`;
+          console.log(`Title image found for drive log ${driveLogId}: ${imagePath}`);
+        } else {
+          console.log(`Title image missing for drive log ${driveLogId}: ${imagePath} - using fallback`);
+          // Keep the default fallback imageUrl
+        }
+      } catch (error) {
+        console.log(`Error checking image file for drive log ${driveLogId}:`, error);
+      }
+    }
     
     // Add timestamp for cache busting
     const timestamp = Date.now();
