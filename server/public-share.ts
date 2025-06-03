@@ -57,15 +57,8 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <meta name="author" content="${authorName}">
     <link rel="canonical" href="${shareUrl}">
     
-    <!-- Redirect to React app after meta tags are loaded -->
-    <script>
-      // Give crawlers time to read meta tags, then redirect to React app
-      setTimeout(() => {
-        if (!window.location.hash) {
-          window.location.href = window.location.href;
-        }
-      }, 100);
-    </script>
+    <!-- Initialize React app -->
+    <script type="module" src="/src/main.tsx"></script>
     
     <style>
       body {
@@ -168,13 +161,8 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
         </div>
     </div>
     
-    <div class="loading">
-        <p>Loading full experience...</p>
-    </div>
-    
-    <!-- Load React app -->
+    <!-- React app container -->
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>`;
   } catch (error) {
