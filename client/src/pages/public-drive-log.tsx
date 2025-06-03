@@ -272,25 +272,22 @@ export default function PublicDriveLog() {
             {/* Stats */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t">
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{driveLog.distance}</div>
+                <div className="text-2xl font-bold text-primary">{driveLog?.distance || 0}</div>
                 <div className="text-sm text-muted-foreground">Kilometers</div>
               </div>
-              {driveLog.duration && (
+              {driveLog?.duration && (
                 <div className="text-center">
                   <div className="text-2xl font-bold text-primary">{formatDuration(driveLog.duration)}</div>
                   <div className="text-sm text-muted-foreground">Duration</div>
                 </div>
               )}
               <div className="text-center">
-                <div className="text-2xl font-bold text-primary">{pitstops?.length || 0}</div>
+                <div className="text-2xl font-bold text-primary">{pitstops.length}</div>
                 <div className="text-sm text-muted-foreground">Pitstops</div>
               </div>
               <div className="text-center">
-                <div className="flex items-center justify-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-sm">{formatDate(driveLog.startTime)}</span>
-                </div>
-                <div className="text-xs text-muted-foreground">{formatTime(driveLog.startTime)}</div>
+                <div className="text-2xl font-bold text-primary">{likeCount}</div>
+                <div className="text-sm text-muted-foreground">Likes</div>
               </div>
             </div>
 
