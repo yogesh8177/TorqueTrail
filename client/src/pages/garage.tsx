@@ -389,7 +389,7 @@ export default function Garage() {
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={handleImageUpload}
+                          onChange={handleVehicleImageUpload}
                           className="hidden"
                           id="image-upload"
                         />
@@ -628,13 +628,13 @@ export default function Garage() {
                       <Car className="w-6 h-6 text-primary" />
                     </div>
                     <div>
-                      <p className="text-2xl font-bold">
+                      <div className="text-2xl font-bold">
                         {vehiclesLoading ? (
                           <Skeleton className="h-8 w-8 inline-block" />
                         ) : (
                           vehicles.length
                         )}
-                      </p>
+                      </div>
                       <p className="text-muted-foreground">Vehicles in Garage</p>
                     </div>
                   </div>
