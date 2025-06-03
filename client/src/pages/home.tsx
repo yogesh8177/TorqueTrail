@@ -373,8 +373,8 @@ export default function Home() {
             <div className="grid grid-cols-2 gap-4 mb-6">
               <Card className="automotive-card">
                 <CardContent className="p-4 text-center">
-                  <p className="text-2xl font-bold text-primary">{((userStats as any)?.totalMiles || 0).toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">Total Miles</p>
+                  <p className="text-2xl font-bold text-primary">{((userStats as any)?.totalKilometers || 0).toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">Total Kilometers</p>
                 </CardContent>
               </Card>
               <Card className="automotive-card">
