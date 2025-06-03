@@ -27,6 +27,10 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     const shareUrl = `${baseUrl}/share/${driveLogId}`;
     const imageUrl = driveLog.titleImageUrl ? `${baseUrl}${driveLog.titleImageUrl}` : `${baseUrl}/generated-icon.png`;
     const description = driveLog.description || `Drive from ${driveLog.startLocation} to ${driveLog.endLocation}`;
+    
+    // Add timestamp for cache busting
+    const timestamp = Date.now();
+    const cacheBustedImageUrl = `${imageUrl}?v=${timestamp}`;
 
     return `
 <!DOCTYPE html>
@@ -40,8 +44,8 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <!-- Open Graph meta tags -->
     <meta property="og:title" content="${driveLog.title} - TorqueTrail">
     <meta property="og:description" content="${description} by ${authorName}">
-    <meta property="og:image" content="${imageUrl}">
-    <meta property="og:image:secure_url" content="${imageUrl}">
+    <meta property="og:image" content="${cacheBustedImageUrl}">
+    <meta property="og:image:secure_url" content="${cacheBustedImageUrl}">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
@@ -55,7 +59,7 @@ export async function generatePublicShareHTML(driveLogId: number, baseUrl: strin
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="${driveLog.title} - TorqueTrail">
     <meta name="twitter:description" content="${description} by ${authorName}">
-    <meta name="twitter:image" content="${imageUrl}">
+    <meta name="twitter:image" content="${cacheBustedImageUrl}">
     <meta name="twitter:image:alt" content="${driveLog.title} - Drive log shared on TorqueTrail">
     
     <!-- WhatsApp specific meta tags -->

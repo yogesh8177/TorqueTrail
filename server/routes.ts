@@ -970,7 +970,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // This ensures social media crawlers get the proper meta tags
       const baseUrl = `${req.protocol}://${req.get('host')}`;
       const html = await generatePublicShareHTML(id, baseUrl);
-      res.setHeader('Content-Type', 'text/html');
+      
+      // Set cache-busting headers for social media crawlers
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+      res.setHeader('Last-Modified', new Date().toUTCString());
+      
       res.send(html);
     } catch (error) {
       console.error("Error generating public share page:", error);
