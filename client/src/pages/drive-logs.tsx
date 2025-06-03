@@ -356,6 +356,12 @@ export default function DriveLogs() {
             
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit, onFormError)} className="space-y-4">
+                {/* TEST SECTION - First in form */}
+                <div className="p-8 bg-yellow-300 border-4 border-black text-center">
+                  <h2 className="text-2xl font-bold">FORM TEST - CAN YOU SEE THIS?</h2>
+                  <p>If you can see this yellow box, forms are working</p>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FormField
                     control={form.control}
