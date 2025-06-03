@@ -502,6 +502,12 @@ export default function DriveLogs() {
                   )}
                 />
 
+                {/* TEST SECTION - Should be visible */}
+                <div className="p-8 bg-yellow-300 border-4 border-black text-center">
+                  <h2 className="text-2xl font-bold">TEST SECTION - CAN YOU SEE THIS?</h2>
+                  <p>If you can see this yellow box, the form structure is working</p>
+                </div>
+
                 {/* Simple Pitstop Management - Always Visible */}
                 <div className="space-y-4 border-4 border-solid border-red-500 p-6 rounded-lg bg-red-50 min-h-[200px]">
                   <div className="mb-4">
