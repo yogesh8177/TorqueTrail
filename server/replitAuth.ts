@@ -1,5 +1,7 @@
 import * as client from "openid-client";
 import { Strategy, type VerifyFunction } from "openid-client/passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import { Strategy as FacebookStrategy } from "passport-facebook";
 
 import passport from "passport";
 import session from "express-session";
@@ -66,6 +68,30 @@ async function upsertUser(
   });
 }
 
+async function upsertSocialUser(
+  socialData: {
+    socialId: string;
+    provider: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    profilePicture?: string;
+  }
+): Promise<{ id: string }> {
+  // Create a unique ID based on provider and social ID
+  const userId = `${socialData.provider}:${socialData.socialId}`;
+  
+  await storage.upsertUser({
+    id: userId,
+    email: socialData.email,
+    firstName: socialData.firstName,
+    lastName: socialData.lastName,
+    profileImageUrl: socialData.profilePicture,
+  });
+  
+  return { id: userId };
+}
+
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
@@ -96,6 +122,53 @@ export async function setupAuth(app: Express) {
       verify,
     );
     passport.use(strategy);
+  }
+
+  // Google OAuth Strategy
+  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "/api/auth/google/callback"
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        const user = await upsertSocialUser({
+          socialId: profile.id,
+          provider: 'google',
+          email: profile.emails?.[0]?.value || '',
+          firstName: profile.name?.givenName || '',
+          lastName: profile.name?.familyName || '',
+          profilePicture: profile.photos?.[0]?.value || ''
+        });
+        return done(null, { id: user.id, claims: { sub: user.id } });
+      } catch (error) {
+        return done(error, null);
+      }
+    }));
+  }
+
+  // Facebook OAuth Strategy
+  if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
+    passport.use(new FacebookStrategy({
+      clientID: process.env.FACEBOOK_APP_ID,
+      clientSecret: process.env.FACEBOOK_APP_SECRET,
+      callbackURL: "/api/auth/facebook/callback",
+      profileFields: ['id', 'emails', 'name', 'picture']
+    }, async (accessToken, refreshToken, profile, done) => {
+      try {
+        const user = await upsertSocialUser({
+          socialId: profile.id,
+          provider: 'facebook',
+          email: profile.emails?.[0]?.value || '',
+          firstName: profile.name?.givenName || '',
+          lastName: profile.name?.familyName || '',
+          profilePicture: profile.photos?.[0]?.value || ''
+        });
+        return done(null, { id: user.id, claims: { sub: user.id } });
+      } catch (error) {
+        return done(error, null);
+      }
+    }));
   }
 
   passport.serializeUser((user: Express.User, cb) => cb(null, user));
