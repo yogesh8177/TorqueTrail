@@ -215,7 +215,7 @@ export default function DriveLogs() {
       }
 
       const response = await fetch(`/api/drive-logs/${data.id}`, {
-        method: 'PATCH',
+        method: 'PUT',
         body: formData,
       });
 
@@ -760,7 +760,12 @@ export default function DriveLogs() {
       </Dialog>
 
       {/* Edit Drive Log Modal */}
-      <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+      <Dialog open={showEditDialog} onOpenChange={(open) => {
+        setShowEditDialog(open);
+        if (!open) {
+          setEditTitleImage(null);
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Drive Log</DialogTitle>
@@ -882,7 +887,10 @@ export default function DriveLogs() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setShowEditDialog(false)}
+                  onClick={() => {
+                    setShowEditDialog(false);
+                    setEditTitleImage(null);
+                  }}
                 >
                   Cancel
                 </Button>
