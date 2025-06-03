@@ -622,14 +622,15 @@ export default function DriveLogs() {
                 <div className="space-y-4">
                   {pitstops.map((pitstop, index) => (
                     <div key={index} className="border rounded-lg p-4 space-y-4">
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                         <h4 className="font-medium">Pitstop {index + 1}</h4>
-                        <div className="flex gap-2">
+                        <div className="flex gap-1 flex-wrap">
                           {/* Reorder buttons */}
                           <Button
                             type="button"
                             variant="outline"
                             size="sm"
+                            className="px-2 py-1 text-xs"
                             onClick={() => {
                               if (index > 0) {
                                 const updated = [...pitstops];
@@ -658,6 +659,7 @@ export default function DriveLogs() {
                             type="button"
                             variant="outline"
                             size="sm"
+                            className="px-2 py-1 text-xs"
                             onClick={() => {
                               if (index < pitstops.length - 1) {
                                 const updated = [...pitstops];
@@ -686,6 +688,7 @@ export default function DriveLogs() {
                             type="button"
                             variant="destructive"
                             size="sm"
+                            className="px-2 py-1 text-xs"
                             onClick={() => {
                               const updated = pitstops.filter((_, i) => i !== index);
                               setPitstops(updated.map((p, i) => ({ ...p, orderIndex: i })));
@@ -706,8 +709,8 @@ export default function DriveLogs() {
                               });
                             }}
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Remove
+                            <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                            <span className="hidden sm:inline">Remove</span>
                           </Button>
                         </div>
                       </div>
@@ -1031,14 +1034,15 @@ export default function DriveLogs() {
                   <div className="space-y-4">
                     {editPitstops.map((pitstop, index) => (
                       <div key={index} className="border rounded-lg p-4 space-y-4">
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
                           <h4 className="font-medium">Pitstop {index + 1}</h4>
-                          <div className="flex gap-2">
+                          <div className="flex gap-1 flex-wrap">
                             {/* Reorder buttons */}
                             <Button
                               type="button"
                               variant="outline"
                               size="sm"
+                              className="px-2 py-1 text-xs"
                               onClick={() => {
                                 if (index > 0) {
                                   const updated = [...editPitstops];
@@ -1075,6 +1079,7 @@ export default function DriveLogs() {
                               type="button"
                               variant="outline"
                               size="sm"
+                              className="px-2 py-1 text-xs"
                               onClick={() => {
                                 if (index < editPitstops.length - 1) {
                                   const updated = [...editPitstops];
@@ -1111,6 +1116,7 @@ export default function DriveLogs() {
                               type="button"
                               variant="destructive"
                               size="sm"
+                              className="px-2 py-1 text-xs"
                               onClick={() => {
                                 const updated = editPitstops.filter((_, i) => i !== index);
                                 setEditPitstops(updated.map((p, i) => ({ ...p, orderIndex: i })));
@@ -1144,8 +1150,8 @@ export default function DriveLogs() {
                                 });
                               }}
                             >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Remove
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                              <span className="hidden sm:inline">Remove</span>
                             </Button>
                           </div>
                         </div>
