@@ -1045,6 +1045,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         vehicle = await storage.getVehicle(driveLog.vehicleId);
       }
 
+      // Check if title image exists on filesystem, use fallback if missing
+      let titleImageUrl = driveLog.titleImageUrl;
+      if (driveLog.titleImageUrl) {
+        const fs = require('fs');
+        const path = require('path');
+        const imagePath = driveLog.titleImageUrl.startsWith('/') 
+          ? path.join(process.cwd(), driveLog.titleImageUrl.substring(1))
+          : path.join(process.cwd(), driveLog.titleImageUrl);
+        
+        try {
+          if (!fs.existsSync(imagePath)) {
+            console.log(`Title image missing for drive log ${driveLogId}: ${imagePath} - using fallback in API`);
+            titleImageUrl = '/generated-icon.png';
+          }
+        } catch (error) {
+          console.log(`Error checking image file for drive log ${driveLogId}:`, error);
+          titleImageUrl = '/generated-icon.png';
+        }
+      }
+
       // Format the response for public sharing with title image and complete data
       const publicDriveLog = {
         id: driveLog.id,
@@ -1056,7 +1076,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         route: driveLog.route,
         startTime: driveLog.startTime,
         endTime: driveLog.endTime,
-        titleImageUrl: driveLog.titleImageUrl,
+        titleImageUrl: titleImageUrl,
         user: {
           firstName: user.firstName,
           lastName: user.lastName,
