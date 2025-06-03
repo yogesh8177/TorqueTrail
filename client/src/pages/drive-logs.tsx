@@ -74,10 +74,16 @@ export default function DriveLogs() {
         formData.append('titleImage', selectedImage);
       }
 
-      return await apiRequest('/api/drive-logs', {
+      const response = await fetch('/api/drive-logs', {
         method: 'POST',
         body: formData,
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/drive-logs'] });
@@ -330,12 +336,26 @@ export default function DriveLogs() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {Array.isArray(driveLogs) && driveLogs.map((driveLog: DriveLog) => (
-            <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <Card key={driveLog.id} className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer">
+              {driveLog.titleImageUrl && (
+                <div className="aspect-video w-full overflow-hidden">
+                  <img
+                    src={driveLog.titleImageUrl}
+                    alt={driveLog.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
               <CardContent className="p-6">
                 <h3 className="font-semibold text-lg mb-2">{driveLog.title}</h3>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-2">
                   {driveLog.startLocation} → {driveLog.endLocation}
                 </p>
+                {driveLog.description && (
+                  <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+                    {driveLog.description}
+                  </p>
+                )}
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>{driveLog.distance} miles</span>
                   <span>{new Date(driveLog.startTime).toLocaleDateString()}</span>
