@@ -429,14 +429,50 @@ export default function DriveLogs() {
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Drive Logs</h1>
-        <Button onClick={() => setShowCreateDialog(true)}>
+        <Button onClick={() => {
+          // Reset all form state when opening create dialog
+          form.reset({
+            title: "",
+            description: "",
+            startLocation: "",
+            endLocation: "",
+            distance: "",
+            route: "",
+            startTime: new Date(),
+            endTime: undefined,
+            vehicleId: undefined,
+          });
+          setSelectedImage(null);
+          setPitstops([]);
+          setPitstopImages({});
+          setShowCreateDialog(true);
+        }}>
           <Plus className="h-4 w-4 mr-2" />
           New Drive Log
         </Button>
       </div>
 
       {/* Enhanced Drive Log Form Modal */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog open={showCreateDialog} onOpenChange={(open) => {
+        setShowCreateDialog(open);
+        if (!open) {
+          // Reset form state when closing dialog
+          form.reset({
+            title: "",
+            description: "",
+            startLocation: "",
+            endLocation: "",
+            distance: "",
+            route: "",
+            startTime: new Date(),
+            endTime: undefined,
+            vehicleId: undefined,
+          });
+          setSelectedImage(null);
+          setPitstops([]);
+          setPitstopImages({});
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[95vh] overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-2xl font-bold text-center mb-6">Create New Drive Log</DialogTitle>
