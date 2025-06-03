@@ -23,6 +23,7 @@ interface DriveLogFormData {
   startLocation: string;
   endLocation: string;
   distance: string;
+  route?: string;
   startTime: Date;
   endTime?: Date;
   vehicleId?: number;
@@ -953,6 +954,14 @@ export default function DriveLogs() {
                     {driveLog.description}
                   </p>
                 )}
+                {driveLog.route && (
+                  <div className="text-sm text-muted-foreground mb-2">
+                    <span className="flex items-center gap-1">
+                      <Route className="h-3 w-3" />
+                      {driveLog.route}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-4">
                     <span>{driveLog.distance} km</span>
@@ -997,6 +1006,11 @@ export default function DriveLogs() {
                       <p className="text-sm text-muted-foreground">
                         {selectedDriveLog.startLocation} → {selectedDriveLog.endLocation}
                       </p>
+                      {selectedDriveLog.route && (
+                        <p className="text-sm text-primary font-medium">
+                          {selectedDriveLog.route}
+                        </p>
+                      )}
                     </div>
                   </div>
 

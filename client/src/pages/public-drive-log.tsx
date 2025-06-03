@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, MapPin, Car, Heart, Eye, ChevronDown, ChevronUp, Share2 } from "lucide-react";
+import { Calendar, Clock, MapPin, Car, Heart, Eye, ChevronDown, ChevronUp, Share2, Route } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import type { DriveLog, Vehicle, Pitstop } from "@shared/schema";
@@ -247,17 +247,26 @@ export default function PublicDriveLog() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Route Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-green-500" />
-                <span className="text-sm text-muted-foreground">From:</span>
-                <span className="font-medium">{driveLog.startLocation}</span>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-green-500" />
+                  <span className="text-sm text-muted-foreground">From:</span>
+                  <span className="font-medium">{driveLog.startLocation}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-red-500" />
+                  <span className="text-sm text-muted-foreground">To:</span>
+                  <span className="font-medium">{driveLog.endLocation}</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="h-4 w-4 text-red-500" />
-                <span className="text-sm text-muted-foreground">To:</span>
-                <span className="font-medium">{driveLog.endLocation}</span>
-              </div>
+              {driveLog.route && (
+                <div className="flex items-center gap-2">
+                  <Route className="h-4 w-4 text-primary" />
+                  <span className="text-sm text-muted-foreground">Route:</span>
+                  <span className="font-medium text-primary">{driveLog.route}</span>
+                </div>
+              )}
             </div>
 
             {/* Stats */}
