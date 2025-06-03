@@ -770,8 +770,7 @@ export default function DriveLogs() {
                         </CollapsibleTrigger>
                         
                         <CollapsibleContent className="p-4 pt-0 border-t">
-                      
-                      <div className="grid grid-cols-1 gap-4">
+                          <div className="grid grid-cols-1 gap-4">
                         <div>
                           <Label htmlFor={`pitstop-name-${index}`} className="text-sm font-medium">Pitstop Name</Label>
                           <Input
@@ -1091,130 +1090,183 @@ export default function DriveLogs() {
                 {editPitstops.length > 0 && (
                   <div className="space-y-4">
                     {editPitstops.map((pitstop, index) => (
-                      <div key={index} className="border rounded-lg p-4 space-y-4">
-                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                          <h4 className="font-medium">Pitstop {index + 1}</h4>
-                          <div className="flex gap-1 flex-wrap">
-                            {/* Reorder buttons */}
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="px-2 py-1 text-xs"
-                              onClick={() => {
-                                if (index > 0) {
-                                  const updated = [...editPitstops];
-                                  const temp = updated[index];
-                                  updated[index] = updated[index - 1];
-                                  updated[index - 1] = temp;
-                                  // Update order indices
-                                  updated.forEach((p, i) => p.orderIndex = i);
-                                  setEditPitstops(updated);
-                                  
-                                  // Swap images as well
-                                  setEditPitstopImages(prev => {
-                                    const newImages = { ...prev };
-                                    const tempImages = newImages[index];
-                                    newImages[index] = newImages[index - 1];
-                                    newImages[index - 1] = tempImages;
-                                    return newImages;
-                                  });
-                                  
-                                  setExistingPitstopImages(prev => {
-                                    const newImages = { ...prev };
-                                    const tempImages = newImages[index];
-                                    newImages[index] = newImages[index - 1];
-                                    newImages[index - 1] = tempImages;
-                                    return newImages;
-                                  });
-                                }
-                              }}
-                              disabled={index === 0}
-                            >
-                              ↑
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="outline"
-                              size="sm"
-                              className="px-2 py-1 text-xs"
-                              onClick={() => {
-                                if (index < editPitstops.length - 1) {
-                                  const updated = [...editPitstops];
-                                  const temp = updated[index];
-                                  updated[index] = updated[index + 1];
-                                  updated[index + 1] = temp;
-                                  // Update order indices
-                                  updated.forEach((p, i) => p.orderIndex = i);
-                                  setEditPitstops(updated);
-                                  
-                                  // Swap images as well
-                                  setEditPitstopImages(prev => {
-                                    const newImages = { ...prev };
-                                    const tempImages = newImages[index];
-                                    newImages[index] = newImages[index + 1];
-                                    newImages[index + 1] = tempImages;
-                                    return newImages;
-                                  });
-                                  
-                                  setExistingPitstopImages(prev => {
-                                    const newImages = { ...prev };
-                                    const tempImages = newImages[index];
-                                    newImages[index] = newImages[index + 1];
-                                    newImages[index + 1] = tempImages;
-                                    return newImages;
-                                  });
-                                }
-                              }}
-                              disabled={index === editPitstops.length - 1}
-                            >
-                              ↓
-                            </Button>
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="px-2 py-1 text-xs"
-                              onClick={() => {
-                                const updated = editPitstops.filter((_, i) => i !== index);
-                                setEditPitstops(updated.map((p, i) => ({ ...p, orderIndex: i })));
-                                setEditPitstopImages(prev => {
-                                  const newImages = { ...prev };
-                                  delete newImages[index];
-                                  // Reindex remaining images
-                                  const reindexed: {[key: number]: File[]} = {};
-                                  Object.entries(newImages).forEach(([key, value]) => {
-                                    const oldIndex = parseInt(key);
-                                    const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
-                                    if (oldIndex !== index) {
-                                      reindexed[newIndex] = value;
+                      <Collapsible 
+                        key={index}
+                        open={expandedEditPitstops[index] !== false}
+                        onOpenChange={(open) => {
+                          setExpandedEditPitstops(prev => ({ ...prev, [index]: open }));
+                        }}
+                      >
+                        <div className="border rounded-lg overflow-hidden">
+                          <CollapsibleTrigger asChild>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 p-4 hover:bg-gray-50 cursor-pointer">
+                              <div className="flex items-center gap-2">
+                                <h4 className="font-medium">Pitstop {index + 1}</h4>
+                                <span className="text-sm text-muted-foreground">
+                                  {pitstop.name || 'Untitled'}
+                                </span>
+                                {expandedEditPitstops[index] !== false ? (
+                                  <ChevronUp className="h-4 w-4" />
+                                ) : (
+                                  <ChevronDown className="h-4 w-4" />
+                                )}
+                              </div>
+                              <div className="flex gap-1 flex-wrap" onClick={(e) => e.stopPropagation()}>
+                                {/* Reorder buttons */}
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="px-2 py-1 text-xs"
+                                  onClick={() => {
+                                    if (index > 0) {
+                                      const updated = [...editPitstops];
+                                      const temp = updated[index];
+                                      updated[index] = updated[index - 1];
+                                      updated[index - 1] = temp;
+                                      // Update order indices
+                                      updated.forEach((p, i) => p.orderIndex = i);
+                                      setEditPitstops(updated);
+                                      
+                                      // Swap images as well
+                                      setEditPitstopImages(prev => {
+                                        const newImages = { ...prev };
+                                        const tempImages = newImages[index];
+                                        newImages[index] = newImages[index - 1];
+                                        newImages[index - 1] = tempImages;
+                                        return newImages;
+                                      });
+                                      
+                                      setExistingPitstopImages(prev => {
+                                        const newImages = { ...prev };
+                                        const tempImages = newImages[index];
+                                        newImages[index] = newImages[index - 1];
+                                        newImages[index - 1] = tempImages;
+                                        return newImages;
+                                      });
+                                      
+                                      // Swap expanded states
+                                      setExpandedEditPitstops(prev => {
+                                        const newExpanded = { ...prev };
+                                        const tempExpanded = newExpanded[index];
+                                        newExpanded[index] = newExpanded[index - 1];
+                                        newExpanded[index - 1] = tempExpanded;
+                                        return newExpanded;
+                                      });
                                     }
-                                  });
-                                  return reindexed;
-                                });
-                                setExistingPitstopImages(prev => {
-                                  const newImages = { ...prev };
-                                  delete newImages[index];
-                                  // Reindex remaining images
-                                  const reindexed: {[key: number]: string[]} = {};
-                                  Object.entries(newImages).forEach(([key, value]) => {
-                                    const oldIndex = parseInt(key);
-                                    const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
-                                    if (oldIndex !== index) {
-                                      reindexed[newIndex] = value;
+                                  }}
+                                  disabled={index === 0}
+                                >
+                                  ↑
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  className="px-2 py-1 text-xs"
+                                  onClick={() => {
+                                    if (index < editPitstops.length - 1) {
+                                      const updated = [...editPitstops];
+                                      const temp = updated[index];
+                                      updated[index] = updated[index + 1];
+                                      updated[index + 1] = temp;
+                                      // Update order indices
+                                      updated.forEach((p, i) => p.orderIndex = i);
+                                      setEditPitstops(updated);
+                                      
+                                      // Swap images as well
+                                      setEditPitstopImages(prev => {
+                                        const newImages = { ...prev };
+                                        const tempImages = newImages[index];
+                                        newImages[index] = newImages[index + 1];
+                                        newImages[index + 1] = tempImages;
+                                        return newImages;
+                                      });
+                                      
+                                      setExistingPitstopImages(prev => {
+                                        const newImages = { ...prev };
+                                        const tempImages = newImages[index];
+                                        newImages[index] = newImages[index + 1];
+                                        newImages[index + 1] = tempImages;
+                                        return newImages;
+                                      });
+                                      
+                                      // Swap expanded states
+                                      setExpandedEditPitstops(prev => {
+                                        const newExpanded = { ...prev };
+                                        const tempExpanded = newExpanded[index];
+                                        newExpanded[index] = newExpanded[index + 1];
+                                        newExpanded[index + 1] = tempExpanded;
+                                        return newExpanded;
+                                      });
                                     }
-                                  });
-                                  return reindexed;
-                                });
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                              <span className="hidden sm:inline">Remove</span>
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 gap-4">
+                                  }}
+                                  disabled={index === editPitstops.length - 1}
+                                >
+                                  ↓
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="destructive"
+                                  size="sm"
+                                  className="px-2 py-1 text-xs"
+                                  onClick={() => {
+                                    const updated = editPitstops.filter((_, i) => i !== index);
+                                    setEditPitstops(updated.map((p, i) => ({ ...p, orderIndex: i })));
+                                    setEditPitstopImages(prev => {
+                                      const newImages = { ...prev };
+                                      delete newImages[index];
+                                      // Reindex remaining images
+                                      const reindexed: {[key: number]: File[]} = {};
+                                      Object.entries(newImages).forEach(([key, value]) => {
+                                        const oldIndex = parseInt(key);
+                                        const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
+                                        if (oldIndex !== index) {
+                                          reindexed[newIndex] = value;
+                                        }
+                                      });
+                                      return reindexed;
+                                    });
+                                    setExistingPitstopImages(prev => {
+                                      const newImages = { ...prev };
+                                      delete newImages[index];
+                                      // Reindex remaining images
+                                      const reindexed: {[key: number]: string[]} = {};
+                                      Object.entries(newImages).forEach(([key, value]) => {
+                                        const oldIndex = parseInt(key);
+                                        const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
+                                        if (oldIndex !== index) {
+                                          reindexed[newIndex] = value;
+                                        }
+                                      });
+                                      return reindexed;
+                                    });
+                                    // Remove expanded state
+                                    setExpandedEditPitstops(prev => {
+                                      const newExpanded = { ...prev };
+                                      delete newExpanded[index];
+                                      // Reindex remaining expanded states
+                                      const reindexed: {[key: number]: boolean} = {};
+                                      Object.entries(newExpanded).forEach(([key, value]) => {
+                                        const oldIndex = parseInt(key);
+                                        const newIndex = oldIndex > index ? oldIndex - 1 : oldIndex;
+                                        if (oldIndex !== index) {
+                                          reindexed[newIndex] = value;
+                                        }
+                                      });
+                                      return reindexed;
+                                    });
+                                  }}
+                                >
+                                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                                  <span className="hidden sm:inline">Remove</span>
+                                </Button>
+                              </div>
+                            </div>
+                          </CollapsibleTrigger>
+                          
+                          <CollapsibleContent className="p-4 pt-0 border-t">
+                            <div className="grid grid-cols-1 gap-4">
                           <div>
                             <Label htmlFor={`edit-pitstop-name-${index}`}>Pitstop Name</Label>
                             <Input
@@ -1331,7 +1383,9 @@ export default function DriveLogs() {
                             )}
                           </div>
                         </div>
-                      </div>
+                          </CollapsibleContent>
+                        </div>
+                      </Collapsible>
                     ))}
                   </div>
                 )}
