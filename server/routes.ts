@@ -42,6 +42,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Serve persistent uploads from workspace directory
   app.use('/persistent-uploads', express.static(path.join('/home/runner/workspace', 'persistent-uploads')));
   
+  // Serve social preview image
+  app.get('/torquetrail-social-preview.svg', (req, res) => {
+    res.setHeader('Content-Type', 'image/svg+xml');
+    res.sendFile(path.join(process.cwd(), 'torquetrail-social-preview.svg'));
+  });
+  
   // Auth middleware
   await setupAuth(app);
 
@@ -1024,7 +1030,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   <meta property="og:url" content="${baseUrl}">
   <meta property="og:title" content="TorqueTrail - Ultimate Automotive Social Platform">
   <meta property="og:description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide.">
-  <meta property="og:image" content="${baseUrl}/generated-icon.png">
+  <meta property="og:image" content="${baseUrl}/torquetrail-social-preview.svg">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="TorqueTrail">
@@ -1035,7 +1041,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   <meta property="twitter:url" content="${baseUrl}">
   <meta property="twitter:title" content="TorqueTrail - Ultimate Automotive Social Platform">
   <meta property="twitter:description" content="Join TorqueTrail, the advanced automotive social platform for tracking drives, sharing experiences, and connecting with car enthusiasts worldwide.">
-  <meta property="twitter:image" content="${baseUrl}/generated-icon.png">
+  <meta property="twitter:image" content="${baseUrl}/torquetrail-social-preview.svg">
   
   <style>
     body {
