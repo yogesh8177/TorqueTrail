@@ -88,8 +88,8 @@ export default function Home() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-muted-foreground text-sm">Total Miles</p>
-                      <p className="text-2xl font-bold text-primary">{(userStats as any)?.totalMiles?.toLocaleString() || '0'}</p>
+                      <p className="text-muted-foreground text-sm">Total Kilometers</p>
+                      <p className="text-2xl font-bold text-primary">{(userStats as any)?.totalKilometers?.toLocaleString() || '0'}</p>
                     </div>
                     <Car className="w-8 h-8 text-primary/50" />
                   </div>

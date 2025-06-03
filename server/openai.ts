@@ -58,7 +58,7 @@ export async function generateDriveBlog(request: AIBlogRequest): Promise<AIBlogR
         
         Route: ${driveData.startLocation} to ${driveData.endLocation}
         ${driveData.routeName ? `Route Name: ${driveData.routeName}` : ''}
-        Distance: ${driveData.distance} miles
+        Distance: ${driveData.distance} km
         Duration: ${Math.floor(driveData.duration / 60)}h ${driveData.duration % 60}m
         Vehicle: ${driveData.vehicleMake} ${driveData.vehicleModel}
         Weather: ${driveData.weatherConditions || 'Clear'}

@@ -86,9 +86,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user.claims.sub;
       
-      // Get user's drive logs to calculate total miles
+      // Get user's drive logs to calculate total kilometers
       const driveLogs = await storage.getUserDriveLogs(userId);
-      const totalMiles = driveLogs.reduce((sum, log) => sum + Number(log.distance), 0);
+      const totalKilometers = driveLogs.reduce((sum, log) => sum + Number(log.distance), 0);
       
       // Get convoys user has organized or joined
       const userConvoys = await storage.getUserConvoys(userId);
@@ -102,7 +102,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userVotes = garageVotes.find(v => v.userId === userId);
       
       const stats = {
-        totalMiles: Math.round(totalMiles * 10) / 10, // Round to 1 decimal
+        totalKilometers: Math.round(totalKilometers * 10) / 10, // Round to 1 decimal
         convoysOrganized: userConvoys.length,
         convoysJoined: joinedConvoys,
         totalConvoys: userConvoys.length + joinedConvoys,
