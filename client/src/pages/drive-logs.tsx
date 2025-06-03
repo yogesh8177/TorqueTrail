@@ -811,8 +811,8 @@ export default function DriveLogs() {
                   />
                 </div>
 
-                <div className="border-2 border-blue-500 p-4 rounded">
-                  <Label htmlFor="edit-titleImage" className="text-sm font-medium text-blue-600">TITLE IMAGE FIELD (DEBUG)</Label>
+                <div>
+                  <Label htmlFor="edit-titleImage" className="text-sm font-medium">Title Image</Label>
                   {editingDriveLog.titleImageUrl && !editTitleImage && (
                     <div className="mt-2 mb-2">
                       <p className="text-sm text-muted-foreground mb-2">Current image:</p>
@@ -828,7 +828,7 @@ export default function DriveLogs() {
                     type="file"
                     accept="image/*"
                     onChange={(e) => setEditTitleImage(e.target.files?.[0] || null)}
-                    className="mt-1 border-blue-500"
+                    className="mt-1"
                   />
                   {editTitleImage && (
                     <div className="mt-2">
@@ -840,7 +840,6 @@ export default function DriveLogs() {
                       />
                     </div>
                   )}
-                  <p className="text-xs text-blue-600 mt-1">DEBUG: This field should be visible</p>
                 </div>
                 
                 <div>
