@@ -48,11 +48,22 @@ export default function DriveLogs() {
     queryKey: ['/api/vehicles'],
   });
 
+  // Fetch pitstops for all drive logs to show counts
+  const { data: allPitstops } = useQuery({
+    queryKey: ['/api/all-pitstops'],
+  });
+
   // Fetch pitstops for selected drive log
   const { data: selectedDriveLogPitstops } = useQuery({
-    queryKey: ['/api/pitstops', selectedDriveLog?.id],
+    queryKey: ['/api/pitstops/' + selectedDriveLog?.id],
     enabled: !!selectedDriveLog?.id,
   });
+
+  // Helper function to get pitstop count for a drive log
+  const getPitstopCount = (driveLogId: number) => {
+    if (!allPitstops || !Array.isArray(allPitstops)) return 0;
+    return allPitstops.filter((p: any) => p.driveLogId === driveLogId).length;
+  };
 
   const form = useForm<DriveLogFormData>({
     defaultValues: {
@@ -789,7 +800,7 @@ export default function DriveLogs() {
                     <span>{driveLog.distance} miles</span>
                     <span className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      {driveLog.pitstops?.length || 0} pitstops
+                      {getPitstopCount(driveLog.id)} pitstops
                     </span>
                   </div>
                   <span>{new Date(driveLog.startTime).toLocaleDateString()}</span>
@@ -861,7 +872,7 @@ export default function DriveLogs() {
               </div>
 
               {/* Pitstops Section */}
-              {selectedDriveLogPitstops && selectedDriveLogPitstops.length > 0 && (
+              {selectedDriveLogPitstops && Array.isArray(selectedDriveLogPitstops) && selectedDriveLogPitstops.length > 0 && (
                 <div className="space-y-4">
                   <div className="flex items-center gap-2">
                     <MapPin className="h-5 w-5 text-muted-foreground" />

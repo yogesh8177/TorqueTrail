@@ -609,6 +609,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all pitstops for pitstop counts
+  app.get('/api/all-pitstops', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      // Get all drive logs for the user first
+      const userDriveLogs = await storage.getUserDriveLogs(userId);
+      const allPitstops = [];
+      
+      for (const driveLog of userDriveLogs) {
+        const pitstops = await storage.getPitstopsByDriveLog(driveLog.id);
+        allPitstops.push(...pitstops);
+      }
+      
+      res.json(allPitstops);
+    } catch (error) {
+      console.error('Error fetching all pitstops:', error);
+      res.status(500).json({ message: 'Failed to fetch pitstops' });
+    }
+  });
+
   // Get pitstops for a drive log
   app.get('/api/pitstops/:driveLogId', isAuthenticated, async (req, res) => {
     try {
