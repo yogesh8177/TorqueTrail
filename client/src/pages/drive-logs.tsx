@@ -319,32 +319,201 @@ export default function DriveLogs() {
             </div>
 
             <div className="space-y-4">
-              <Label className="text-base font-medium">Pitstops (Optional)</Label>
-              <GoogleMapsPitstopSelector 
-                pitstops={pitstops}
-                onPitstopsChange={setPitstops}
-                maxPitstops={10}
-              />
-              
-              {pitstops.map((pitstop, index) => (
-                <div key={index} className="border rounded-lg p-4 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium">{pitstop.name || `Pitstop ${index + 1}`}</h4>
-                    <span className="text-sm text-muted-foreground capitalize">{pitstop.type}</span>
-                  </div>
-                  
-                  <PitstopImageUpload
-                    images={pitstopImages[index] || []}
-                    onImagesChange={(images) => {
-                      setPitstopImages(prev => ({
-                        ...prev,
-                        [index]: images
-                      }));
-                    }}
-                    maxImages={3}
-                  />
+              <div className="flex justify-between items-center">
+                <Label className="text-base font-medium">Pitstops (Optional)</Label>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (pitstops.length >= 10) {
+                      toast({
+                        title: "Maximum pitstops reached",
+                        description: "You can add up to 10 pitstops per drive log",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    
+                    setPitstops([...pitstops, {
+                      name: '',
+                      address: '',
+                      latitude: 0,
+                      longitude: 0,
+                      type: 'other',
+                      orderIndex: pitstops.length,
+                      description: '',
+                    }]);
+                  }}
+                >
+                  <Plus className="h-4 w-4 mr-1" />
+                  Add Pitstop
+                </Button>
+              </div>
+
+              {pitstops.length > 0 && (
+                <div className="space-y-4">
+                  {pitstops.map((pitstop, index) => (
+                    <div key={index} className="border rounded-lg p-4 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h4 className="font-medium">Pitstop {index + 1}</h4>
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => {
+                            const updated = pitstops.filter((_, i) => i !== index);
+                            setPitstops(updated.map((p, i) => ({ ...p, orderIndex: i })));
+                            // Remove images for this pitstop
+                            setPitstopImages(prev => {
+                              const newImages = { ...prev };
+                              delete newImages[index];
+                              return newImages;
+                            });
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4 mr-1" />
+                          Remove
+                        </Button>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-4">
+                        <div>
+                          <Label htmlFor={`pitstop-name-${index}`} className="text-sm font-medium">Pitstop Name</Label>
+                          <Input
+                            id={`pitstop-name-${index}`}
+                            placeholder="Enter pitstop name"
+                            value={pitstop.name}
+                            onChange={(e) => {
+                              const updated = [...pitstops];
+                              updated[index] = { ...updated[index], name: e.target.value };
+                              setPitstops(updated);
+                            }}
+                            className="mt-1"
+                          />
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`pitstop-location-${index}`} className="text-sm font-medium">Location</Label>
+                          <div className="relative">
+                            <Input
+                              id={`pitstop-location-${index}`}
+                              placeholder="Search for location or enter address"
+                              value={pitstop.address || ''}
+                              onChange={(e) => {
+                                const updated = [...pitstops];
+                                updated[index] = { ...updated[index], address: e.target.value };
+                                setPitstops(updated);
+                              }}
+                              className="mt-1 pr-10"
+                            />
+                            <MapPin className="h-4 w-4 absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground" />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <Label htmlFor={`pitstop-type-${index}`} className="text-sm font-medium">Type</Label>
+                          <select
+                            id={`pitstop-type-${index}`}
+                            value={pitstop.type}
+                            onChange={(e) => {
+                              const updated = [...pitstops];
+                              updated[index] = { ...updated[index], type: e.target.value as any };
+                              setPitstops(updated);
+                            }}
+                            className="mt-1 w-full p-2 border border-input rounded-md bg-background"
+                          >
+                            <option value="food">Food & Dining</option>
+                            <option value="fuel">Fuel Station</option>
+                            <option value="scenic">Scenic Spot</option>
+                            <option value="rest">Rest Area</option>
+                            <option value="attraction">Attraction</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div>
+                          <Label htmlFor={`pitstop-description-${index}`} className="text-sm font-medium">Description (Optional)</Label>
+                          <Textarea
+                            id={`pitstop-description-${index}`}
+                            placeholder="Describe this pitstop"
+                            value={pitstop.description || ''}
+                            onChange={(e) => {
+                              const updated = [...pitstops];
+                              updated[index] = { ...updated[index], description: e.target.value };
+                              setPitstops(updated);
+                            }}
+                            className="mt-1 min-h-[60px]"
+                          />
+                        </div>
+
+                        <div>
+                          <Label className="text-sm font-medium">Images (up to 3)</Label>
+                          <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            onChange={(e) => {
+                              const files = Array.from(e.target.files || []);
+                              if (files.length > 3) {
+                                toast({
+                                  title: "Too many images",
+                                  description: "You can upload up to 3 images per pitstop",
+                                  variant: "destructive",
+                                });
+                                return;
+                              }
+                              setPitstopImages(prev => ({
+                                ...prev,
+                                [index]: files
+                              }));
+                            }}
+                            className="mt-1"
+                          />
+                          
+                          {pitstopImages[index] && pitstopImages[index].length > 0 && (
+                            <div className="grid grid-cols-3 gap-2 mt-2">
+                              {pitstopImages[index].map((file, imgIndex) => (
+                                <div key={imgIndex} className="relative">
+                                  <img
+                                    src={URL.createObjectURL(file)}
+                                    alt={`Pitstop ${index + 1} - Image ${imgIndex + 1}`}
+                                    className="w-full h-16 object-cover rounded border"
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="destructive"
+                                    className="absolute -top-1 -right-1 h-5 w-5 p-0"
+                                    onClick={() => {
+                                      const updatedImages = [...pitstopImages[index]];
+                                      updatedImages.splice(imgIndex, 1);
+                                      setPitstopImages(prev => ({
+                                        ...prev,
+                                        [index]: updatedImages
+                                      }));
+                                    }}
+                                  >
+                                    ×
+                                  </Button>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
+
+              {pitstops.length === 0 && (
+                <div className="text-center py-8 border-2 border-dashed border-muted rounded-lg">
+                  <MapPin className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground mb-2">No pitstops added yet</p>
+                  <p className="text-sm text-muted-foreground">Click "Add Pitstop" to start adding stops to your route</p>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-4 pt-6">
