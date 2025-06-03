@@ -921,6 +921,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         vehicleId: driveLog.vehicleId,
         createdAt: driveLog.createdAt,
         routeName: driveLog.routeName,
+        route: driveLog.route,
         weatherConditions: driveLog.weatherConditions,
         notes: driveLog.notes,
         titleImageUrl: driveLog.titleImageUrl,

@@ -19,19 +19,19 @@ export default function PublicDriveLog() {
   const [likeCount, setLikeCount] = useState(0);
 
   // Fetch public drive log data
-  const { data: driveLog, isLoading } = useQuery({
+  const { data: driveLog, isLoading } = useQuery<DriveLog>({
     queryKey: ['/api/public/drive-logs/' + params.id],
     enabled: !!params.id,
   });
 
   // Fetch pitstops for the drive log
-  const { data: pitstops } = useQuery({
+  const { data: pitstops = [] } = useQuery<Pitstop[]>({
     queryKey: ['/api/public/pitstops/' + params.id],
     enabled: !!params.id,
   });
 
   // Fetch vehicle data if available
-  const { data: vehicle } = useQuery({
+  const { data: vehicle } = useQuery<Vehicle>({
     queryKey: ['/api/public/vehicles/' + driveLog?.vehicleId],
     enabled: !!driveLog?.vehicleId,
   });
